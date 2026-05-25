@@ -288,6 +288,87 @@ class TelephonyPhoneNumberModel(Base):
     )
 
 
+class TelegramSipGatewayConfigurationModel(Base):
+    """SIP-to-Telegram gateway account for an organization.
+
+    Telegram does not expose SIP natively; credentials here point at an external
+    gateway (e.g. SIP.TG, tg2sip, or a custom REST/SIP bridge).
+    """
+
+    __tablename__ = "telegram_sip_gateway_configurations"
+
+    id = Column(Integer, primary_key=True, index=True)
+    organization_id = Column(
+        Integer, ForeignKey("organizations.id", ondelete="CASCADE"), nullable=False
+    )
+    name = Column(String(64), nullable=False)
+    gateway_provider_type = Column(String(32), nullable=False)
+    credentials = Column(JSON, nullable=False, default=dict)
+    is_enabled = Column(
+        Boolean, nullable=False, default=True, server_default=text("true")
+    )
+    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(UTC))
+    updated_at = Column(
+        DateTime(timezone=True),
+        default=lambda: datetime.now(UTC),
+        onupdate=lambda: datetime.now(UTC),
+    )
+
+    organization = relationship("OrganizationModel")
+    call_logs = relationship(
+        "TelegramSipCallLogModel",
+        back_populates="configuration",
+        cascade="all, delete-orphan",
+    )
+
+    __table_args__ = (
+        UniqueConstraint(
+            "organization_id",
+            "name",
+            name="uq_telegram_sip_gateway_configurations_org_name",
+        ),
+        Index("ix_telegram_sip_gateway_configurations_org", "organization_id"),
+    )
+
+
+class TelegramSipCallLogModel(Base):
+    """Lifecycle record for a call placed or received via a Telegram SIP gateway."""
+
+    __tablename__ = "telegram_sip_call_logs"
+
+    id = Column(Integer, primary_key=True, index=True)
+    organization_id = Column(
+        Integer, ForeignKey("organizations.id", ondelete="CASCADE"), nullable=False
+    )
+    configuration_id = Column(
+        Integer,
+        ForeignKey("telegram_sip_gateway_configurations.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+    gateway_call_id = Column(String(128), nullable=True, index=True)
+    direction = Column(String(16), nullable=False)
+    destination = Column(String(255), nullable=False)
+    status = Column(String(32), nullable=False, default="initiated")
+    error_code = Column(String(64), nullable=True)
+    error_message = Column(Text, nullable=True)
+    events = Column(JSON, nullable=False, default=list)
+    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(UTC))
+    updated_at = Column(
+        DateTime(timezone=True),
+        default=lambda: datetime.now(UTC),
+        onupdate=lambda: datetime.now(UTC),
+    )
+
+    configuration = relationship(
+        "TelegramSipGatewayConfigurationModel", back_populates="call_logs"
+    )
+
+    __table_args__ = (
+        Index("ix_telegram_sip_call_logs_org", "organization_id"),
+        Index("ix_telegram_sip_call_logs_config", "configuration_id"),
+    )
+
+
 class IntegrationModel(Base):
     __tablename__ = "integrations"
 

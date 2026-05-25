@@ -16,6 +16,7 @@ import {
   LogOut,
   type LucideIcon,
   Megaphone,
+  MessageCircle,
   Phone,
   Settings,
   TrendingUp,
@@ -106,6 +107,11 @@ const NAV_SECTIONS: SidebarNavSection[] = [
         url: "/telephony-configurations",
         icon: Phone,
         showsTelephonyWarning: true,
+      },
+      {
+        title: "Telegram SIP",
+        url: "/telegram-sip-gateway",
+        icon: MessageCircle,
       },
       {
         title: "Tools",

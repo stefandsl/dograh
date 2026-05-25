@@ -18,6 +18,10 @@ from api.routes.reports import router as reports_router
 from api.routes.s3_signed_url import router as s3_router
 from api.routes.service_keys import router as service_keys_router
 from api.routes.superuser import router as superuser_router
+from api.routes.telegram_sip_gateway import (
+    public_router as telegram_sip_gateway_public_router,
+    router as telegram_sip_gateway_router,
+)
 from api.routes.telephony import router as telephony_router
 from api.routes.tool import router as tool_router
 from api.routes.turn_credentials import router as turn_credentials_router
@@ -41,6 +45,8 @@ router.include_router(credentials_router)
 router.include_router(tool_router)
 router.include_router(integration_router)
 router.include_router(organization_router)
+router.include_router(telegram_sip_gateway_router)
+router.include_router(telegram_sip_gateway_public_router)
 router.include_router(s3_router)
 router.include_router(service_keys_router)
 router.include_router(organization_usage_router)

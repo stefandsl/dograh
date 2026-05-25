@@ -8,6 +8,7 @@ from api.db.organization_client import OrganizationClient
 from api.db.organization_configuration_client import OrganizationConfigurationClient
 from api.db.organization_usage_client import OrganizationUsageClient
 from api.db.reports_client import ReportsClient
+from api.db.telegram_sip_gateway_client import TelegramSipGatewayClient
 from api.db.telephony_configuration_client import TelephonyConfigurationClient
 from api.db.telephony_phone_number_client import TelephonyPhoneNumberClient
 from api.db.tool_client import ToolClient
@@ -39,6 +40,7 @@ class DBClient(
     WorkflowRecordingClient,
     TelephonyConfigurationClient,
     TelephonyPhoneNumberClient,
+    TelegramSipGatewayClient,
 ):
     """
     Unified database client that combines all specialized database operations.
