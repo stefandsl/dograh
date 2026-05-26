@@ -1,0 +1,91 @@
+---
+title: "MessageNet Integration"
+description: "Connect Dograh AI to a MessageNet SIP trunk for voice agent calls"
+---
+
+## Overview
+
+[MessageNet](https://www.messagenet.it/) is an Italian VoIP provider offering SIP trunking. Dograh AI integrates with MessageNet by registering against your SIP trunk and bridging audio through a SIP/media gateway (typically Asterisk) running alongside your Dograh deployment.
+
+Because MessageNet does not expose a REST call-control API, all signalling and media go over SIP/RTP. The configuration in Dograh stores the SIP URI and password for the trunk; the SIP/media gateway component is provisioned separately at deployment time.
+
+## Prerequisites
+
+Before setting up the MessageNet integration, you'll need:
+
+- An active **MessageNet** account with at least one SIP trunk enabled
+- The trunk's **SIP URI** (in the form `sip:5000000@sip.messagenet.it`)
+- The trunk's **SIP password** (also called *user password* in the MessageNet portal)
+- *(Optional)* One or more caller IDs / DIDs you've assigned to the trunk
+- A SIP/media gateway (e.g. Asterisk + PJSIP) reachable from your Dograh backend — this is the component that actually speaks SIP to MessageNet and exposes a WebSocket audio leg to Dograh
+- Dograh AI instance running and accessible
+
+<Note>
+The MessageNet portal exposes the SIP URI and user password under your trunk's account page (often labelled "SIP URI" / "Internal URI" and "SIP password"). Keep the password handy — it's the same one you'd give a softphone or any other SIP client.
+</Note>
+
+## SIP/Media Gateway
+
+MessageNet, like other pure SIP trunks, requires a SIP-speaking component on your side to register the trunk and bridge audio. Dograh treats this component as an abstraction (`MessagenetSipGatewayClient`) so the same provider code works regardless of which backend you wire in.
+
+The default ship state of the provider returns **HTTP 503 — "MessageNet SIP gateway is not configured"** for every outbound attempt. This is intentional: until you wire a real gateway, calls fail safely instead of half-working.
+
+To make the integration live, point Dograh's gateway implementation at an Asterisk (or Kamailio, or other SIP-capable) instance configured with:
+
+- A PJSIP endpoint/auth/registration for your MessageNet trunk
+- A dialplan rule that routes outbound calls onto that endpoint
+- An external-media / WebSocket bridge for the audio leg back to Dograh
+
+This is the same pattern documented for [Asterisk ARI](./asterisk-ari.mdx) — in fact, an existing ARI deployment can usually be reused as the MessageNet gateway by adding a PJSIP endpoint pointed at MessageNet.
+
+## Configuration in Dograh
+
+### Step 1: Navigate to Telephony Settings
+
+1. Open **/telephony-configurations** and click **Add configuration**
+2. Select **MessageNet** as your provider
+
+### Step 2: Enter Your MessageNet Credentials
+
+| Field | Description | Example |
+|-------|-------------|---------|
+| **SIP URI** | The MessageNet trunk SIP URI | `sip:5000000@sip.messagenet.it` |
+| **SIP Username** | *Optional.* SIP auth username — defaults to the user part of the SIP URI if you leave this blank. | `5000000` |
+| **SIP Password** | The trunk's SIP password. Masked on read; resubmitting the masked value keeps the stored secret. | *(your password)* |
+| **Caller IDs** | *Optional.* Comma- or array-style list of phone numbers / DIDs allowed as the outbound caller ID. | `+390212345678` |
+
+Click **Save Configuration**.
+
+### Step 3: Verify
+
+If your SIP/media gateway is wired in, you can now place a test call from the Dograh UI. If not, you'll receive a clear 503 error pointing at the gateway component — that's the expected behaviour until the gateway is configured.
+
+## Outbound Calls
+
+1. Navigate to a workflow → **Test Call**
+2. Pick a destination number (E.164 format)
+3. The outbound caller ID is selected from the configured **Caller IDs** list on the trunk (or chosen explicitly per-call via the API)
+4. The gateway dials the destination via the registered MessageNet trunk and streams audio back to Dograh over the configured WebSocket bridge
+
+## Inbound Calls
+
+Inbound MessageNet calls are routed to Dograh by the SIP/media gateway, not by an HTTP webhook. Configure your gateway's dialplan to route the dialled extension/DID into the Dograh-facing WebSocket bridge (see the [Asterisk ARI](./asterisk-ari.mdx) integration guide for a reference dialplan).
+
+Dograh matches inbound calls to a workflow using the **called number** — there's no account-id concept on MessageNet trunks, so you can run multiple MessageNet trunks in the same organization as long as their caller IDs / DIDs don't overlap.
+
+## Limitations (Phase 1)
+
+- **No REST call-control API** — MessageNet is SIP-only. All control plane and media-plane operations route through your SIP gateway.
+- **SIP/media gateway is required** — without one, outbound calls fail with HTTP 503 and inbound calls won't reach Dograh.
+- **Cost retrieval is not implemented** — MessageNet does not expose a per-call cost API. CDR reconciliation is a deployment-level concern.
+- **Call transfer is phase 2** — `transfer_call` raises `NotImplementedError`. Implement transfers using SIP re-INVITE / REFER on the gateway side once your deployment needs them.
+- **Inbound matching is by called number** — no account-id matching across trunks.
+
+## Troubleshooting
+
+| Symptom | Likely cause | Action |
+|---------|--------------|--------|
+| `HTTP 503 — MessageNet SIP gateway is not configured` | Default stub gateway is still active | Wire a real `MessagenetSipGatewayClient` for this deployment |
+| `HTTP 400 — MessageNet provider is not properly configured` | `sip_uri` or `password` missing/blank on the saved config | Re-open the configuration in Dograh and confirm both fields |
+| Outbound call placed but audio never starts | Gateway answered SIP but the WebSocket audio leg failed | Check the gateway's external-media configuration; mismatch in sample rate (`8000 Hz`) or codec (`PCMU`/`PCMA`) is the usual culprit |
+| Inbound call rings on MessageNet side but doesn't reach Dograh | Gateway dialplan isn't routing the dialled number into the Dograh WebSocket bridge | Verify the dialplan extension for the inbound DID points at your Dograh-facing endpoint |
