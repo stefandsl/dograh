@@ -114,3 +114,20 @@ class DograhClient:
         return await self._request(
             "GET", f"/api/v1/workflow/{workflow_id}/runs/{run_id}"
         )
+
+    async def request_web_call_link(
+        self, *, workflow_id: int, telegram_chat_id: int
+    ) -> dict[str, Any]:
+        """``POST /api/v1/telegram/web-call-link`` — see ADR-101.
+
+        Returns ``{ url, workflow_run_id, expires_in_seconds }``.
+        The bot sends ``url`` to the user as a Telegram WebApp button.
+        """
+        return await self._request(
+            "POST",
+            "/api/v1/telegram/web-call-link",
+            json={
+                "workflow_id": workflow_id,
+                "telegram_chat_id": telegram_chat_id,
+            },
+        )
