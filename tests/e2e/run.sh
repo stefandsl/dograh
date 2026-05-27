@@ -21,8 +21,18 @@ trap cleanup EXIT
 echo "==> Building telegram-bot image"
 $COMPOSE --profile telegram build telegram-bot
 
-echo "==> Bringing the stack up"
-$COMPOSE --profile telegram up -d
+echo "==> Bringing the stack up (retries on transient registry errors)"
+attempt=0
+until $COMPOSE --profile telegram up -d; do
+  attempt=$((attempt + 1))
+  if [[ $attempt -ge 3 ]]; then
+    echo "==> compose up failed 3 times, giving up"
+    exit 1
+  fi
+  echo "==> compose up failed (attempt $attempt/3); sleeping 10s before retry"
+  $COMPOSE --profile telegram down -v || true
+  sleep 10
+done
 
 wait_for() {
   # wait_for <label> <command>  → retries the command until it succeeds
