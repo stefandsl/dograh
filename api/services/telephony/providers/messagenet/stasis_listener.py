@@ -1,0 +1,331 @@
+"""Deployment-level Stasis event listener for the MessageNet ARI app.
+
+Why this is separate from ``ari_manager.py``:
+
+``ari_manager.py`` is org-scoped — it walks ``telephony_configurations``
+rows where ``provider='ari'`` and opens one WebSocket per org. MessageNet
+calls go through a **single deployment-level** Asterisk instance whose
+ARI endpoint is configured via env (``ARI_BASE_URL`` etc.), not per-org
+DB rows, so the org-driven loop doesn't see it. This listener is the
+minimum viable counterpart: one WebSocket subscribed to one Stasis app,
+handling the outbound bridge dance the messagenet provider depends on.
+
+Phase 1 handles **outbound only** — channels originated by
+``MessagenetProvider.initiate_call`` that land in the Stasis app with a
+``workflow_run_id`` appArg. Inbound (PSTN → MessageNet → Asterisk →
+Stasis) is logged but not bridged here; DID-to-workflow resolution is a
+follow-up that needs to read ``telephony_phone_numbers`` and create a
+workflow_run, mirroring the inbound path in ari_manager.
+"""
+
+from __future__ import annotations
+
+import asyncio
+import json
+import os
+from typing import Any, Dict, Optional
+
+import aiohttp
+import websockets
+from loguru import logger
+
+
+_STASIS_APP_DEFAULT = "dograh-messagenet"
+
+
+class MessagenetStasisListener:
+    """Single-connection ARI event listener for the messagenet Stasis app."""
+
+    def __init__(
+        self,
+        *,
+        ari_base_url: str,
+        ari_user: str,
+        ari_password: str,
+        app_name: str,
+        ws_client_name: str,
+    ) -> None:
+        self.ari_base_url = ari_base_url.rstrip("/")
+        self.ari_user = ari_user
+        self.ari_password = ari_password
+        self.app_name = app_name
+        self.ws_client_name = ws_client_name
+        self._task: Optional[asyncio.Task[None]] = None
+        self._stop = asyncio.Event()
+
+    # --- Lifecycle ----------------------------------------------------
+    async def start(self) -> None:
+        if self._task is not None:
+            return
+        self._stop.clear()
+        self._task = asyncio.create_task(
+            self._run(), name="messagenet-stasis-listener"
+        )
+        logger.info(
+            f"[MessageNet/Stasis] Listener started for app={self.app_name} "
+            f"at {self.ari_base_url}"
+        )
+
+    async def stop(self) -> None:
+        if self._task is None:
+            return
+        self._stop.set()
+        self._task.cancel()
+        try:
+            await self._task
+        except (asyncio.CancelledError, Exception):
+            pass
+        self._task = None
+        logger.info("[MessageNet/Stasis] Listener stopped")
+
+    # --- WS connect loop ---------------------------------------------
+    async def _run(self) -> None:
+        # Convert http(s):// → ws(s):// for the ARI WebSocket events URL.
+        if self.ari_base_url.startswith("https://"):
+            ws_scheme = "wss://"
+            host_path = self.ari_base_url[len("https://"):]
+        elif self.ari_base_url.startswith("http://"):
+            ws_scheme = "ws://"
+            host_path = self.ari_base_url[len("http://"):]
+        else:
+            raise RuntimeError(
+                f"ARI_BASE_URL must start with http:// or https:// "
+                f"(got {self.ari_base_url!r})"
+            )
+        events_url = (
+            f"{ws_scheme}{host_path}/ari/events"
+            f"?api_key={self.ari_user}:{self.ari_password}"
+            f"&app={self.app_name}&subscribeAll=true"
+        )
+
+        backoff = 1.0
+        while not self._stop.is_set():
+            try:
+                async with websockets.connect(events_url) as ws:
+                    logger.info(
+                        f"[MessageNet/Stasis] Connected to ARI events "
+                        f"for app={self.app_name}"
+                    )
+                    backoff = 1.0
+                    async for raw in ws:
+                        if self._stop.is_set():
+                            break
+                        await self._handle_event(raw)
+            except asyncio.CancelledError:
+                raise
+            except Exception as exc:
+                # Reconnect with exponential backoff capped at 30s.
+                logger.warning(
+                    f"[MessageNet/Stasis] WS error ({exc!r}); "
+                    f"reconnecting in {backoff:.1f}s"
+                )
+                try:
+                    await asyncio.wait_for(self._stop.wait(), timeout=backoff)
+                except asyncio.TimeoutError:
+                    pass
+                backoff = min(backoff * 2, 30.0)
+
+    # --- Event handlers ----------------------------------------------
+    async def _handle_event(self, raw: Any) -> None:
+        try:
+            event = json.loads(raw)
+        except Exception:
+            logger.warning(f"[MessageNet/Stasis] Non-JSON event: {raw!r}")
+            return
+
+        event_type = event.get("type", "")
+        if event_type == "StasisStart":
+            await self._on_stasis_start(event)
+        elif event_type == "StasisEnd":
+            await self._on_stasis_end(event)
+        # Other events (ChannelStateChange, BridgeCreated, etc.) are
+        # ignored here — the audio bridge is enough for phase 1.
+
+    async def _on_stasis_start(self, event: Dict[str, Any]) -> None:
+        channel = event.get("channel", {}) or {}
+        channel_id = channel.get("id", "")
+        args = event.get("args", []) or []
+        kv = _parse_appargs(args)
+
+        # Outbound channels carry a workflow_run_id appArg (set by
+        # MessagenetProvider via the AsteriskARIGateway originate call).
+        workflow_run_id = kv.get("workflow_run_id")
+        direction = kv.get("direction", "outbound" if workflow_run_id else "")
+
+        if direction == "inbound" and not workflow_run_id:
+            # Phase 1 limitation — log loudly and hang up.
+            logger.warning(
+                f"[MessageNet/Stasis] Inbound StasisStart not yet wired "
+                f"(channel={channel_id}, to={kv.get('to')}, from={kv.get('from')}). "
+                f"DID-to-workflow lookup is a follow-up; hanging up."
+            )
+            await self._hangup(channel_id)
+            return
+
+        if not workflow_run_id:
+            logger.warning(
+                f"[MessageNet/Stasis] StasisStart missing workflow_run_id "
+                f"(channel={channel_id}, args={args}); hanging up"
+            )
+            await self._hangup(channel_id)
+            return
+
+        logger.info(
+            f"[MessageNet/Stasis] Outbound StasisStart "
+            f"channel={channel_id} workflow_run_id={workflow_run_id}"
+        )
+
+        # 1. Answer the trunk leg so audio cuts through.
+        if not await self._answer(channel_id):
+            return
+
+        # 2. Spawn the externalMedia leg pointing back at Dograh.
+        ext_id = await self._create_external_media(
+            workflow_run_id=workflow_run_id,
+            workflow_id=kv.get("workflow_id", ""),
+            user_id=kv.get("user_id", ""),
+        )
+        if not ext_id:
+            await self._hangup(channel_id)
+            return
+
+        # 3. Bridge the two legs.
+        bridge_id = await self._bridge([channel_id, ext_id])
+        if not bridge_id:
+            await self._hangup(channel_id)
+            await self._hangup(ext_id)
+            return
+
+        logger.info(
+            f"[MessageNet/Stasis] Bridge {bridge_id} live: "
+            f"trunk={channel_id} ext={ext_id}"
+        )
+
+    async def _on_stasis_end(self, event: Dict[str, Any]) -> None:
+        channel = event.get("channel", {}) or {}
+        channel_id = channel.get("id", "")
+        logger.info(f"[MessageNet/Stasis] StasisEnd channel={channel_id}")
+        # Asterisk tears down the bridge automatically when both legs leave.
+
+    # --- ARI helpers --------------------------------------------------
+    def _auth(self) -> aiohttp.BasicAuth:
+        return aiohttp.BasicAuth(self.ari_user, self.ari_password)
+
+    async def _ari(self, method: str, path: str, **kwargs: Any) -> Optional[Dict[str, Any]]:
+        url = f"{self.ari_base_url}/ari{path}"
+        async with aiohttp.ClientSession() as session:
+            async with session.request(method, url, auth=self._auth(), **kwargs) as resp:
+                text = await resp.text()
+                if resp.status >= 400:
+                    logger.error(
+                        f"[MessageNet/Stasis] ARI {method} {path} "
+                        f"failed: HTTP {resp.status} {text}"
+                    )
+                    return None
+                if not text:
+                    return {}
+                try:
+                    return json.loads(text)
+                except json.JSONDecodeError:
+                    return {"raw": text}
+
+    async def _answer(self, channel_id: str) -> bool:
+        res = await self._ari("POST", f"/channels/{channel_id}/answer")
+        return res is not None
+
+    async def _hangup(self, channel_id: str) -> None:
+        await self._ari("DELETE", f"/channels/{channel_id}")
+
+    async def _create_external_media(
+        self, *, workflow_run_id: str, workflow_id: str, user_id: str
+    ) -> str:
+        # v() appends URI query params onto the websocket_client.conf URL,
+        # so the api side resolves the workflow run via /ws/ari?…
+        transport_data = (
+            f"v(workflow_id={workflow_id},"
+            f"user_id={user_id},"
+            f"workflow_run_id={workflow_run_id})"
+        )
+        params = {
+            "app": self.app_name,
+            "external_host": self.ws_client_name,
+            "format": "ulaw",
+            "transport": "websocket",
+            "encapsulation": "none",
+            "connection_type": "client",
+            "direction": "both",
+            "transport_data": transport_data,
+        }
+        res = await self._ari("POST", "/channels/externalMedia", params=params)
+        return (res or {}).get("id", "")
+
+    async def _bridge(self, channel_ids: list[str]) -> str:
+        res = await self._ari(
+            "POST",
+            "/bridges",
+            params={"type": "mixing", "name": f"mn-{channel_ids[0]}"},
+        )
+        bridge_id = (res or {}).get("id", "")
+        if not bridge_id:
+            return ""
+        ok = await self._ari(
+            "POST",
+            f"/bridges/{bridge_id}/addChannel",
+            params={"channel": ",".join(channel_ids)},
+        )
+        return bridge_id if ok is not None else ""
+
+
+def _parse_appargs(args: list[str]) -> Dict[str, str]:
+    """Parse ``["key=value", "k2=v2"]`` into ``{"key": "value", ...}``.
+
+    Asterisk passes Stasis() appArgs as a list of strings split on commas
+    in the dialplan and as positional args from ARI originate. We accept
+    both shapes — anything without ``=`` is ignored.
+    """
+    out: Dict[str, str] = {}
+    for item in args:
+        if not isinstance(item, str) or "=" not in item:
+            continue
+        k, _, v = item.partition("=")
+        out[k.strip()] = v.strip()
+    return out
+
+
+_listener_singleton: Optional[MessagenetStasisListener] = None
+
+
+def get_listener() -> Optional[MessagenetStasisListener]:
+    return _listener_singleton
+
+
+def install_messagenet_stasis_listener() -> Optional[MessagenetStasisListener]:
+    """Build the listener from env. Returns None if the backend isn't asterisk-ari.
+
+    Called from the FastAPI lifespan; the caller is responsible for
+    invoking ``listener.start()`` and ``listener.stop()``.
+    """
+    global _listener_singleton
+
+    backend = (os.getenv("MESSAGENET_GATEWAY_BACKEND") or "stub").lower()
+    if backend != "asterisk-ari":
+        logger.info(
+            f"[MessageNet/Stasis] Backend={backend} — Stasis listener not started"
+        )
+        return None
+
+    try:
+        listener = MessagenetStasisListener(
+            ari_base_url=os.environ["ARI_BASE_URL"],
+            ari_user=os.environ["ARI_USER"],
+            ari_password=os.environ["ARI_PASSWORD"],
+            app_name=os.getenv("ARI_APP_NAME", _STASIS_APP_DEFAULT),
+            ws_client_name=os.getenv("MESSAGENET_WS_CLIENT_NAME", "dograh-ws"),
+        )
+    except KeyError as exc:
+        raise RuntimeError(
+            f"Missing env var for MessageNet Stasis listener: {exc.args[0]}"
+        ) from exc
+
+    _listener_singleton = listener
+    return listener

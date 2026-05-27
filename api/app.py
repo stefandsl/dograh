@@ -33,6 +33,9 @@ from api.services.pipecat.tracing_config import (
     handle_langfuse_sync,
     load_all_org_langfuse_credentials,
 )
+from api.services.telephony.providers.messagenet.stasis_listener import (
+    install_messagenet_stasis_listener,
+)
 from api.services.telephony.providers.messagenet.wiring import (
     install_messagenet_gateway,
 )
@@ -62,6 +65,14 @@ async def lifespan(app: FastAPI):
         # Defaults to the stub (HTTP 503 on call attempts) when unset.
         install_messagenet_gateway()
 
+        # When the asterisk-ari backend is selected, also start the
+        # deployment-level Stasis listener that bridges originated
+        # channels to the Dograh externalMedia WebSocket. No-op for
+        # other backends.
+        messagenet_stasis_listener = install_messagenet_stasis_listener()
+        if messagenet_stasis_listener is not None:
+            await messagenet_stasis_listener.start()
+
         # Start cross-worker sync manager so config changes propagate to all workers
         sync_manager = WorkerSyncManager(REDIS_URL)
         sync_manager.register(
@@ -74,6 +85,8 @@ async def lifespan(app: FastAPI):
 
         # Shutdown sequence - this runs when FastAPI is shutting down
         logger.info("Starting graceful shutdown...")
+        if messagenet_stasis_listener is not None:
+            await messagenet_stasis_listener.stop()
         await sync_manager.stop()
 
 

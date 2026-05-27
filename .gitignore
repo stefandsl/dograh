@@ -4,6 +4,10 @@ __pycache__
 .env.prod
 .env.test
 
+# Local MessageNet trunk credentials rendered from .example by the
+# asterisk container entrypoint — never commit real SIP passwords.
+asterisk/conf.d/messagenet_local.conf
+
 # logs and run directory on production
 /logs/
 /run/
