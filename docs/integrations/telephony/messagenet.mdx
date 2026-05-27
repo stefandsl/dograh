@@ -134,6 +134,28 @@ From a workflow's **Test Call** action, dial an E.164 number. In the logs you sh
 4. `[MessageNet/Stasis] Bridge … live: trunk=… ext=…`
 5. The pipecat pipeline starting on the externalMedia WebSocket leg
 
+### Audio bridge via AudioSocket
+
+Audio between Asterisk and the Dograh pipecat pipeline runs over **AudioSocket** (TCP), not over chan_websocket. The chan_websocket externalMedia transport is broken in `andrius/asterisk:21`, so the bundled stack uses chan_audiosocket instead.
+
+How it works:
+
+1. `MessagenetStasisListener._create_external_media` generates a UUID, pre-registers it with the deployment-level `AudioSocketServer` (api side, port 9092), then issues `POST /channels/externalMedia` with `transport=tcp`, `encapsulation=audiosocket`, `external_host=api:9092`, `data=<uuid>`, `format=slin`.
+2. Asterisk opens a TCP connection to `api:9092` and sends a first frame `type=0x01` (UUID) containing the 16-byte UUID.
+3. `AudioSocketServer` matches the UUID to the workflow run and opens a loopback WebSocket to its own `/api/v1/telephony/ws/ari?workflow_id=…&user_id=…&workflow_run_id=…` endpoint.
+4. The bridge transcodes audio bidirectionally — AudioSocket carries PCM16 (slin), the existing `AsteriskFrameSerializer` expects µ-law on the WebSocket side, so the bridge runs `audioop.lin2ulaw` / `audioop.ulaw2lin`.
+
+Env knobs (optional; sensible defaults work for the bundled stack):
+
+| Var | Default | Purpose |
+|---|---|---|
+| `MESSAGENET_AUDIOSOCKET_PORT` | `9092` | TCP port the AudioSocket server binds. Same port is used as `external_host` toward Asterisk. |
+| `MESSAGENET_AUDIOSOCKET_HOST` | `0.0.0.0` | Bind address. |
+| `MESSAGENET_AUDIOSOCKET_TARGET_HOST` | `api` | Hostname Asterisk uses to reach the AudioSocket server. Default matches the docker service name on `root_app-network`. |
+| `DOGRAH_WS_HOST` | `localhost:8000` | Host:port the loopback bridge connects to for `/ws/ari`. |
+
+The TCP port is internal to the docker network — no host port mapping is needed.
+
 ### What's not wired yet
 
 - **Inbound calls** reach Asterisk and hit Stasis, but the listener does **not** yet resolve the called DID to a workflow + create a workflow_run. Inbound StasisStarts are logged and hung up. The follow-up will mirror the DID lookup that `ari_manager._handle_inbound_stasis_start` already does for the `ari` provider.
@@ -158,4 +180,4 @@ From a workflow's **Test Call** action, dial an E.164 number. In the logs you sh
 | `[MessageNet/Stasis] Inbound StasisStart not yet wired` log | Bundled listener doesn't yet resolve DID→workflow | Expected in phase 1 — implement the DID lookup in `stasis_listener.py` or wait for the follow-up |
 | Asterisk logs show `Outbound registration to sip.messagenet.it failed` | Wrong `MESSAGENET_USER` / `MESSAGENET_PASSWORD` in `.env`, or the asterisk container started before they were set | `docker compose --profile messagenet restart asterisk` after correcting `.env` |
 | Carrier returns `SIP/2.0 500 ... server error (6/TM)` on outbound INVITE; SDP body has no `m=audio` line | `res_pjsip_sdp_rtp.so` (or its RTP-engine deps `res_rtp_asterisk.so`, `res_rtp_multicast.so`) isn't loaded — chan_pjsip sends a header-only SDP that strict carriers reject | Confirm the modules are loaded with `asterisk -rx 'module show like rtp'`; the bundled `asterisk/modules.conf` already loads them |
-| `[MessageNet/Stasis] ARI POST /channels/externalMedia failed: HTTP 500` and the outbound trunk is hung up right after StasisStart | chan_websocket externalMedia silently 500s in `andrius/asterisk:21` even though the `websocket_client.conf` entry registers in sorcery and chan_websocket finds it via `ast_websocket_client_retrieve_by_id`. SIP path is fine; audio bridging is the gap. | Known issue in the bundled image — trunk signalling works end-to-end (REGISTER + INVITE + answer) but audio can't be carried back to Dograh on this build. Workarounds: switch externalMedia to `audiosocket` transport (needs a serializer on the Dograh side) or try a different Asterisk image. |
+| `[MessageNet/Stasis] ARI POST /channels/externalMedia failed: HTTP 500` and the outbound trunk is hung up right after StasisStart | chan_websocket externalMedia is broken in `andrius/asterisk:21` even though sorcery has the entry. | Resolved in this repo by switching to **AudioSocket transport** (TCP) — see [Audio bridge](#audio-bridge-via-audiosocket) below. The chan_websocket path is no longer used. |
