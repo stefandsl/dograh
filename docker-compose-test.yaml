@@ -28,6 +28,14 @@ services:
       - full_page_writes=off
 
   api:
+    # The base compose pulls the published dograh-api:latest, which
+    # doesn't carry the fork's new IM-channels routes. In CI we build
+    # from source so the smoke actually exercises what the PR added.
+    build:
+      context: .
+      dockerfile: api/Dockerfile
+    image: dograh-api:ci
+    pull_policy: never
     environment:
       ENABLE_TELEMETRY: "false"
       OSS_JWT_SECRET: "ci-only-jwt-secret-do-not-use-in-prod"
