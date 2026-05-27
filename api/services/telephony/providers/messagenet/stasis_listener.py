@@ -240,8 +240,17 @@ class MessagenetStasisListener:
             return
 
         try:
+            # MessageNet is an Italian carrier; their inbound INVITEs put the
+            # dialled DID in the To header in national format (e.g.
+            # 0418878808). normalize_telephony_address needs a country hint
+            # to turn that into the canonical E.164 form (+390418878808)
+            # the DB stores. Override via MESSAGENET_COUNTRY for non-IT
+            # deployments.
+            country_hint = os.getenv("MESSAGENET_COUNTRY", "IT")
             row = await db_client.find_phone_number_for_provider_address(
-                provider="messagenet", address=to_number
+                provider="messagenet",
+                address=to_number,
+                country_hint=country_hint,
             )
             if row is None:
                 logger.warning(
