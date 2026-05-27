@@ -33,6 +33,9 @@ from api.services.pipecat.tracing_config import (
     handle_langfuse_sync,
     load_all_org_langfuse_credentials,
 )
+from api.services.telephony.providers.messagenet.wiring import (
+    install_messagenet_gateway,
+)
 from api.services.worker_sync.manager import (
     WorkerSyncManager,
     set_worker_sync_manager,
@@ -54,6 +57,10 @@ async def lifespan(app: FastAPI):
         # Pre-register all org-specific Langfuse exporters so they're ready
         # before any pipeline runs, without per-call DB lookups.
         await load_all_org_langfuse_credentials()
+
+        # Install the MessageNet SIP gateway backend selected by env.
+        # Defaults to the stub (HTTP 503 on call attempts) when unset.
+        install_messagenet_gateway()
 
         # Start cross-worker sync manager so config changes propagate to all workers
         sync_manager = WorkerSyncManager(REDIS_URL)
