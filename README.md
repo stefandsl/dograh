@@ -80,6 +80,17 @@ An honest comparison on the axes that matter most to teams evaluating voice AI p
 curl -o docker-compose.yaml https://raw.githubusercontent.com/dograh-hq/dograh/main/docker-compose.yaml && REGISTRY=ghcr.io/dograh-hq ENABLE_TELEMETRY=true docker compose up --pull always
 ```
 
+#### Interactive install (with optional Telegram bot)
+
+If you want the [Telegram IM channel](docs/channels/telegram.md), use the interactive installer instead — it asks once whether to enable Telegram, generates the shared secret, writes `.env`, and brings the stack up:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/dograh-hq/dograh/main/install.sh \
+  -o /tmp/dograh-install.sh && bash /tmp/dograh-install.sh
+```
+
+The installer is idempotent (re-running keeps your `.env` values) and supports `--no-telegram`, `--with-telegram`, `--reconfigure`, `--dry-run`.
+
 > **Note**
 > First startup may take 2-3 minutes to download all images. Once running, open http://localhost:3010 to create your first AI voice assistant!
 > For common issues and solutions, see 🔧 **[Troubleshooting](docs/troubleshooting.md)**.
