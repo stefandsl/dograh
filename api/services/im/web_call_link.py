@@ -12,28 +12,17 @@ with SHA-256 and base64url-encode it.
 
 from __future__ import annotations
 
-import base64
-import hashlib
 import json
 import time
 from dataclasses import dataclass
 from typing import Optional
 
-from cryptography.fernet import Fernet, InvalidToken
+from cryptography.fernet import InvalidToken
 
-from api.constants import OSS_JWT_SECRET
+from .encryption import fernet as _FERNET
 
 
 _DEFAULT_TTL_SECONDS = 5 * 60
-
-
-def _derive_fernet_key(master: str) -> bytes:
-    """Turn an arbitrary secret string into a Fernet-compatible key."""
-    digest = hashlib.sha256(master.encode("utf-8")).digest()
-    return base64.urlsafe_b64encode(digest)
-
-
-_FERNET = Fernet(_derive_fernet_key(OSS_JWT_SECRET))
 
 
 @dataclass(frozen=True)

@@ -1296,3 +1296,49 @@ class KnowledgeBaseChunkModel(Base):
             postgresql_ops={"embedding": "vector_cosine_ops"},
         ),
     )
+
+
+class ImChannelModel(Base):
+    """IM-channel registration (Telegram first, more later).
+
+    One row per channel an org has enabled. ``config_encrypted`` is the
+    Fernet-encrypted JSON blob holding the bot token + per-type config
+    (see ``api/services/im/channel_service.py``). The plaintext never
+    leaves the encryption helper.
+
+    Soft-link to ``api_keys.id`` via ``api_key_id``: the IM channel
+    auto-mints (or reuses) a service-account API key in the same org;
+    the bot uses that key as ``X-API-Key`` for all downstream calls
+    (ADR-102).
+    """
+
+    __tablename__ = "im_channels"
+
+    id = Column(Integer, primary_key=True, index=True)
+    organization_id = Column(
+        Integer, ForeignKey("organizations.id", ondelete="CASCADE"), nullable=False
+    )
+    type = Column(String(16), nullable=False)  # 'telegram', 'whatsapp', 'discord'
+    name = Column(String(64), nullable=False)
+    config_encrypted = Column(Text, nullable=False)  # Fernet ciphertext (str)
+    enabled = Column(
+        Boolean, nullable=False, default=True, server_default=text("true")
+    )
+    api_key_id = Column(
+        Integer, ForeignKey("api_keys.id", ondelete="SET NULL"), nullable=True
+    )
+    created_by = Column(Integer, ForeignKey("users.id"), nullable=True)
+    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(UTC))
+    updated_at = Column(
+        DateTime(timezone=True),
+        default=lambda: datetime.now(UTC),
+        onupdate=lambda: datetime.now(UTC),
+    )
+
+    organization = relationship("OrganizationModel")
+    api_key = relationship("APIKeyModel")
+
+    __table_args__ = (
+        Index("ix_im_channels_org_type_enabled", "organization_id", "type", "enabled"),
+        UniqueConstraint("organization_id", "type", "name", name="uq_im_channels_org_type_name"),
+    )
