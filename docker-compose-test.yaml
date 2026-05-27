@@ -1,0 +1,42 @@
+# Overrides applied on top of docker-compose.yaml for the e2e smoke job
+# in .github/workflows/e2e-smoke.yml. Run as:
+#
+#   docker compose -f docker-compose.yaml -f docker-compose-test.yaml \
+#       --profile telegram up -d
+#
+# Goals:
+# - Determinism: pin every secret so reruns are reproducible.
+# - Speed: postgres with fsync off (data is throwaway per CI run).
+# - No real Telegram calls: the bot runs in multi-channel mode against
+#   an empty IM channels list. The full Telegram-test-server scenarios
+#   (tap-each-button, voice-note round-trip) are a follow-up PR — they
+#   need either a real test bot token in repo secrets or a local
+#   tdlib/telegram-bot-api server.
+
+services:
+  postgres:
+    # postgres_data named volume from the base compose stays mounted;
+    # we just disable fsync to speed CI up. tmpfs would conflict with
+    # the base volume mount target.
+    command:
+      - postgres
+      - -c
+      - fsync=off
+      - -c
+      - synchronous_commit=off
+      - -c
+      - full_page_writes=off
+
+  api:
+    environment:
+      ENABLE_TELEMETRY: "false"
+      OSS_JWT_SECRET: "ci-only-jwt-secret-do-not-use-in-prod"
+      IM_INTERNAL_SECRET: "ci-only-im-internal-secret"
+
+  telegram-bot:
+    environment:
+      IM_INTERNAL_SECRET: "ci-only-im-internal-secret"
+      # No TELEGRAM_BOT_TOKEN in CI on purpose — bot stays in
+      # health-only mode + tries the secret-bundle path. Verifies the
+      # multi-channel branch builds and connects to the api without
+      # ever needing a live Telegram account.
