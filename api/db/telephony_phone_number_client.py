@@ -123,6 +123,40 @@ class TelephonyPhoneNumberClient(BaseDBClient):
             )
             return result.scalars().first()
 
+    async def find_phone_number_for_provider_address(
+        self,
+        provider: str,
+        address: str,
+        country_hint: Optional[str] = None,
+    ) -> Optional[Tuple[TelephonyConfigurationModel, TelephonyPhoneNumberModel]]:
+        """Address-only inbound lookup for providers without account-id dispatch.
+
+        ``find_active_phone_number_for_inbound`` is org-scoped, which fits the
+        ari_manager (one connection per org). MessageNet runs a single
+        deployment-level Stasis listener, so on an inbound StasisStart we only
+        know the called DID — we have to resolve the owning org by joining
+        ``telephony_configurations`` on (provider, address). Returns
+        ``(config, phone)`` or ``None`` when no active phone number matches.
+        """
+        normalized = normalize_telephony_address(address, country_hint=country_hint)
+        async with self.async_session() as session:
+            result = await session.execute(
+                select(TelephonyConfigurationModel, TelephonyPhoneNumberModel)
+                .join(
+                    TelephonyPhoneNumberModel,
+                    TelephonyPhoneNumberModel.telephony_configuration_id
+                    == TelephonyConfigurationModel.id,
+                )
+                .where(
+                    TelephonyConfigurationModel.provider == provider,
+                    TelephonyPhoneNumberModel.address_normalized
+                    == normalized.canonical,
+                    TelephonyPhoneNumberModel.is_active.is_(True),
+                )
+            )
+            row = result.first()
+            return (row[0], row[1]) if row else None
+
     async def find_inbound_route_by_account(
         self,
         provider: str,

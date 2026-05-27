@@ -156,9 +156,19 @@ Env knobs (optional; sensible defaults work for the bundled stack):
 
 The TCP port is internal to the docker network — no host port mapping is needed.
 
+### Inbound calls
+
+When MessageNet sends an INVITE to a DID associated with this trunk:
+
+1. Asterisk's `dograh-inbound` dialplan answers and hands off to the `dograh-messagenet` Stasis app with `direction=inbound&to=<exten>&from=<callerid>` appArgs.
+2. `MessagenetStasisListener._on_inbound_stasis_start` looks up the called number via `db_client.find_phone_number_for_provider_address("messagenet", to)` — this is org-agnostic (unlike the org-scoped `find_active_phone_number_for_inbound`) because the listener is deployment-level. The query joins `telephony_phone_numbers` with `telephony_configurations` filtered to `provider='messagenet'` and `is_active=true`.
+3. The matched phone number must have `inbound_workflow_id` set; the workflow is loaded scoped to its owning org, quota is checked, and a `workflow_run` is created with `mode=messagenet`, `call_type=INBOUND`, and `initial_context.{caller_number, called_number, direction, provider, telephony_configuration_id}`.
+4. From there it joins the same externalMedia + bridge sequence as outbound — Asterisk's already-Up trunk channel gets bridged with an AudioSocket leg, the loopback WebSocket connects to `/ws/ari`, and the pipeline runs.
+
+To enable inbound routing for a MessageNet DID, register it in the UI under the MessageNet telephony configuration and assign it an `inbound_workflow_id`. If the assignment is missing the listener logs `phone number row id=… has no inbound_workflow_id assigned — hanging up` and rejects the call cleanly.
+
 ### What's not wired yet
 
-- **Inbound calls** reach Asterisk and hit Stasis, but the listener does **not** yet resolve the called DID to a workflow + create a workflow_run. Inbound StasisStarts are logged and hung up. The follow-up will mirror the DID lookup that `ari_manager._handle_inbound_stasis_start` already does for the `ari` provider.
 - **Call transfer** is still phase 2 on the MessageNet provider itself (`supports_transfers()` returns `False`).
 
 ## Limitations (Phase 1)
@@ -177,7 +187,8 @@ The TCP port is internal to the docker network — no host port mapping is neede
 | `HTTP 400 — MessageNet provider is not properly configured` | `sip_uri` or `password` missing/blank on the saved config | Re-open the configuration in Dograh and confirm both fields |
 | Outbound call placed but audio never starts | Gateway answered SIP but the WebSocket audio leg failed | Check the gateway's external-media configuration; mismatch in sample rate (`8000 Hz`) or codec (`PCMU`/`PCMA`) is the usual culprit |
 | Inbound call rings on MessageNet side but doesn't reach Dograh | Gateway dialplan isn't routing the dialled number into the Dograh WebSocket bridge | Verify the dialplan extension for the inbound DID points at your Dograh-facing endpoint |
-| `[MessageNet/Stasis] Inbound StasisStart not yet wired` log | Bundled listener doesn't yet resolve DID→workflow | Expected in phase 1 — implement the DID lookup in `stasis_listener.py` or wait for the follow-up |
+| `[MessageNet/Stasis] Inbound call to <DID> ... no active phone number registered in any messagenet config` | Inbound DID isn't registered (or `is_active=false`) on any messagenet `telephony_configurations` row | Add the DID under the trunk's configuration in the UI and assign it an `inbound_workflow_id` |
+| `[MessageNet/Stasis] phone number row id=N has no inbound_workflow_id assigned` | DID is registered but no workflow handles inbound | Edit the DID row in the UI and pick an `inbound_workflow_id` |
 | Asterisk logs show `Outbound registration to sip.messagenet.it failed` | Wrong `MESSAGENET_USER` / `MESSAGENET_PASSWORD` in `.env`, or the asterisk container started before they were set | `docker compose --profile messagenet restart asterisk` after correcting `.env` |
 | Carrier returns `SIP/2.0 500 ... server error (6/TM)` on outbound INVITE; SDP body has no `m=audio` line | `res_pjsip_sdp_rtp.so` (or its RTP-engine deps `res_rtp_asterisk.so`, `res_rtp_multicast.so`) isn't loaded — chan_pjsip sends a header-only SDP that strict carriers reject | Confirm the modules are loaded with `asterisk -rx 'module show like rtp'`; the bundled `asterisk/modules.conf` already loads them |
 | `[MessageNet/Stasis] ARI POST /channels/externalMedia failed: HTTP 500` and the outbound trunk is hung up right after StasisStart | chan_websocket externalMedia is broken in `andrius/asterisk:21` even though sorcery has the entry. | Resolved in this repo by switching to **AudioSocket transport** (TCP) — see [Audio bridge](#audio-bridge-via-audiosocket) below. The chan_websocket path is no longer used. |
