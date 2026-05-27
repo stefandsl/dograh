@@ -28,7 +28,13 @@ from aiogram import Bot, Dispatcher, Router
 from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
 from aiogram.filters import Command
-from aiogram.types import Message, TelegramObject
+from aiogram.types import (
+    InlineKeyboardButton,
+    InlineKeyboardMarkup,
+    Message,
+    TelegramObject,
+    WebAppInfo,
+)
 from aiohttp import web
 from loguru import logger
 
@@ -36,6 +42,7 @@ from .config import BotConfig, load_config
 from .db import dispose as db_dispose, init_engine
 from .dograh_client import DograhClient, DograhClientError
 from .formatting import md_to_telegram_html
+from .voice import transcribe_voice
 
 
 router = Router(name="dograh-telegram-bot")
@@ -107,11 +114,73 @@ async def on_workflows(message: Message, dograh: DograhClient) -> None:
     await message.answer("\n".join(lines))
 
 
+@router.message(Command("call"))
+async def on_call(message: Message, dograh: DograhClient) -> None:
+    """/call <workflow_id> → reply with a WebApp button (Phase 3 Path 2)."""
+    parts = (message.text or "").split(maxsplit=1)
+    if len(parts) < 2 or not parts[1].strip().isdigit():
+        await message.answer(
+            "Usage: <code>/call &lt;workflow_id&gt;</code>"
+        )
+        return
+    workflow_id = int(parts[1].strip())
+    chat_id = message.chat.id
+    try:
+        link = await dograh.request_web_call_link(
+            workflow_id=workflow_id, telegram_chat_id=chat_id
+        )
+    except DograhClientError as exc:
+        await message.answer(f"❌ Dograh API error: {exc}")
+        return
+
+    kb = InlineKeyboardMarkup(
+        inline_keyboard=[[
+            InlineKeyboardButton(
+                text="🎙️ Open Voice Call",
+                web_app=WebAppInfo(url=link["url"]),
+            )
+        ]]
+    )
+    await message.answer(
+        f"Tap to start a voice call (link valid {link['expires_in_seconds']}s):",
+        reply_markup=kb,
+    )
+
+
+# --- voice notes (Phase 3 Path 1: STT-in, text echo for now) -------------
+@router.message(lambda m: m.voice is not None)
+async def on_voice(
+    message: Message, bot: Bot, dograh: DograhClient, cfg: BotConfig
+) -> None:
+    if message.voice is None:
+        return
+    transcript = await transcribe_voice(
+        message.voice, bot, cfg.groq_api_key
+    )
+    if transcript is None:
+        await message.answer(
+            "🎙️ Got your voice note, but Groq Whisper isn't configured "
+            "(set <code>GROQ_API_KEY</code>)."
+        )
+        return
+    if transcript.startswith("[STT error"):
+        await message.answer(f"🎙️ {transcript}")
+        return
+    # Phase 5 routes this into the active workflow run and streams an
+    # audio reply back. For now, echo the transcript so we can confirm
+    # the STT path is wired.
+    await message.answer(
+        md_to_telegram_html(
+            f"🎙️ *Transcript:*\n{transcript}\n\n"
+            "_Phase 5 will route this into your active workflow._"
+        )
+    )
+
+
+# --- text messages ------------------------------------------------------
 @router.message()
 async def on_text(message: Message) -> None:
-    # Phase 2 placeholder: prove the dispatcher is alive and the
-    # /workflows handler isn't the only handler. Phase 5 replaces this
-    # with the chat-with-active-workflow flow.
+    # Phase 5 replaces this placeholder with the chat-with-active-workflow flow.
     if not message.text:
         return
     await message.answer(
@@ -166,7 +235,7 @@ async def _run(cfg: BotConfig) -> None:
                 f"[telegram-bot] bot online as @{me.username} (id={me.id})"
             )
             bot_task = asyncio.create_task(
-                dp.start_polling(bot, dograh=dograh_cm),
+                dp.start_polling(bot, dograh=dograh_cm, cfg=cfg),
                 name="aiogram-polling",
             )
         except Exception as exc:  # noqa: BLE001
