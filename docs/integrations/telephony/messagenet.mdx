@@ -160,12 +160,17 @@ The TCP port is internal to the docker network — no host port mapping is neede
 
 When MessageNet sends an INVITE to a DID associated with this trunk:
 
-1. Asterisk's `dograh-inbound` dialplan answers and hands off to the `dograh-messagenet` Stasis app with `direction=inbound&to=<exten>&from=<callerid>` appArgs.
-2. `MessagenetStasisListener._on_inbound_stasis_start` looks up the called number via `db_client.find_phone_number_for_provider_address("messagenet", to)` — this is org-agnostic (unlike the org-scoped `find_active_phone_number_for_inbound`) because the listener is deployment-level. The query joins `telephony_phone_numbers` with `telephony_configurations` filtered to `provider='messagenet'` and `is_active=true`.
-3. The matched phone number must have `inbound_workflow_id` set; the workflow is loaded scoped to its owning org, quota is checked, and a `workflow_run` is created with `mode=messagenet`, `call_type=INBOUND`, and `initial_context.{caller_number, called_number, direction, provider, telephony_configuration_id}`.
-4. From there it joins the same externalMedia + bridge sequence as outbound — Asterisk's already-Up trunk channel gets bridged with an AudioSocket leg, the loopback WebSocket connects to `/ws/ari`, and the pipeline runs.
+1. MessageNet sends INVITEs with **Request-URI `sip:s@...`** and the actual dialled DID in the **To header URI** (e.g. `<sip:0418878808@10.100.102.97:5060>`). The `dograh-inbound` dialplan's `s` extension reads the To header with `PJSIP_HEADER(read,To)` and extracts the user part via `PJSIP_PARSE_URI(...,user)`. Both helpers require `res_pjsip_header_funcs.so` to be loaded — it is, in the bundled `asterisk/modules.conf`.
+2. The dialplan then answers and hands off to the `dograh-messagenet` Stasis app with `direction=inbound&to=<DIALED>&from=<callerid>` appArgs.
+3. `MessagenetStasisListener._on_inbound_stasis_start` looks up the called number via `db_client.find_phone_number_for_provider_address("messagenet", to, country_hint="IT")` — this is org-agnostic (unlike the org-scoped `find_active_phone_number_for_inbound`) because the listener is deployment-level. The query joins `telephony_phone_numbers` with `telephony_configurations` filtered to `provider='messagenet'` and `is_active=true`. The country hint is configurable via `MESSAGENET_COUNTRY` (default `IT`).
+4. The matched phone number must have `inbound_workflow_id` set; the workflow is loaded scoped to its owning org, quota is checked, and a `workflow_run` is created with `mode=messagenet`, `call_type=INBOUND`, and `initial_context.{caller_number, called_number, direction, provider, telephony_configuration_id}`.
+5. From there it joins the same externalMedia + bridge sequence as outbound — Asterisk's already-Up trunk channel gets bridged with an AudioSocket leg, the loopback WebSocket connects to `/ws/ari`, and the pipeline runs.
 
 To enable inbound routing for a MessageNet DID, register it in the UI under the MessageNet telephony configuration and assign it an `inbound_workflow_id`. If the assignment is missing the listener logs `phone number row id=… has no inbound_workflow_id assigned — hanging up` and rejects the call cleanly.
+
+<Warning>
+**Italian landline DIDs canonicalise without the leading 0.** The Python `phonenumbers` library treats the leading `0` on Italian landlines as a trunk prefix and strips it during normalisation. A landline DID like `041 887 8808` stores as `+39418878808`, **not** `+390418878808`. The UI's "Add DID" form runs the same normaliser, so as long as you create the row through the UI the stored value matches the listener's lookup. If you insert directly via SQL, use the same canonical form or the inbound lookup will silently miss.
+</Warning>
 
 ### What's not wired yet
 
