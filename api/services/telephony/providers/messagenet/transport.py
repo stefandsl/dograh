@@ -13,6 +13,7 @@ provider satisfies the registry contract and is ready for the gateway
 swap-in.
 """
 
+import os
 from typing import Optional
 
 from fastapi import WebSocket
@@ -66,8 +67,16 @@ async def create_transport(
     # that were created before the validator existed.
     parse_sip_uri(sip_uri)
 
+    # AsteriskFrameSerializer needs ARI creds so its transfer/hangup
+    # strategies can call back into Asterisk. For messagenet the ARI
+    # endpoint is deployment-level (configured via env, not per-org),
+    # so pull straight from os.environ here. Empty strings are fine if
+    # transfer/hangup never gets used.
     serializer = AsteriskFrameSerializer(
         channel_id=call_id,
+        ari_endpoint=os.getenv("ARI_BASE_URL", ""),
+        app_name=os.getenv("ARI_APP_NAME", "dograh-messagenet"),
+        app_password=os.getenv("ARI_PASSWORD", ""),
         params=AsteriskFrameSerializer.InputParams(
             asterisk_sample_rate=audio_config.transport_in_sample_rate,
             sample_rate=audio_config.pipeline_sample_rate,

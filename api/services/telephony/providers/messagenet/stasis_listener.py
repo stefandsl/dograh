@@ -44,12 +44,17 @@ class MessagenetStasisListener:
         ari_password: str,
         app_name: str,
         ws_client_name: str,
+        audiosocket_target: str = "api:9092",
     ) -> None:
         self.ari_base_url = ari_base_url.rstrip("/")
         self.ari_user = ari_user
         self.ari_password = ari_password
         self.app_name = app_name
         self.ws_client_name = ws_client_name
+        # host:port asterisk uses to reach the api's AudioSocket server.
+        # asterisk and api share root_app-network so the bridge hostname
+        # "api" resolves; in other deployments this can be overridden.
+        self.audiosocket_target = audiosocket_target
         self._task: Optional[asyncio.Task[None]] = None
         self._stop = asyncio.Event()
 
@@ -148,14 +153,20 @@ class MessagenetStasisListener:
         args = event.get("args", []) or []
         kv = _parse_appargs(args)
 
-        # externalMedia channels enter Stasis with no appArgs because
-        # POST /channels/externalMedia doesn't accept them. The gateway
-        # already wired the bridge before we even see this event; nothing
-        # to do here.
-        if channel_name.startswith("UnicastRTP/"):
+        # externalMedia channels enter Stasis with no useful appArgs
+        # (chan_websocket / UnicastRTP / chan_audiosocket variants). The
+        # listener already wired the bridge before we see this event,
+        # so just ignore the StasisStart — hanging up here would tear
+        # down the bridge we just made.
+        if (
+            channel_name.startswith("UnicastRTP/")
+            or channel_name.startswith("AudioSocket/")
+            or channel_name.startswith("WebSocket/")
+        ):
             logger.debug(
                 f"[MessageNet/Stasis] externalMedia StasisStart "
-                f"channel={channel_id} — gateway-managed, ignoring"
+                f"channel={channel_id} name={channel_name} — "
+                f"gateway-managed, ignoring"
             )
             return
 
@@ -245,25 +256,43 @@ class MessagenetStasisListener:
     async def _create_external_media(
         self, *, workflow_run_id: str, workflow_id: str, user_id: str
     ) -> str:
-        # v() appends URI query params onto the websocket_client.conf URL,
-        # so the api side resolves the workflow run via /ws/ari?…
-        transport_data = (
-            f"v(workflow_id={workflow_id},"
-            f"user_id={user_id},"
-            f"workflow_run_id={workflow_run_id})"
+        # AudioSocket over TCP — chan_websocket externalMedia silently
+        # 500s in andrius/asterisk:21, see docs troubleshooting. We
+        # pre-register a UUID with the AudioSocket server so the
+        # inbound TCP connection can be routed back to this workflow run.
+        from .audiosocket_server import get_audiosocket_server
+        import uuid as uuid_lib
+
+        srv = get_audiosocket_server()
+        if srv is None:
+            logger.error(
+                "[MessageNet/Stasis] AudioSocket server not running; "
+                "cannot create externalMedia leg"
+            )
+            return ""
+
+        call_uuid = str(uuid_lib.uuid4())
+        await srv.register_call(
+            call_uuid=call_uuid,
+            workflow_id=workflow_id,
+            user_id=user_id,
+            workflow_run_id=workflow_run_id,
         )
         params = {
             "app": self.app_name,
-            "external_host": self.ws_client_name,
-            "format": "ulaw",
-            "transport": "websocket",
-            "encapsulation": "none",
-            "connection_type": "client",
+            "external_host": f"{self.audiosocket_target}",
+            "format": "slin",
+            "transport": "tcp",
+            "encapsulation": "audiosocket",
             "direction": "both",
-            "transport_data": transport_data,
+            "data": call_uuid,
         }
         res = await self._ari("POST", "/channels/externalMedia", params=params)
-        return (res or {}).get("id", "")
+        ext_id = (res or {}).get("id", "")
+        if not ext_id:
+            # Clean up the registration if the ARI call failed.
+            await srv.unregister_call(call_uuid)
+        return ext_id
 
     async def _bridge(self, channel_ids: list[str]) -> str:
         res = await self._ari(
@@ -321,12 +350,17 @@ def install_messagenet_stasis_listener() -> Optional[MessagenetStasisListener]:
         return None
 
     try:
+        # ``api`` is the docker service name reachable from the asterisk
+        # container; override via env in non-bridge-network deployments.
+        as_host = os.getenv("MESSAGENET_AUDIOSOCKET_TARGET_HOST", "api")
+        as_port = os.getenv("MESSAGENET_AUDIOSOCKET_PORT", "9092")
         listener = MessagenetStasisListener(
             ari_base_url=os.environ["ARI_BASE_URL"],
             ari_user=os.environ["ARI_USER"],
             ari_password=os.environ["ARI_PASSWORD"],
             app_name=os.getenv("ARI_APP_NAME", _STASIS_APP_DEFAULT),
             ws_client_name=os.getenv("MESSAGENET_WS_CLIENT_NAME", "dograh-ws"),
+            audiosocket_target=f"{as_host}:{as_port}",
         )
     except KeyError as exc:
         raise RuntimeError(

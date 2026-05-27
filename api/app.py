@@ -33,6 +33,9 @@ from api.services.pipecat.tracing_config import (
     handle_langfuse_sync,
     load_all_org_langfuse_credentials,
 )
+from api.services.telephony.providers.messagenet.audiosocket_server import (
+    install_messagenet_audiosocket_server,
+)
 from api.services.telephony.providers.messagenet.stasis_listener import (
     install_messagenet_stasis_listener,
 )
@@ -67,8 +70,14 @@ async def lifespan(app: FastAPI):
 
         # When the asterisk-ari backend is selected, also start the
         # deployment-level Stasis listener that bridges originated
-        # channels to the Dograh externalMedia WebSocket. No-op for
-        # other backends.
+        # channels to the Dograh externalMedia WebSocket, plus the
+        # AudioSocket TCP server that carries audio between Asterisk
+        # and the /ws/ari pipeline (chan_websocket externalMedia is
+        # broken in andrius/asterisk:21; AudioSocket is the workaround).
+        # Both are no-ops for other backends.
+        messagenet_audiosocket = install_messagenet_audiosocket_server()
+        if messagenet_audiosocket is not None:
+            await messagenet_audiosocket.start()
         messagenet_stasis_listener = install_messagenet_stasis_listener()
         if messagenet_stasis_listener is not None:
             await messagenet_stasis_listener.start()
@@ -87,6 +96,8 @@ async def lifespan(app: FastAPI):
         logger.info("Starting graceful shutdown...")
         if messagenet_stasis_listener is not None:
             await messagenet_stasis_listener.stop()
+        if messagenet_audiosocket is not None:
+            await messagenet_audiosocket.stop()
         await sync_manager.stop()
 
 
