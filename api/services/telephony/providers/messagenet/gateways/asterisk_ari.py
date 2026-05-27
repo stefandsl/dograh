@@ -107,6 +107,12 @@ class AsteriskARIGateway:
         # outbound INVITE carries a proper SDP with m=audio. Listener
         # handles externalMedia + bridge on StasisStart.
         endpoint = f"PJSIP/{to_number}@{self.pjsip_endpoint}"
+        # ARI defaults originate timeout to 30s, which is too tight for
+        # international PSTN — 183 Session Progress arrives, the destination
+        # rings for a few seconds, the phone is in a pocket / on silent,
+        # and we CANCEL before anyone can pick up. 60s is a more humane
+        # ring-out window; override via MESSAGENET_ORIGINATE_TIMEOUT.
+        timeout = int(os.getenv("MESSAGENET_ORIGINATE_TIMEOUT", "60"))
         params: Dict[str, Any] = {
             "endpoint": endpoint,
             "app": self.app_name,
@@ -115,6 +121,7 @@ class AsteriskARIGateway:
                 f"workflow_id={workflow_id or ''},"
                 f"user_id={user_id or ''}"
             ),
+            "timeout": timeout,
         }
         if from_number:
             params["callerId"] = from_number
