@@ -96,10 +96,15 @@ curl -o docker-compose.yaml https://raw.githubusercontent.com/dograh-hq/dograh/m
 
 ### Voice Capabilities
 
-- Telephony: Built-in telephony integration like Twilio, Vonage, Vobiz, Cloudonix (easily add others), with support for transferring calls to human agents
+- Telephony: Built-in telephony integration like Twilio, Vonage, Vobiz, Cloudonix, MessageNet (easily add others), with support for transferring calls to human agents
 - Languages: English support (expandable to other languages)
 - Custom Models: Bring your own TTS/STT models
 - Real-time Processing: Low-latency voice interactions
+
+### 📨 IM Channels
+
+- **Telegram** — opt-in container that runs alongside the api (`--profile telegram`). Manage bot tokens from the UI under [`/channels/im`](docs/channels/telegram.md); the bot hot-reloads on config changes via Redis pub/sub. 9-button Syntx-style menu (Voice Call, Chat with Agent, Sessions, Memory, Scheduled Tasks, …). Voice notes are transcribed via Groq Whisper; real-time voice opens a signed WebApp link into the existing WebRTC client.
+- **WhatsApp / Discord** — coming. The IM-channels surface is built generically.
 
 ### Developer Experience
 
