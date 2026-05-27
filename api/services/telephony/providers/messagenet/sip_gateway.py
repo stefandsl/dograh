@@ -87,6 +87,8 @@ class MessagenetSipGatewayClient(Protocol):
         to_number: str,
         from_number: Optional[str],
         workflow_run_id: Optional[int],
+        workflow_id: Optional[int] = None,
+        user_id: Optional[int] = None,
     ) -> GatewayCallHandle: ...
 
     async def accept_inbound_call(self, call_id: str) -> None: ...
@@ -122,6 +124,8 @@ class StubMessagenetSipGateway:
         to_number: str,
         from_number: Optional[str],
         workflow_run_id: Optional[int],
+        workflow_id: Optional[int] = None,
+        user_id: Optional[int] = None,
     ) -> GatewayCallHandle:
         raise MessagenetGatewayNotConfigured(self._MESSAGE)
 
