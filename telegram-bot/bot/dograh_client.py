@@ -115,6 +115,43 @@ class DograhClient:
             "GET", f"/api/v1/workflow/{workflow_id}/runs/{run_id}"
         )
 
+    # --- text chat (Phase 5) ---------------------------------------
+    async def create_text_chat_session(
+        self, workflow_id: int, name: Optional[str] = None
+    ) -> dict[str, Any]:
+        body: dict[str, Any] = {}
+        if name:
+            body["name"] = name
+        return await self._request(
+            "POST",
+            f"/api/v1/workflow/{workflow_id}/text-chat/sessions",
+            json=body,
+        )
+
+    async def get_text_chat_session(
+        self, workflow_id: int, run_id: int
+    ) -> dict[str, Any]:
+        return await self._request(
+            "GET",
+            f"/api/v1/workflow/{workflow_id}/text-chat/sessions/{run_id}",
+        )
+
+    async def append_text_chat_message(
+        self,
+        workflow_id: int,
+        run_id: int,
+        text: str,
+        expected_revision: Optional[int] = None,
+    ) -> dict[str, Any]:
+        body: dict[str, Any] = {"text": text}
+        if expected_revision is not None:
+            body["expected_revision"] = expected_revision
+        return await self._request(
+            "POST",
+            f"/api/v1/workflow/{workflow_id}/text-chat/sessions/{run_id}/messages",
+            json=body,
+        )
+
     async def request_web_call_link(
         self, *, workflow_id: int, telegram_chat_id: int
     ) -> dict[str, Any]:
