@@ -243,6 +243,37 @@ services:
     networks:
       - app-network
 
+  # Asterisk PBX — only started for MessageNet SIP-trunk integration.
+  # Opt in with: docker compose --profile messagenet up
+  # See docs/integrations/telephony/messagenet.mdx for the full setup.
+  asterisk:
+    image: andrius/asterisk:21
+    container_name: dograh-asterisk
+    profiles: ["messagenet"]
+    restart: unless-stopped
+    networks:
+      - app-network
+    ports:
+      - "5060:5060/udp"
+      - "10000-10100:10000-10100/udp"
+    volumes:
+      - ./asterisk:/etc/asterisk-src:ro
+      - asterisk-runtime:/etc/asterisk-runtime
+      - asterisk-var:/var/lib/asterisk
+      - asterisk-spool:/var/spool/asterisk
+      - asterisk-logs:/var/log/asterisk
+    environment:
+      ARI_PASSWORD: "${ARI_PASSWORD:-}"
+      MESSAGENET_USER: "${MESSAGENET_USER:-}"
+      MESSAGENET_PASSWORD: "${MESSAGENET_PASSWORD:-}"
+    entrypoint: ["/bin/bash", "/etc/asterisk-src/entrypoint.sh"]
+    healthcheck:
+      test: ["CMD-SHELL", "asterisk -rx 'core show version' >/dev/null 2>&1 || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+
 volumes:
   postgres_data:
   redis_data:
@@ -254,6 +285,10 @@ volumes:
     driver: local
   coturn-generated:
     driver: local
+  asterisk-runtime:
+  asterisk-var:
+  asterisk-spool:
+  asterisk-logs:
 
 networks:
   app-network:

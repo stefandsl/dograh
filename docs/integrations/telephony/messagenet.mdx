@@ -73,6 +73,72 @@ Inbound MessageNet calls are routed to Dograh by the SIP/media gateway, not by a
 
 Dograh matches inbound calls to a workflow using the **called number** — there's no account-id concept on MessageNet trunks, so you can run multiple MessageNet trunks in the same organization as long as their caller IDs / DIDs don't overlap.
 
+## Local development with the bundled Asterisk gateway
+
+The repo ships a ready-to-run Asterisk container under `asterisk/` and a `messagenet` docker-compose profile so you can exercise the full SIP path locally against a real MessageNet trunk.
+
+### Prerequisites
+
+- Docker + docker compose installed
+- A real MessageNet trunk you can register against (SIP URI + password)
+- The Dograh stack already running (`docker compose up`)
+- A public port-forward for `5060/udp` on your machine — only required if you want to receive **inbound** calls; outbound-only testing works behind NAT since the registration keeps the SIP pinhole open
+
+### Step 1: Fill in environment variables
+
+In `api/.env`, set:
+
+```bash
+MESSAGENET_GATEWAY_BACKEND=asterisk-ari
+ARI_BASE_URL=http://asterisk:8088
+ARI_APP_NAME=dograh-messagenet
+ARI_USER=dograh
+ARI_PASSWORD=<pick-any-strong-string>
+MESSAGENET_PJSIP_ENDPOINT=messagenet
+# Trunk credentials — used by the asterisk entrypoint to render conf.d/messagenet_local.conf
+MESSAGENET_USER=<the user part of your SIP URI>
+MESSAGENET_PASSWORD=<your MessageNet SIP password>
+```
+
+The `MESSAGENET_USER` value is the part **before** `@` in `sip:NNNNNN@sip.messagenet.it`.
+
+### Step 2: Start the asterisk service
+
+```bash
+docker compose --profile messagenet up -d asterisk
+```
+
+Without the `messagenet` profile the asterisk container is not created, so existing dev setups are unaffected.
+
+### Step 3: Restart the api container
+
+The Stasis listener boots from the FastAPI lifespan, so the api container needs to come up *after* the env vars are set:
+
+```bash
+docker compose up -d --force-recreate api
+```
+
+You should see `[MessageNet] SIP gateway backend installed: asterisk-ari` and `[MessageNet/Stasis] Connected to ARI events for app=dograh-messagenet` in the api logs.
+
+### Step 4: Save a MessageNet telephony configuration in the UI
+
+Open `/telephony-configurations`, click **Add configuration**, pick **MessageNet**, and enter the same `sip_uri` / `username` / `password` you put into `.env`. The provider configuration and the Asterisk PJSIP trunk are two separate stores — Dograh uses the UI row to authorize and tag outbound calls, while Asterisk uses its own config to actually speak SIP.
+
+### Step 5: Place a test call
+
+From a workflow's **Test Call** action, dial an E.164 number. In the logs you should see, in order:
+
+1. `[MessageNet] Initiating outbound call to +…`
+2. `[ARI Channel created: …]` (from the AsteriskARIGateway originate)
+3. `[MessageNet/Stasis] Outbound StasisStart channel=… workflow_run_id=…`
+4. `[MessageNet/Stasis] Bridge … live: trunk=… ext=…`
+5. The pipecat pipeline starting on the externalMedia WebSocket leg
+
+### What's not wired yet
+
+- **Inbound calls** reach Asterisk and hit Stasis, but the listener does **not** yet resolve the called DID to a workflow + create a workflow_run. Inbound StasisStarts are logged and hung up. The follow-up will mirror the DID lookup that `ari_manager._handle_inbound_stasis_start` already does for the `ari` provider.
+- **Call transfer** is still phase 2 on the MessageNet provider itself (`supports_transfers()` returns `False`).
+
 ## Limitations (Phase 1)
 
 - **No REST call-control API** — MessageNet is SIP-only. All control plane and media-plane operations route through your SIP gateway.
@@ -89,3 +155,5 @@ Dograh matches inbound calls to a workflow using the **called number** — there
 | `HTTP 400 — MessageNet provider is not properly configured` | `sip_uri` or `password` missing/blank on the saved config | Re-open the configuration in Dograh and confirm both fields |
 | Outbound call placed but audio never starts | Gateway answered SIP but the WebSocket audio leg failed | Check the gateway's external-media configuration; mismatch in sample rate (`8000 Hz`) or codec (`PCMU`/`PCMA`) is the usual culprit |
 | Inbound call rings on MessageNet side but doesn't reach Dograh | Gateway dialplan isn't routing the dialled number into the Dograh WebSocket bridge | Verify the dialplan extension for the inbound DID points at your Dograh-facing endpoint |
+| `[MessageNet/Stasis] Inbound StasisStart not yet wired` log | Bundled listener doesn't yet resolve DID→workflow | Expected in phase 1 — implement the DID lookup in `stasis_listener.py` or wait for the follow-up |
+| Asterisk logs show `Outbound registration to sip.messagenet.it failed` | Wrong `MESSAGENET_USER` / `MESSAGENET_PASSWORD` in `.env`, or the asterisk container started before they were set | `docker compose --profile messagenet restart asterisk` after correcting `.env` |

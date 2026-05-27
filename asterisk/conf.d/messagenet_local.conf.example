@@ -1,0 +1,48 @@
+; Copy this file to messagenet_local.conf and fill in the four placeholders
+; from your MessageNet portal. The real file is gitignored.
+;
+; SIP URI form: sip:<MESSAGENET_USER>@sip.messagenet.it
+; The MESSAGENET_USER value below is the part before the @.
+
+[messagenet]
+type = registration
+outbound_auth = messagenet
+server_uri = sip:sip.messagenet.it
+client_uri = sip:__MESSAGENET_USER__@sip.messagenet.it
+retry_interval = 60
+forbidden_retry_interval = 600
+expiration = 3600
+
+[messagenet]
+type = auth
+auth_type = userpass
+username = __MESSAGENET_USER__
+password = __MESSAGENET_PASSWORD__
+
+[messagenet]
+type = aor
+contact = sip:sip.messagenet.it
+qualify_frequency = 60
+
+[messagenet]
+type = endpoint
+context = dograh-inbound
+disallow = all
+allow = ulaw
+allow = alaw
+outbound_auth = messagenet
+aors = messagenet
+from_user = __MESSAGENET_USER__
+from_domain = sip.messagenet.it
+direct_media = no
+rtp_symmetric = yes
+force_rport = yes
+rewrite_contact = yes
+language = it
+
+; Inbound identification — MessageNet sends INVITEs from sip.messagenet.it.
+; Match incoming INVITEs to this endpoint so the inbound context kicks in.
+[messagenet-identify]
+type = identify
+endpoint = messagenet
+match = sip.messagenet.it
