@@ -174,13 +174,7 @@ class MessagenetStasisListener:
         direction = kv.get("direction", "outbound" if workflow_run_id else "")
 
         if direction == "inbound" and not workflow_run_id:
-            # Phase 1 limitation — log loudly and hang up.
-            logger.warning(
-                f"[MessageNet/Stasis] Inbound StasisStart not yet wired "
-                f"(channel={channel_id}, to={kv.get('to')}, from={kv.get('from')}). "
-                f"DID-to-workflow lookup is a follow-up; hanging up."
-            )
-            await self._hangup(channel_id)
+            await self._on_inbound_stasis_start(event, kv)
             return
 
         if not workflow_run_id:
@@ -217,6 +211,132 @@ class MessagenetStasisListener:
             f"[MessageNet/Stasis] Bridge {bridge_id} live: "
             f"trunk={channel_id} ext={ext_id}"
         )
+
+    async def _on_inbound_stasis_start(
+        self, event: Dict[str, Any], kv: Dict[str, str]
+    ) -> None:
+        """Resolve called DID → workflow → create workflow_run → bridge audio.
+
+        Mirrors ``ari_manager._handle_inbound_stasis_start`` but for the
+        deployment-level messagenet listener: there's no org context to start
+        from, so we look up the phone number across orgs using
+        ``find_phone_number_for_provider_address``.
+        """
+        from api.db import db_client
+        from api.enums import CallType, WorkflowRunMode
+        from api.services.quota_service import check_dograh_quota_by_user_id
+
+        channel = event.get("channel", {}) or {}
+        channel_id = channel.get("id", "")
+        to_number = kv.get("to") or channel.get("dialplan", {}).get("exten", "")
+        from_number = kv.get("from") or channel.get("caller", {}).get("number", "")
+
+        if not to_number:
+            logger.warning(
+                f"[MessageNet/Stasis] Inbound StasisStart channel={channel_id} "
+                f"has no 'to' / dialplan.exten — hanging up"
+            )
+            await self._hangup(channel_id)
+            return
+
+        try:
+            row = await db_client.find_phone_number_for_provider_address(
+                provider="messagenet", address=to_number
+            )
+            if row is None:
+                logger.warning(
+                    f"[MessageNet/Stasis] Inbound call to {to_number} from "
+                    f"{from_number}: no active phone number registered in any "
+                    f"messagenet config — hanging up"
+                )
+                await self._hangup(channel_id)
+                return
+            config, phone = row
+
+            if not phone.inbound_workflow_id:
+                logger.warning(
+                    f"[MessageNet/Stasis] Inbound call to {to_number}: phone "
+                    f"number row id={phone.id} has no inbound_workflow_id "
+                    f"assigned — hanging up"
+                )
+                await self._hangup(channel_id)
+                return
+
+            workflow = await db_client.get_workflow(
+                phone.inbound_workflow_id,
+                organization_id=phone.organization_id,
+            )
+            if not workflow:
+                logger.warning(
+                    f"[MessageNet/Stasis] inbound_workflow_id={phone.inbound_workflow_id} "
+                    f"not found in org {phone.organization_id} — hanging up"
+                )
+                await self._hangup(channel_id)
+                return
+
+            user_id = workflow.user_id
+            quota = await check_dograh_quota_by_user_id(
+                user_id, workflow_id=phone.inbound_workflow_id
+            )
+            if not quota.has_quota:
+                logger.warning(
+                    f"[MessageNet/Stasis] Quota exceeded for user {user_id} — "
+                    f"hanging up inbound call to {to_number}"
+                )
+                await self._hangup(channel_id)
+                return
+
+            workflow_run = await db_client.create_workflow_run(
+                name=f"MessageNet Inbound {from_number or 'unknown'}",
+                workflow_id=phone.inbound_workflow_id,
+                mode=WorkflowRunMode.MESSAGENET.value,
+                user_id=user_id,
+                call_type=CallType.INBOUND,
+                initial_context={
+                    "caller_number": from_number,
+                    "called_number": to_number,
+                    "direction": "inbound",
+                    "provider": "messagenet",
+                    "telephony_configuration_id": config.id,
+                },
+                gathered_context={"call_id": channel_id},
+            )
+
+            logger.info(
+                f"[MessageNet/Stasis] Inbound workflow_run {workflow_run.id} "
+                f"created for channel={channel_id} (caller={from_number}, "
+                f"called={to_number}, workflow_id={phone.inbound_workflow_id})"
+            )
+
+            # Same bridge sequence as outbound StasisStart: the trunk
+            # channel is already Up (the inbound dialplan does Answer()),
+            # so just spawn the externalMedia leg and bridge.
+            ext_id = await self._create_external_media(
+                workflow_run_id=str(workflow_run.id),
+                workflow_id=str(phone.inbound_workflow_id),
+                user_id=str(user_id),
+            )
+            if not ext_id:
+                await self._hangup(channel_id)
+                return
+            bridge_id = await self._bridge([channel_id, ext_id])
+            if not bridge_id:
+                await self._hangup(channel_id)
+                await self._hangup(ext_id)
+                return
+            logger.info(
+                f"[MessageNet/Stasis] Inbound bridge {bridge_id} live: "
+                f"trunk={channel_id} ext={ext_id}"
+            )
+        except Exception as exc:  # noqa: BLE001
+            logger.exception(
+                f"[MessageNet/Stasis] Error handling inbound StasisStart "
+                f"channel={channel_id}: {exc!r}"
+            )
+            try:
+                await self._hangup(channel_id)
+            except Exception:  # noqa: BLE001
+                pass
 
     async def _on_stasis_end(self, event: Dict[str, Any]) -> None:
         channel = event.get("channel", {}) or {}
