@@ -1,0 +1,67 @@
+name: E2E smoke (Telegram channel)
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "telegram-bot/**"
+      - "api/routes/im_channels.py"
+      - "api/routes/telegram.py"
+      - "api/services/im/**"
+      - "docker-compose.yaml"
+      - "docker-compose-test.yaml"
+      - "tests/e2e/**"
+      - ".github/workflows/e2e-smoke.yml"
+  push:
+    branches: [main]
+    paths:
+      - "telegram-bot/**"
+      - "api/routes/im_channels.py"
+      - "api/routes/telegram.py"
+      - "api/services/im/**"
+      - "docker-compose.yaml"
+      - "docker-compose-test.yaml"
+      - "tests/e2e/**"
+      - ".github/workflows/e2e-smoke.yml"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  smoke:
+    if: ${{ !startsWith(github.head_ref, 'release-please--') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Set up Docker Buildx (layer cache)
+        uses: docker/setup-buildx-action@v3
+
+      - name: Run e2e smoke
+        env:
+          # Required by docker-compose.yaml's variable substitution. CI
+          # is a closed loop, so any placeholder string works — the
+          # overrides in docker-compose-test.yaml pin the values that
+          # actually matter (OSS_JWT_SECRET, IM_INTERNAL_SECRET).
+          DATABASE_URL: "postgresql+asyncpg://postgres:postgres@postgres:5432/postgres"
+          REDIS_URL: "redis://:redissecret@redis:6379"
+          REGISTRY: "ghcr.io/dograh-hq"
+          TURN_HOST: "localhost"
+          TURN_SECRET: "ci-only-turn-secret"
+          OSS_JWT_SECRET: "ci-only-jwt-secret-do-not-use-in-prod"
+          IM_INTERNAL_SECRET: "ci-only-im-internal-secret"
+          ENABLE_TELEMETRY: "false"
+        run: bash tests/e2e/run.sh
+
+      - name: Dump bot logs on failure
+        if: failure()
+        run: docker logs dograh-telegram-bot || true
+
+      - name: Dump api logs on failure
+        if: failure()
+        run: docker logs $(docker ps -aq --filter name=api) || true

@@ -1,0 +1,49 @@
+name: Telegram bot tests
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "telegram-bot/**"
+      - ".github/workflows/telegram-bot-tests.yml"
+  push:
+    branches: [main]
+    paths:
+      - "telegram-bot/**"
+      - ".github/workflows/telegram-bot-tests.yml"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  pytest:
+    if: ${{ !startsWith(github.head_ref, 'release-please--') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    defaults:
+      run:
+        working-directory: telegram-bot
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: telegram-bot/requirements.txt
+
+      - name: Install bot deps + pytest
+        run: |
+          python -m pip install --upgrade pip
+          # ffmpeg/libopus are runtime deps for voice handling; the
+          # pytest suite covers protocol/parsing logic and doesn't
+          # actually transcode, so we skip the apt installs here.
+          pip install -r requirements.txt
+          pip install pytest pytest-asyncio
+
+      - name: Run pytest
+        run: python -m pytest -q
