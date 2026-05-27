@@ -16,6 +16,7 @@ import {
   LogOut,
   type LucideIcon,
   Megaphone,
+  MessageCircle,
   Phone,
   Settings,
   TrendingUp,
@@ -105,6 +106,11 @@ const NAV_SECTIONS: SidebarNavSection[] = [
         url: "/telephony-configurations",
         icon: Phone,
         showsTelephonyWarning: true,
+      },
+      {
+        title: "IM Channels",
+        url: "/channels/im",
+        icon: MessageCircle,
       },
       {
         title: "Tools",
