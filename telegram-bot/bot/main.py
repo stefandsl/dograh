@@ -50,6 +50,8 @@ from .config import BotConfig, load_config
 from .db import dispose as db_dispose, init_engine
 from .dograh_client import DograhClient, DograhClientError
 from .formatting import md_to_telegram_html
+from .handlers import build_menu_router
+from .menu import build_main_menu
 from .voice import transcribe_voice
 
 
@@ -86,13 +88,8 @@ def build_router() -> Router:
     @r.message(Command("start"))
     async def on_start(message: Message) -> None:
         await message.answer(
-            md_to_telegram_html(
-                "*Dograh bot online.*\n\n"
-                "Quick start:\n"
-                "• `/workflows` — list available workflows\n"
-                "• `/call <workflow_id>` — open a real-time voice call\n"
-                "• send any text — placeholder echo for now (full chat lands in Phase 5)\n"
-            )
+            "<b>Dograh bot online.</b>\n\nPick an action:",
+            reply_markup=build_main_menu(),
         )
 
     @r.message(Command("help"))
@@ -173,12 +170,17 @@ def build_router() -> Router:
 
     @r.message()
     async def on_text(message: Message) -> None:
+        # Fallback for text outside chat mode (handlers.py owns the
+        # ChatStates.chatting branch). Nudge toward the menu.
         if not message.text:
             return
         await message.answer(
-            "📝 received — Phase 5 will route this to your active workflow."
+            "📝 Not in chat mode. Open <b>💬 Chat with Agent</b> from /menu "
+            "to start a workflow conversation."
         )
 
+    # Mount the Syntx-style menu router under this bot's router tree.
+    r.include_router(build_menu_router())
     return r
 
 
