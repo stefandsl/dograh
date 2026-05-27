@@ -1,25 +1,28 @@
 """Telegram bot entrypoint.
 
-Phase 2 scope: aiohttp health server (Phase 1) + aiogram Dispatcher
-running side-by-side, with the bootstrap ``TELEGRAM_BOT_TOKEN`` from
-env. Three handlers wired:
+Two modes:
 
-- ``/start``       — greet + show how to pick a workflow
-- ``/workflows``   — list workflows (calls Dograh API)
-- text message     — placeholder reply (Phase 5 will wire it into the
-                     active workflow run)
+1. **Bootstrap mode** — if ``TELEGRAM_BOT_TOKEN`` is set in env, run a
+   single dispatcher using that token + the env allowlist. This is the
+   Phase 1/2/3 behaviour and stays as the fallback for dev where the
+   api isn't reachable.
 
-Phase 4 will replace the single-token bootstrap with per-channel tokens
-loaded from the ``im_channels`` table. Phase 5 expands the handler set
-into the Syntx-style inline menu.
+2. **Multi-channel mode** — if ``IM_INTERNAL_SECRET`` is set, fetch the
+   ``/api/v1/im/channels/secret-bundle`` payload from the api and run
+   one dispatcher per enabled Telegram channel. Hot-reloads on the
+   Redis ``im:channels:reload`` event.
 
-Allowed-user gate (``TELEGRAM_ALLOWED_USERS`` csv) is applied as an
-outer middleware so every handler benefits automatically.
+If both env vars are present, multi-channel mode wins (it carries
+allowlists per-channel) and the bootstrap token is ignored.
+
+The handler router is the single ``router`` object below; both modes
+include it into their dispatcher(s).
 """
 
 from __future__ import annotations
 
 import asyncio
+import os
 import signal
 from contextlib import suppress
 from typing import Any, Awaitable, Callable
@@ -38,6 +41,11 @@ from aiogram.types import (
 from aiohttp import web
 from loguru import logger
 
+from .channels import (
+    ChannelBundle,
+    TelegramChannelManager,
+    get_internal_secret,
+)
 from .config import BotConfig, load_config
 from .db import dispose as db_dispose, init_engine
 from .dograh_client import DograhClient, DograhClientError
@@ -45,15 +53,9 @@ from .formatting import md_to_telegram_html
 from .voice import transcribe_voice
 
 
-router = Router(name="dograh-telegram-bot")
-
-
 # --- middleware -----------------------------------------------------------
 class AllowedUsersMiddleware:
-    """Drop updates from users not on the allowlist (empty list = allow all).
-
-    aiogram 3 outer-middleware signature: ``async def __call__(handler, event, data)``.
-    """
+    """Drop updates from users not on the allowlist (empty list = allow all)."""
 
     def __init__(self, allowed: list[int]) -> None:
         self._allowed = set(allowed)
@@ -76,116 +78,108 @@ class AllowedUsersMiddleware:
         return None
 
 
-# --- handlers -------------------------------------------------------------
-@router.message(Command("start"))
-async def on_start(message: Message) -> None:
-    await message.answer(
-        md_to_telegram_html(
-            "*Dograh bot online.*\n\n"
-            "Quick start:\n"
-            "• `/workflows` — list available workflows\n"
-            "• send any text — placeholder echo for now (full chat lands in Phase 5)\n"
-        )
-    )
+# --- handlers (shared across every bot) ----------------------------------
+def build_router() -> Router:
+    """Build a fresh Router so each Dispatcher gets its own include tree."""
+    r = Router(name="dograh-telegram-bot")
 
-
-@router.message(Command("help"))
-async def on_help(message: Message) -> None:
-    await on_start(message)
-
-
-@router.message(Command("workflows"))
-async def on_workflows(message: Message, dograh: DograhClient) -> None:
-    try:
-        workflows = await dograh.list_workflows_summary()
-    except DograhClientError as exc:
-        await message.answer(f"❌ Dograh API error: {exc}")
-        return
-    if not workflows:
+    @r.message(Command("start"))
+    async def on_start(message: Message) -> None:
         await message.answer(
-            "No workflows yet. Create one in the Dograh UI first."
-        )
-        return
-    lines = ["<b>Available workflows</b>"]
-    for w in workflows[:25]:
-        wid = w.get("id") or w.get("workflow_id")
-        name = w.get("name") or "(untitled)"
-        lines.append(f"• <code>{wid}</code> — {name}")
-    await message.answer("\n".join(lines))
-
-
-@router.message(Command("call"))
-async def on_call(message: Message, dograh: DograhClient) -> None:
-    """/call <workflow_id> → reply with a WebApp button (Phase 3 Path 2)."""
-    parts = (message.text or "").split(maxsplit=1)
-    if len(parts) < 2 or not parts[1].strip().isdigit():
-        await message.answer(
-            "Usage: <code>/call &lt;workflow_id&gt;</code>"
-        )
-        return
-    workflow_id = int(parts[1].strip())
-    chat_id = message.chat.id
-    try:
-        link = await dograh.request_web_call_link(
-            workflow_id=workflow_id, telegram_chat_id=chat_id
-        )
-    except DograhClientError as exc:
-        await message.answer(f"❌ Dograh API error: {exc}")
-        return
-
-    kb = InlineKeyboardMarkup(
-        inline_keyboard=[[
-            InlineKeyboardButton(
-                text="🎙️ Open Voice Call",
-                web_app=WebAppInfo(url=link["url"]),
+            md_to_telegram_html(
+                "*Dograh bot online.*\n\n"
+                "Quick start:\n"
+                "• `/workflows` — list available workflows\n"
+                "• `/call <workflow_id>` — open a real-time voice call\n"
+                "• send any text — placeholder echo for now (full chat lands in Phase 5)\n"
             )
-        ]]
-    )
-    await message.answer(
-        f"Tap to start a voice call (link valid {link['expires_in_seconds']}s):",
-        reply_markup=kb,
-    )
+        )
 
+    @r.message(Command("help"))
+    async def on_help(message: Message) -> None:
+        await on_start(message)
 
-# --- voice notes (Phase 3 Path 1: STT-in, text echo for now) -------------
-@router.message(lambda m: m.voice is not None)
-async def on_voice(
-    message: Message, bot: Bot, dograh: DograhClient, cfg: BotConfig
-) -> None:
-    if message.voice is None:
-        return
-    transcript = await transcribe_voice(
-        message.voice, bot, cfg.groq_api_key
-    )
-    if transcript is None:
+    @r.message(Command("workflows"))
+    async def on_workflows(message: Message, dograh: DograhClient) -> None:
+        try:
+            workflows = await dograh.list_workflows_summary()
+        except DograhClientError as exc:
+            await message.answer(f"❌ Dograh API error: {exc}")
+            return
+        if not workflows:
+            await message.answer(
+                "No workflows yet. Create one in the Dograh UI first."
+            )
+            return
+        lines = ["<b>Available workflows</b>"]
+        for w in workflows[:25]:
+            wid = w.get("id") or w.get("workflow_id")
+            name = w.get("name") or "(untitled)"
+            lines.append(f"• <code>{wid}</code> — {name}")
+        await message.answer("\n".join(lines))
+
+    @r.message(Command("call"))
+    async def on_call(message: Message, dograh: DograhClient) -> None:
+        parts = (message.text or "").split(maxsplit=1)
+        if len(parts) < 2 or not parts[1].strip().isdigit():
+            await message.answer("Usage: <code>/call &lt;workflow_id&gt;</code>")
+            return
+        workflow_id = int(parts[1].strip())
+        chat_id = message.chat.id
+        try:
+            link = await dograh.request_web_call_link(
+                workflow_id=workflow_id, telegram_chat_id=chat_id
+            )
+        except DograhClientError as exc:
+            await message.answer(f"❌ Dograh API error: {exc}")
+            return
+        kb = InlineKeyboardMarkup(
+            inline_keyboard=[[
+                InlineKeyboardButton(
+                    text="🎙️ Open Voice Call",
+                    web_app=WebAppInfo(url=link["url"]),
+                )
+            ]]
+        )
         await message.answer(
-            "🎙️ Got your voice note, but Groq Whisper isn't configured "
-            "(set <code>GROQ_API_KEY</code>)."
+            f"Tap to start a voice call (link valid {link['expires_in_seconds']}s):",
+            reply_markup=kb,
         )
-        return
-    if transcript.startswith("[STT error"):
-        await message.answer(f"🎙️ {transcript}")
-        return
-    # Phase 5 routes this into the active workflow run and streams an
-    # audio reply back. For now, echo the transcript so we can confirm
-    # the STT path is wired.
-    await message.answer(
-        md_to_telegram_html(
-            f"🎙️ *Transcript:*\n{transcript}\n\n"
-            "_Phase 5 will route this into your active workflow._"
+
+    @r.message(lambda m: m.voice is not None)
+    async def on_voice(
+        message: Message, bot: Bot, dograh: DograhClient, cfg: BotConfig
+    ) -> None:
+        if message.voice is None:
+            return
+        transcript = await transcribe_voice(
+            message.voice, bot, cfg.groq_api_key
         )
-    )
+        if transcript is None:
+            await message.answer(
+                "🎙️ Got your voice note, but Groq Whisper isn't configured "
+                "(set <code>GROQ_API_KEY</code>)."
+            )
+            return
+        if transcript.startswith("[STT error"):
+            await message.answer(f"🎙️ {transcript}")
+            return
+        await message.answer(
+            md_to_telegram_html(
+                f"🎙️ *Transcript:*\n{transcript}\n\n"
+                "_Phase 5 will route this into your active workflow._"
+            )
+        )
 
+    @r.message()
+    async def on_text(message: Message) -> None:
+        if not message.text:
+            return
+        await message.answer(
+            "📝 received — Phase 5 will route this to your active workflow."
+        )
 
-# --- text messages ------------------------------------------------------
-@router.message()
-async def on_text(message: Message) -> None:
-    # Phase 5 replaces this placeholder with the chat-with-active-workflow flow.
-    if not message.text:
-        return
-    await message.answer(
-        "📝 received — Phase 5 will route this to your active workflow."
-    )
+    return r
 
 
 # --- runner ---------------------------------------------------------------
@@ -208,43 +202,107 @@ async def _start_health_server(port: int) -> web.AppRunner:
     return runner
 
 
+async def _run_bootstrap_dispatcher(cfg: BotConfig) -> asyncio.Task[None] | None:
+    """Old single-token path — kept as a fallback when no IM_INTERNAL_SECRET."""
+    if not cfg.telegram_bot_token:
+        logger.warning(
+            "[telegram-bot] TELEGRAM_BOT_TOKEN not set and IM_INTERNAL_SECRET "
+            "not set either — running health-only"
+        )
+        return None
+    bot = Bot(
+        token=cfg.telegram_bot_token,
+        default=DefaultBotProperties(parse_mode=ParseMode.HTML),
+    )
+    dp = Dispatcher()
+    dp.update.outer_middleware(
+        AllowedUsersMiddleware(cfg.telegram_allowed_users)
+    )
+    dp.include_router(build_router())
+    dograh_cm = DograhClient(
+        base_url=cfg.dograh_api_url, api_key=cfg.dograh_api_key
+    )
+    await dograh_cm.__aenter__()
+    try:
+        me = await bot.get_me()
+        logger.info(
+            f"[telegram-bot] bootstrap bot online as @{me.username} "
+            f"(id={me.id})"
+        )
+    except Exception as exc:  # noqa: BLE001
+        logger.exception(f"[telegram-bot] bootstrap getMe failed: {exc!r}")
+        await dograh_cm.__aexit__()
+        return None
+    return asyncio.create_task(
+        dp.start_polling(bot, dograh=dograh_cm, cfg=cfg),
+        name="aiogram-bootstrap-polling",
+    )
+
+
+def _make_multi_channel_kwargs(cfg: BotConfig) -> Callable[[ChannelBundle], dict[str, Any]]:
+    """Per-bot context kwargs for multi-channel mode."""
+    def factory(bundle: ChannelBundle) -> dict[str, Any]:
+        # One DograhClient per bot — the per-channel api_key from the
+        # bundle, NOT the env DOGRAH_API_KEY. Lifetime is tied to the
+        # dispatcher task; we leak the __aenter__ on purpose, the
+        # channel manager closes the bot session when removing.
+        dograh = DograhClient(
+            base_url=cfg.dograh_api_url, api_key=bundle.api_key
+        )
+        return {
+            "dograh": _LazyEnteredClient(dograh),
+            "cfg": cfg,
+        }
+    return factory
+
+
+class _LazyEnteredClient:
+    """Wraps a DograhClient so first use opens the httpx session.
+
+    Avoids juggling __aenter__/__aexit__ across dispatcher lifetimes.
+    """
+
+    def __init__(self, client: DograhClient):
+        self._client = client
+        self._entered = False
+        self._lock = asyncio.Lock()
+
+    async def __aenter__(self):  # pragma: no cover (not used as ctx mgr)
+        return self
+
+    def __getattr__(self, name):
+        async def _wrapper(*args, **kwargs):
+            async with self._lock:
+                if not self._entered:
+                    await self._client.__aenter__()
+                    self._entered = True
+            return await getattr(self._client, name)(*args, **kwargs)
+        return _wrapper
+
+
 async def _run(cfg: BotConfig) -> None:
     init_engine(cfg.database_url)
     health_runner = await _start_health_server(cfg.health_port)
 
-    bot_task: asyncio.Task[None] | None = None
-    if cfg.telegram_bot_token:
-        bot = Bot(
-            token=cfg.telegram_bot_token,
-            default=DefaultBotProperties(parse_mode=ParseMode.HTML),
-        )
-        dp = Dispatcher()
-        dp.update.outer_middleware(
-            AllowedUsersMiddleware(cfg.telegram_allowed_users)
-        )
-        dp.include_router(router)
+    manager: TelegramChannelManager | None = None
+    bootstrap_task: asyncio.Task[None] | None = None
 
-        # Inject a long-lived DograhClient into every handler context.
-        dograh_cm = DograhClient(
-            base_url=cfg.dograh_api_url, api_key=cfg.dograh_api_key
+    internal_secret = get_internal_secret()
+    if internal_secret:
+        manager = TelegramChannelManager(
+            dograh_api_url=cfg.dograh_api_url,
+            internal_secret=internal_secret,
+            redis_url=cfg.redis_url,
+            router_factory=build_router,
+            handler_kwargs_factory=_make_multi_channel_kwargs(cfg),
+            middleware_factory=lambda bundle: [
+                AllowedUsersMiddleware(bundle.allowed_user_ids)
+            ],
         )
-        await dograh_cm.__aenter__()
-        try:
-            me = await bot.get_me()
-            logger.info(
-                f"[telegram-bot] bot online as @{me.username} (id={me.id})"
-            )
-            bot_task = asyncio.create_task(
-                dp.start_polling(bot, dograh=dograh_cm, cfg=cfg),
-                name="aiogram-polling",
-            )
-        except Exception as exc:  # noqa: BLE001
-            logger.exception(f"[telegram-bot] failed to start polling: {exc!r}")
+        await manager.start()
+        logger.info("[telegram-bot] multi-channel mode online")
     else:
-        logger.warning(
-            "[telegram-bot] TELEGRAM_BOT_TOKEN not set — running health-only "
-            "(Phase 4 will load tokens from the im_channels table)"
-        )
+        bootstrap_task = await _run_bootstrap_dispatcher(cfg)
 
     stop = asyncio.Event()
 
@@ -259,10 +317,12 @@ async def _run(cfg: BotConfig) -> None:
     try:
         await stop.wait()
     finally:
-        if bot_task is not None:
-            bot_task.cancel()
+        if manager is not None:
+            await manager.stop()
+        if bootstrap_task is not None:
+            bootstrap_task.cancel()
             with suppress(asyncio.CancelledError, Exception):
-                await bot_task
+                await bootstrap_task
         await health_runner.cleanup()
         await db_dispose()
         logger.info("[telegram-bot] stopped")
