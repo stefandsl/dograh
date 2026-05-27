@@ -116,6 +116,13 @@ class MessagenetProvider(TelephonyProvider):
                 to_number=to_number,
                 from_number=from_number,
                 workflow_run_id=workflow_run_id,
+                # workflow_id + user_id are needed by gateways that bridge
+                # audio through Dograh's /ws/ari endpoint, which requires
+                # all three in the query string. The routes layer passes
+                # them in kwargs; defaulting to None keeps the protocol
+                # tolerant of callers that don't.
+                workflow_id=kwargs.get("workflow_id"),
+                user_id=kwargs.get("user_id"),
             )
         except MessagenetGatewayNotConfigured as exc:
             # Surface the operator-facing message verbatim — it tells the

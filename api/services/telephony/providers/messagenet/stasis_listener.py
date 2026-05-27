@@ -144,11 +144,21 @@ class MessagenetStasisListener:
     async def _on_stasis_start(self, event: Dict[str, Any]) -> None:
         channel = event.get("channel", {}) or {}
         channel_id = channel.get("id", "")
+        channel_name = channel.get("name", "")
         args = event.get("args", []) or []
         kv = _parse_appargs(args)
 
-        # Outbound channels carry a workflow_run_id appArg (set by
-        # MessagenetProvider via the AsteriskARIGateway originate call).
+        # externalMedia channels enter Stasis with no appArgs because
+        # POST /channels/externalMedia doesn't accept them. The gateway
+        # already wired the bridge before we even see this event; nothing
+        # to do here.
+        if channel_name.startswith("UnicastRTP/"):
+            logger.debug(
+                f"[MessageNet/Stasis] externalMedia StasisStart "
+                f"channel={channel_id} — gateway-managed, ignoring"
+            )
+            return
+
         workflow_run_id = kv.get("workflow_run_id")
         direction = kv.get("direction", "outbound" if workflow_run_id else "")
 
@@ -165,21 +175,20 @@ class MessagenetStasisListener:
         if not workflow_run_id:
             logger.warning(
                 f"[MessageNet/Stasis] StasisStart missing workflow_run_id "
-                f"(channel={channel_id}, args={args}); hanging up"
+                f"(channel={channel_id}, name={channel_name}, args={args}); hanging up"
             )
             await self._hangup(channel_id)
             return
 
+        # Gateway uses the simple originate pattern. On StasisStart we
+        # answer, spawn externalMedia, and bridge.
         logger.info(
-            f"[MessageNet/Stasis] Outbound StasisStart "
-            f"channel={channel_id} workflow_run_id={workflow_run_id}"
+            f"[MessageNet/Stasis] Outbound trunk StasisStart "
+            f"channel={channel_id} name={channel_name} "
+            f"workflow_run_id={workflow_run_id}"
         )
-
-        # 1. Answer the trunk leg so audio cuts through.
         if not await self._answer(channel_id):
             return
-
-        # 2. Spawn the externalMedia leg pointing back at Dograh.
         ext_id = await self._create_external_media(
             workflow_run_id=workflow_run_id,
             workflow_id=kv.get("workflow_id", ""),
@@ -188,14 +197,11 @@ class MessagenetStasisListener:
         if not ext_id:
             await self._hangup(channel_id)
             return
-
-        # 3. Bridge the two legs.
         bridge_id = await self._bridge([channel_id, ext_id])
         if not bridge_id:
             await self._hangup(channel_id)
             await self._hangup(ext_id)
             return
-
         logger.info(
             f"[MessageNet/Stasis] Bridge {bridge_id} live: "
             f"trunk={channel_id} ext={ext_id}"

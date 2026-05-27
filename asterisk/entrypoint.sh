@@ -26,5 +26,22 @@ fi
 sed -i "s|__MESSAGENET_USER__|${MESSAGENET_USER}|g" "${LOCAL_CONF}"
 sed -i "s|__MESSAGENET_PASSWORD__|${MESSAGENET_PASSWORD}|g" "${LOCAL_CONF}"
 
+# Resolve EXTERNAL_IP for SDP / Contact rewriting. Required when Asterisk
+# runs in a docker bridge network so the carrier can reach us for RTP.
+# Operator can pin it via the EXTERNAL_IP env var; otherwise we ask a
+# public echo service. Fall back to the container's primary IP only if
+# both fail — useful for in-network testing but not for live trunks.
+if [ -z "${EXTERNAL_IP:-}" ]; then
+  EXTERNAL_IP="$(curl -fsS --max-time 3 https://api.ipify.org 2>/dev/null || true)"
+fi
+if [ -z "${EXTERNAL_IP:-}" ]; then
+  EXTERNAL_IP="$(hostname -I | awk '{print $1}')"
+  echo "[entrypoint] WARNING: EXTERNAL_IP not set and public lookup failed;" \
+       "falling back to container IP ${EXTERNAL_IP}. RTP from MessageNet" \
+       "will not be reachable."
+fi
+echo "[entrypoint] Using EXTERNAL_IP=${EXTERNAL_IP} for PJSIP SDP/Contact rewriting"
+sed -i "s|__EXTERNAL_IP__|${EXTERNAL_IP}|g" "${RUNTIME_DIR}/pjsip.conf"
+
 # Point Asterisk at the rendered config dir.
 exec asterisk -f -C "${RUNTIME_DIR}/asterisk.conf"

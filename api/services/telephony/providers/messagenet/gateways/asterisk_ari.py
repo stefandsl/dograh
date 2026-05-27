@@ -1,11 +1,18 @@
 """Asterisk ARI implementation of ``MessagenetSipGatewayClient``.
 
-Originates calls into a Stasis app via the ARI REST surface; trunk
-registration is owned by Asterisk's PJSIP config (see the deployment
-guide for the ``[messagenet]`` registration/auth/aor/endpoint blocks).
-The Stasis app pipes answered audio into ``chan_websocket`` pointed at
-the Dograh MessageNet WebSocket endpoint, where ``AsteriskFrameSerializer``
-takes over.
+Outbound flow:
+
+1. ``originate_call`` does a single ``POST /channels`` with
+   ``app=dograh-messagenet`` and the PJSIP endpoint, so the channel
+   enters Stasis as soon as MessageNet answers. The outbound INVITE
+   carries a proper SDP (``m=audio``) — this depends on Asterisk
+   having ``res_pjsip_sdp_rtp.so`` loaded (see ``asterisk/modules.conf``).
+2. The listener (:mod:`stasis_listener`) handles the StasisStart event:
+   answer the channel, create the externalMedia leg, bridge the two.
+
+Trunk registration is owned by Asterisk's PJSIP config (see the
+deployment guide for the ``[messagenet]`` registration/auth/aor/endpoint
+blocks); we only orchestrate channels here.
 
 Wired in at startup by :func:`messagenet.wiring.install_messagenet_gateway`
 when ``MESSAGENET_GATEWAY_BACKEND=asterisk-ari``.
@@ -18,6 +25,7 @@ from dataclasses import dataclass
 from typing import Any, Dict, Optional
 
 import aiohttp
+from loguru import logger
 
 from ..sip_gateway import (
     GatewayCallHandle,
@@ -33,6 +41,7 @@ class AsteriskARIGateway:
     ari_user: str
     ari_password: str
     pjsip_endpoint: str
+    ws_client_name: str = "dograh-ws"
 
     @classmethod
     def from_env(cls) -> "AsteriskARIGateway":
@@ -43,6 +52,7 @@ class AsteriskARIGateway:
                 ari_user=os.environ["ARI_USER"],
                 ari_password=os.environ["ARI_PASSWORD"],
                 pjsip_endpoint=os.getenv("MESSAGENET_PJSIP_ENDPOINT", "messagenet"),
+                ws_client_name=os.getenv("MESSAGENET_WS_CLIENT_NAME", "dograh-ws"),
             )
         except KeyError as exc:
             raise MessagenetGatewayNotConfigured(
@@ -51,6 +61,31 @@ class AsteriskARIGateway:
 
     def _auth(self) -> aiohttp.BasicAuth:
         return aiohttp.BasicAuth(self.ari_user, self.ari_password)
+
+    async def _ari(
+        self,
+        method: str,
+        path: str,
+        *,
+        params: Optional[Dict[str, Any]] = None,
+    ) -> Dict[str, Any]:
+        url = f"{self.base_url}/ari{path}"
+        async with aiohttp.ClientSession() as session:
+            async with session.request(
+                method, url, params=params, auth=self._auth()
+            ) as resp:
+                text = await resp.text()
+                if resp.status >= 400:
+                    raise RuntimeError(
+                        f"ARI {method} {path} failed: HTTP {resp.status} {text}"
+                    )
+                if not text:
+                    return {}
+                try:
+                    import json
+                    return json.loads(text)
+                except json.JSONDecodeError:
+                    return {"raw": text}
 
     async def register_trunk(self, credentials: MessagenetTrunkCredentials) -> None:
         # Registration is owned by Asterisk PJSIP config; nothing to do
@@ -64,79 +99,52 @@ class AsteriskARIGateway:
         to_number: str,
         from_number: Optional[str],
         workflow_run_id: Optional[int],
+        workflow_id: Optional[int] = None,
+        user_id: Optional[int] = None,
     ) -> GatewayCallHandle:
-        # SIP URI form so we don't depend on a dialplan rewrite for the
-        # destination; the registered PJSIP endpoint anchors the trunk.
-        endpoint = (
-            f"PJSIP/sip:{to_number}@{credentials.sip_uri.host}"
-            f"/{self.pjsip_endpoint}"
-        )
-        params = {
+        # Simple originate-into-Stasis pattern. With res_pjsip_sdp_rtp.so
+        # loaded, chan_pjsip allocates the audio stream up front and the
+        # outbound INVITE carries a proper SDP with m=audio. Listener
+        # handles externalMedia + bridge on StasisStart.
+        endpoint = f"PJSIP/{to_number}@{self.pjsip_endpoint}"
+        params: Dict[str, Any] = {
             "endpoint": endpoint,
             "app": self.app_name,
-            "appArgs": f"workflow_run_id={workflow_run_id or ''}",
+            "appArgs": (
+                f"workflow_run_id={workflow_run_id or ''},"
+                f"workflow_id={workflow_id or ''},"
+                f"user_id={user_id or ''}"
+            ),
         }
         if from_number:
             params["callerId"] = from_number
-
-        async with aiohttp.ClientSession() as session:
-            async with session.post(
-                f"{self.base_url}/ari/channels",
-                params=params,
-                auth=self._auth(),
-            ) as resp:
-                body = await resp.json()
-                if resp.status != 200:
-                    raise RuntimeError(
-                        f"ARI originate failed: HTTP {resp.status} {body}"
-                    )
-                return GatewayCallHandle(
-                    call_id=body["id"],
-                    status=body.get("state", "originated"),
-                    raw=body,
-                )
+        body = await self._ari("POST", "/channels", params=params)
+        return GatewayCallHandle(
+            call_id=body["id"],
+            status=body.get("state", "originated"),
+            raw=body,
+        )
 
     async def accept_inbound_call(self, call_id: str) -> None:
-        async with aiohttp.ClientSession() as session:
-            async with session.post(
-                f"{self.base_url}/ari/channels/{call_id}/answer",
-                auth=self._auth(),
-            ) as resp:
-                if resp.status not in (200, 204):
-                    raise RuntimeError(
-                        f"ARI answer failed: HTTP {resp.status} "
-                        f"{await resp.text()}"
-                    )
+        await self._ari("POST", f"/channels/{call_id}/answer")
 
     async def hangup(self, call_id: str) -> None:
-        async with aiohttp.ClientSession() as session:
-            async with session.delete(
-                f"{self.base_url}/ari/channels/{call_id}",
-                auth=self._auth(),
-            ) as resp:
-                # 404 means the channel is already gone — treat as success.
-                if resp.status not in (204, 404):
-                    raise RuntimeError(
-                        f"ARI hangup failed: HTTP {resp.status} "
-                        f"{await resp.text()}"
-                    )
+        try:
+            await self._ari("DELETE", f"/channels/{call_id}")
+        except RuntimeError as exc:
+            # 404 means the channel is already gone — treat as success.
+            if "HTTP 404" not in str(exc):
+                raise
 
     async def get_call_status(self, call_id: str) -> Dict[str, Any]:
-        async with aiohttp.ClientSession() as session:
-            async with session.get(
-                f"{self.base_url}/ari/channels/{call_id}",
-                auth=self._auth(),
-            ) as resp:
-                if resp.status == 404:
-                    return {"call_id": call_id, "status": "completed"}
-                if resp.status != 200:
-                    raise RuntimeError(
-                        f"ARI status failed: HTTP {resp.status} "
-                        f"{await resp.text()}"
-                    )
-                data = await resp.json()
-                return {
-                    "call_id": data["id"],
-                    "status": data.get("state", "unknown"),
-                    "raw": data,
-                }
+        try:
+            data = await self._ari("GET", f"/channels/{call_id}")
+        except RuntimeError as exc:
+            if "HTTP 404" in str(exc):
+                return {"call_id": call_id, "status": "completed"}
+            raise
+        return {
+            "call_id": data["id"],
+            "status": data.get("state", "unknown"),
+            "raw": data,
+        }
