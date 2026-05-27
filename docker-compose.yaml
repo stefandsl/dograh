@@ -247,7 +247,7 @@ services:
   # Opt in with: docker compose --profile messagenet up
   # See docs/integrations/telephony/messagenet.mdx for the full setup.
   asterisk:
-    image: andrius/asterisk:21-current
+    image: andrius/asterisk:21
     container_name: dograh-asterisk
     profiles: ["messagenet"]
     restart: unless-stopped
