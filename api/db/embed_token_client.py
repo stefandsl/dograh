@@ -197,6 +197,52 @@ class EmbedTokenClient(BaseDBClient):
             )
             await session.commit()
 
+    async def find_or_create_internal_embed_token(
+        self,
+        workflow_id: int,
+        organization_id: int,
+        created_by: int,
+        *,
+        source: str,
+    ) -> EmbedTokenModel:
+        """Lookup-or-create a single internal embed token per (workflow, source).
+
+        Internal tokens back server-mediated flows (e.g. the Telegram
+        WebApp voice-call page) where the consumer is not a third-party
+        site and the regular embed_token domain whitelist would only get
+        in the way. Marker lives in ``settings['source']`` because
+        EmbedTokenModel has no name/is_internal column and ADR-101's
+        no-migration guardrail keeps it that way.
+
+        Lookup is workflow-scoped + source-marker filtered. If two
+        concurrent first-time calls each insert a row, the lower-id row
+        wins on subsequent calls and the orphan is harmless (zero usage,
+        no FK references except its own embed_sessions).
+        """
+        async with self.async_session() as session:
+            existing = await session.execute(
+                select(EmbedTokenModel)
+                .where(
+                    and_(
+                        EmbedTokenModel.workflow_id == workflow_id,
+                        EmbedTokenModel.organization_id == organization_id,
+                        EmbedTokenModel.is_active == True,  # noqa: E712
+                    )
+                )
+                .order_by(EmbedTokenModel.id.asc())
+            )
+            for row in existing.scalars():
+                if (row.settings or {}).get("source") == source:
+                    return row
+
+        return await self.create_embed_token(
+            workflow_id=workflow_id,
+            organization_id=organization_id,
+            created_by=created_by,
+            allowed_domains=[],
+            settings={"source": source},
+        )
+
     async def create_embed_session(
         self,
         session_token: str,
