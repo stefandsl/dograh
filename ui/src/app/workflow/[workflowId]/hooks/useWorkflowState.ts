@@ -10,6 +10,7 @@ import { EdgeChange, NodeChange } from "@xyflow/system";
 import { useRouter } from "next/navigation";
 import posthog from "posthog-js";
 import { useCallback, useEffect, useRef } from "react";
+import { toast } from "sonner";
 
 import { useWorkflowStore } from "@/app/workflow/[workflowId]/stores/workflowStore";
 import {
@@ -306,6 +307,25 @@ export const useWorkflowState = ({
         // This avoids a race condition where rfInstance.toObject() may return
         // stale node data if React hasn't re-rendered yet after a store update.
         const { nodes: currentNodes, edges: currentEdges } = useWorkflowStore.getState();
+        // Client-side preflight: refuse to ship a workflow definition with
+        // more than one trigger. The backend validator rejects it too
+        // (`Workflow has N start nodes — exactly one is required`), but
+        // doing the check here saves a round-trip and surfaces a clean
+        // toast instead of a generic save failure. AddNodePanel already
+        // disables the trigger spec when one exists, so this catches
+        // pasted/imported workflows and anything edited outside the UI.
+        if (updateWorkflowDefinition) {
+            const triggerCount = currentNodes.reduce((n, node) => {
+                const spec = bySpecName.get(node.type ?? "");
+                return spec?.category === "trigger" ? n + 1 : n;
+            }, 0);
+            if (triggerCount > 1) {
+                toast.error(
+                    `Workflow has ${triggerCount} start nodes — exactly one is required. Remove the extras before saving.`,
+                );
+                return;
+            }
+        }
         const viewport = rfInstance.current.getViewport();
         const flow = { nodes: currentNodes, edges: currentEdges, viewport };
         let result: { versionNumber?: number; versionStatus?: string } | undefined;
@@ -372,6 +392,7 @@ export const useWorkflowState = ({
         user,
         validateWorkflow,
         applyWorkflowErrors,
+        bySpecName,
     ]);
 
     // Set up keyboard shortcut for save (Cmd/Ctrl + S)

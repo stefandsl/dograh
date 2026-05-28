@@ -2,9 +2,16 @@ import * as LucideIcons from 'lucide-react';
 import { Circle, ExternalLink, type LucideIcon, X } from 'lucide-react';
 import { useEffect, useMemo } from 'react';
 
+import { useWorkflowNodes } from '@/app/workflow/[workflowId]/stores/workflowStore';
 import type { NodeSpec } from '@/client/types.gen';
 import { useNodeSpecs } from '@/components/flow/renderer';
 import { Button } from '@/components/ui/button';
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
+} from '@/components/ui/tooltip';
 
 import { NodeType } from './types';
 
@@ -31,10 +38,14 @@ function resolveIcon(name: string): LucideIcon {
 function NodeSection({
     title,
     specs,
+    disabledTypes,
+    disabledReason,
     onNodeSelect,
 }: {
     title: string;
     specs: NodeSpec[];
+    disabledTypes: Set<string>;
+    disabledReason: string;
     onNodeSelect: (nodeType: NodeType) => void;
 }) {
     if (specs.length === 0) return null;
@@ -46,12 +57,17 @@ function NodeSection({
             <div className="space-y-2">
                 {specs.map((spec) => {
                     const Icon = resolveIcon(spec.icon);
-                    return (
+                    const isDisabled = disabledTypes.has(spec.name);
+                    const buttonNode = (
                         <Button
                             key={spec.name}
                             variant="outline"
-                            className="w-full justify-start p-4 h-auto hover:bg-accent/50 transition-colors"
-                            onClick={() => onNodeSelect(spec.name as NodeType)}
+                            disabled={isDisabled}
+                            className="w-full justify-start p-4 h-auto hover:bg-accent/50 transition-colors disabled:cursor-not-allowed disabled:opacity-60"
+                            onClick={() => {
+                                if (isDisabled) return;
+                                onNodeSelect(spec.name as NodeType);
+                            }}
                         >
                             <div className="flex items-center">
                                 <div className="bg-muted p-2 rounded-lg mr-3 border border-border">
@@ -68,6 +84,19 @@ function NodeSection({
                             </div>
                         </Button>
                     );
+                    if (!isDisabled) return buttonNode;
+                    // Disabled buttons swallow pointer events so wrap in a
+                    // span so the tooltip trigger still receives hover.
+                    return (
+                        <Tooltip key={spec.name}>
+                            <TooltipTrigger asChild>
+                                <span className="block w-full">{buttonNode}</span>
+                            </TooltipTrigger>
+                            <TooltipContent side="left">
+                                {disabledReason}
+                            </TooltipContent>
+                        </Tooltip>
+                    );
                 })}
             </div>
         </div>
@@ -76,6 +105,7 @@ function NodeSection({
 
 export default function AddNodePanel({ isOpen, onNodeSelect, onClose }: AddNodePanelProps) {
     const { specs } = useNodeSpecs();
+    const nodes = useWorkflowNodes();
 
     // Group registered specs by category, preserving the SECTION_ORDER.
     // Adding a new node type with a new spec.category just shows up here.
@@ -85,6 +115,28 @@ export default function AddNodePanel({ isOpen, onNodeSelect, onClose }: AddNodeP
             specs: specs.filter((s) => s.category === category),
         }));
     }, [specs]);
+
+    // A workflow must have exactly one trigger (enforced by the backend
+    // validator: "Workflow has N start nodes — exactly one is required").
+    // Once a trigger exists, disable every spec in the `trigger` category
+    // in the palette so the user can't queue up a save that the server
+    // will reject. If they want a different trigger they delete the
+    // current one first.
+    const triggerSpecNames = useMemo(
+        () =>
+            new Set(
+                specs.filter((s) => s.category === 'trigger').map((s) => s.name),
+            ),
+        [specs],
+    );
+    const hasTriggerNode = useMemo(
+        () => nodes.some((n) => triggerSpecNames.has(n.type ?? '')),
+        [nodes, triggerSpecNames],
+    );
+    const disabledTypes = useMemo(
+        () => (hasTriggerNode ? triggerSpecNames : new Set<string>()),
+        [hasTriggerNode, triggerSpecNames],
+    );
 
     useEffect(() => {
         const handleKeyDown = (event: KeyboardEvent) => {
@@ -121,16 +173,20 @@ export default function AddNodePanel({ isOpen, onNodeSelect, onClose }: AddNodeP
                     </Button>
                 </div>
 
-                <div className="space-y-6">
-                    {sections.map(({ title, specs }) => (
-                        <NodeSection
-                            key={title}
-                            title={title}
-                            specs={specs}
-                            onNodeSelect={onNodeSelect}
-                        />
-                    ))}
-                </div>
+                <TooltipProvider delayDuration={200}>
+                    <div className="space-y-6">
+                        {sections.map(({ title, specs }) => (
+                            <NodeSection
+                                key={title}
+                                title={title}
+                                specs={specs}
+                                disabledTypes={disabledTypes}
+                                disabledReason="Workflow already has a start node. Remove it before adding a different trigger."
+                                onNodeSelect={onNodeSelect}
+                            />
+                        ))}
+                    </div>
+                </TooltipProvider>
             </div>
         </div>
     );
