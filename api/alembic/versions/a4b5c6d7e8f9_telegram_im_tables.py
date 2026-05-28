@@ -19,7 +19,6 @@ from typing import Sequence, Union
 import sqlalchemy as sa
 from alembic import op
 
-
 revision: str = "a4b5c6d7e8f9"
 down_revision: Union[str, None] = "6bd9f67ec994"
 branch_labels: Union[str, Sequence[str], None] = None
@@ -140,9 +139,7 @@ def upgrade() -> None:
         # cron expression (5-field) OR ISO timestamp for one-shot tasks
         sa.Column("schedule", sa.String(255), nullable=False),
         sa.Column("payload", sa.Text(), nullable=False),
-        sa.Column(
-            "is_active", sa.Boolean(), nullable=False, server_default=sa.true()
-        ),
+        sa.Column("is_active", sa.Boolean(), nullable=False, server_default=sa.true()),
         sa.Column("last_run_at", sa.TIMESTAMP(timezone=True), nullable=True),
         sa.Column("next_run_at", sa.TIMESTAMP(timezone=True), nullable=True),
         sa.Column(
@@ -172,10 +169,6 @@ def downgrade() -> None:
         type_="unique",
     )
     op.drop_table("telegram_sessions")
-    op.drop_index(
-        "idx_telegram_memory_facts_chat", table_name="telegram_memory_facts"
-    )
-    op.drop_index(
-        "idx_telegram_memory_facts_tsv", table_name="telegram_memory_facts"
-    )
+    op.drop_index("idx_telegram_memory_facts_chat", table_name="telegram_memory_facts")
+    op.drop_index("idx_telegram_memory_facts_tsv", table_name="telegram_memory_facts")
     op.drop_table("telegram_memory_facts")

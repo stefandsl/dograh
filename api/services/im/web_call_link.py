@@ -21,7 +21,6 @@ from cryptography.fernet import InvalidToken
 
 from .encryption import fernet as _FERNET
 
-
 _DEFAULT_TTL_SECONDS = 5 * 60
 
 

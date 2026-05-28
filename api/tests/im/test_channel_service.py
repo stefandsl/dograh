@@ -15,10 +15,13 @@ import pytest
 def fresh_module(monkeypatch):
     monkeypatch.setenv("OSS_JWT_SECRET", "test-secret-12345")
     import api.constants
+
     importlib.reload(api.constants)
     import api.services.im.encryption as enc
+
     importlib.reload(enc)
     import api.services.im.channel_service as svc
+
     importlib.reload(svc)
     return svc
 

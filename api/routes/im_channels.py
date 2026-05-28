@@ -29,7 +29,6 @@ from api.schemas.im_channels import (
 from api.services.auth.depends import get_user
 from api.services.im import channel_service
 
-
 router = APIRouter(prefix="/im", tags=["im-channels"])
 
 
@@ -187,7 +186,7 @@ async def rotate_telegram_api_key(
     "/channels/secret-bundle",
     response_model=list[SecretBundleEntry],
     summary="Internal — returns plaintext bot_token + api_key for every "
-            "enabled Telegram channel. Gated by IM_INTERNAL_SECRET header.",
+    "enabled Telegram channel. Gated by IM_INTERNAL_SECRET header.",
     include_in_schema=False,
 )
 async def get_secret_bundle(
@@ -195,9 +194,7 @@ async def get_secret_bundle(
 ) -> list[SecretBundleEntry]:
     expected = os.getenv("IM_INTERNAL_SECRET")
     if not expected:
-        logger.error(
-            "[im/secret-bundle] IM_INTERNAL_SECRET not configured — refusing"
-        )
+        logger.error("[im/secret-bundle] IM_INTERNAL_SECRET not configured — refusing")
         raise HTTPException(status_code=503, detail="im_internal_secret_unset")
     if x_im_internal_secret != expected:
         raise HTTPException(status_code=401, detail="invalid_internal_secret")

@@ -19,7 +19,6 @@ import html
 import os
 import secrets
 from datetime import UTC, datetime, timedelta
-from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import HTMLResponse
@@ -31,7 +30,6 @@ from api.enums import WorkflowRunMode
 from api.services.auth.depends import get_user
 from api.services.im.web_call_link import sign, verify
 
-
 router = APIRouter(prefix="/telegram", tags=["telegram"])
 
 
@@ -40,8 +38,8 @@ class WebCallLinkRequest(BaseModel):
     telegram_chat_id: int = Field(
         ...,
         description="The Telegram chat the bot is conversing in — included "
-                    "so the token is bound to one chat and can't be reused "
-                    "from a different chat by accident.",
+        "so the token is bound to one chat and can't be reused "
+        "from a different chat by accident.",
     )
 
 
@@ -89,10 +87,9 @@ async def create_web_call_link(
         telegram_chat_id=req.telegram_chat_id,
         ttl_seconds=ttl,
     )
-    base = (
-        os.getenv("DOGRAH_PUBLIC_URL")
-        or str(request.base_url).rstrip("/")
-    ).rstrip("/")
+    base = (os.getenv("DOGRAH_PUBLIC_URL") or str(request.base_url).rstrip("/")).rstrip(
+        "/"
+    )
     url = f"{base}/api/v1/telegram/web-call/{token}"
 
     logger.info(
@@ -155,8 +152,7 @@ async def open_web_call(token: str, request: Request) -> HTMLResponse:
     )
 
     public_base = (
-        os.getenv("DOGRAH_PUBLIC_URL")
-        or str(request.base_url).rstrip("/")
+        os.getenv("DOGRAH_PUBLIC_URL") or str(request.base_url).rstrip("/")
     ).rstrip("/")
     ws_base = public_base.replace("https://", "wss://").replace("http://", "ws://")
     ws_url = f"{ws_base}/api/v1/ws/public/signaling/{embed_session.session_token}"

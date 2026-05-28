@@ -76,9 +76,7 @@ class MessagenetSipGatewayClient(Protocol):
     and calls into it; SIP/RTP plumbing stays behind this protocol.
     """
 
-    async def register_trunk(
-        self, credentials: MessagenetTrunkCredentials
-    ) -> None: ...
+    async def register_trunk(self, credentials: MessagenetTrunkCredentials) -> None: ...
 
     async def originate_call(
         self,

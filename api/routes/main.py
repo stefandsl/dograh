@@ -7,6 +7,7 @@ from api.routes.auth import router as auth_router
 from api.routes.campaign import router as campaign_router
 from api.routes.credentials import router as credentials_router
 from api.routes.folder import router as folder_router
+from api.routes.im_channels import router as im_channels_router
 from api.routes.knowledge_base import router as knowledge_base_router
 from api.routes.node_types import router as node_types_router
 from api.routes.organization import router as organization_router
@@ -18,12 +19,11 @@ from api.routes.reports import router as reports_router
 from api.routes.s3_signed_url import router as s3_router
 from api.routes.service_keys import router as service_keys_router
 from api.routes.superuser import router as superuser_router
+from api.routes.telegram import router as telegram_router
 from api.routes.telephony import router as telephony_router
 from api.routes.tool import router as tool_router
 from api.routes.turn_credentials import router as turn_credentials_router
 from api.routes.user import router as user_router
-from api.routes.im_channels import router as im_channels_router
-from api.routes.telegram import router as telegram_router
 from api.routes.webrtc_signaling import router as webrtc_signaling_router
 from api.routes.workflow import router as workflow_router
 from api.routes.workflow_embed import router as workflow_embed_router
