@@ -207,9 +207,7 @@ async def execute_pending_text_chat_turn(
         # the caller; the underlying message is still recorded on
         # workflow_run_text_sessions.session_data via _mark_pending_turn_failed,
         # but only the API logs and the DB row had it.
-        logger.exception(
-            f"Text chat pending turn execution failed for run {run_id}"
-        )
+        logger.exception(f"Text chat pending turn execution failed for run {run_id}")
         await _mark_pending_turn_failed(
             run_id=run_id,
             text_session=text_session,
