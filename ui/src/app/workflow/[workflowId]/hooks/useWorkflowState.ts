@@ -20,6 +20,7 @@ import {
 } from "@/client";
 import { NodeSpec, WorkflowError } from "@/client/types.gen";
 import { useNodeSpecs } from "@/components/flow/renderer";
+import { buildDataFromSpec } from "@/components/flow/spec-defaults";
 import { FlowEdge, FlowNode, FlowNodeData, NodeType } from "@/components/flow/types";
 import { PostHogEvent } from "@/constants/posthog-events";
 import logger from '@/lib/logger';
@@ -41,20 +42,6 @@ function extractWorkflowErrors(payload: unknown): WorkflowError[] {
     if (p.is_valid === false && p.errors) return p.errors;
     if (typeof p.detail === "object" && p.detail?.errors) return p.detail.errors;
     return [];
-}
-
-// Build initial node data from spec defaults. Replaces the per-type
-// hardcoded `getNewNode` switch — adding a new node type is now zero
-// frontend code: declare the spec on the backend and the defaults flow
-// through here.
-function buildDataFromSpec(spec: NodeSpec): Record<string, unknown> {
-    const data: Record<string, unknown> = {};
-    for (const prop of spec.properties) {
-        if (prop.default !== undefined && prop.default !== null) {
-            data[prop.name] = prop.default;
-        }
-    }
-    return data;
 }
 
 function buildNewNode(

@@ -1,16 +1,26 @@
 import { NodeProps, NodeToolbar, Position } from "@xyflow/react";
 import * as LucideIcons from "lucide-react";
-import { Check, Circle, Copy, Edit, type LucideIcon, Trash2Icon } from "lucide-react";
+import { Check, Circle, Copy, Edit, type LucideIcon, RefreshCw, Trash2Icon } from "lucide-react";
 import Link from "next/link";
 import { memo, useCallback, useEffect, useMemo, useState } from "react";
 
 import { useWorkflow } from "@/app/workflow/[workflowId]/contexts/WorkflowContext";
+import { useWorkflowStore } from "@/app/workflow/[workflowId]/stores/workflowStore";
 import type { NodeSpec } from "@/client/types.gen";
 import { DocumentBadges } from "@/components/flow/DocumentBadges";
 import { NodeEditForm, useNodeSpecs } from "@/components/flow/renderer";
+import { buildDataFromSpec } from "@/components/flow/spec-defaults";
 import { ToolBadges } from "@/components/flow/ToolBadges";
 import { FlowNodeData } from "@/components/flow/types";
 import { Button } from "@/components/ui/button";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { NODE_DOCUMENTATION_URLS } from "@/constants/documentation";
 import { cn } from "@/lib/utils";
@@ -473,8 +483,35 @@ export const GenericNode = memo(({ data, selected, id, type }: GenericNodeProps)
         additionalData,
     });
     const { saveWorkflow, tools, documents, recordings } = useWorkflow();
-    const { bySpecName } = useNodeSpecs();
+    const { bySpecName, specs } = useNodeSpecs();
     const spec = bySpecName.get(type);
+
+    // Replace-trigger affordance: lets the user swap an existing trigger
+    // node for a different trigger type in-place (preserving id, position
+    // and outgoing edges). Hidden when there's only one trigger spec in
+    // the catalog (nothing to replace with). Pairs with the "Add Node"
+    // palette guard that prevents adding a *second* trigger.
+    const updateNode = useWorkflowStore((state) => state.updateNode);
+    const triggerSpecs = useMemo(
+        () => specs.filter((s) => s.category === "trigger"),
+        [specs],
+    );
+    const canReplaceTrigger = spec?.category === "trigger" && triggerSpecs.length > 1;
+    const handleReplaceTrigger = useCallback(
+        (newType: string) => {
+            if (newType === type) return;
+            const newSpec = bySpecName.get(newType);
+            if (!newSpec) return;
+            const newData = buildDataFromSpec(newSpec) as Partial<FlowNodeData> &
+                Record<string, unknown>;
+            newData.is_start = true;
+            updateNode(id, {
+                type: newType,
+                data: newData as unknown as FlowNodeData,
+            });
+        },
+        [id, type, bySpecName, updateNode],
+    );
 
     // ── Form state ─────────────────────────────────────────────────────
     // mcp_tool_filters is not a spec property, so seedValues won't carry it;
@@ -636,6 +673,44 @@ export const GenericNode = memo(({ data, selected, id, type }: GenericNodeProps)
                     <Button onClick={() => setOpen(true)} variant="outline" size="icon">
                         <Edit />
                     </Button>
+                    {/* Replace-trigger affordance for trigger nodes when the */}
+                    {/* catalog has more than one trigger spec. Mirrors */}
+                    {/* Activepieces' "pencil icon to swap" pattern. */}
+                    {canReplaceTrigger && (
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button
+                                    variant="outline"
+                                    size="icon"
+                                    title="Replace trigger"
+                                >
+                                    <RefreshCw />
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent side="right" align="start">
+                                <DropdownMenuLabel>
+                                    Replace with…
+                                </DropdownMenuLabel>
+                                <DropdownMenuSeparator />
+                                {triggerSpecs.map((triggerSpec) => (
+                                    <DropdownMenuItem
+                                        key={triggerSpec.name}
+                                        disabled={triggerSpec.name === type}
+                                        onClick={() =>
+                                            handleReplaceTrigger(triggerSpec.name)
+                                        }
+                                    >
+                                        {triggerSpec.display_name}
+                                        {triggerSpec.name === type && (
+                                            <span className="ml-auto text-xs text-muted-foreground">
+                                                current
+                                            </span>
+                                        )}
+                                    </DropdownMenuItem>
+                                ))}
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    )}
                     {/* Start nodes can't be deleted (workflow always needs one). */}
                     {type !== "startCall" && (
                         <Button
