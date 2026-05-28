@@ -486,20 +486,21 @@ export const GenericNode = memo(({ data, selected, id, type }: GenericNodeProps)
     const { bySpecName, specs } = useNodeSpecs();
     const spec = bySpecName.get(type);
 
-    // Replace-trigger affordance: lets the user swap an existing trigger
-    // node for a different trigger type in-place (preserving id, position
-    // and outgoing edges). Hidden when there's only one trigger spec in
-    // the catalog (nothing to replace with). Pairs with the "Add Node"
-    // palette guard that prevents adding a *second* trigger.
+    // Replace-trigger affordance: swap an existing trigger for a
+    // different trigger type in-place (same id, same position, same
+    // outgoing edges). Surfaced on every trigger node — even when only
+    // one trigger spec exists today, because selecting the current type
+    // is also useful as a "reset to defaults". When new trigger types
+    // ship, the dropdown grows automatically. Pairs with the AddNodePanel
+    // guard that prevents *adding* a second trigger.
     const updateNode = useWorkflowStore((state) => state.updateNode);
     const triggerSpecs = useMemo(
         () => specs.filter((s) => s.category === "trigger"),
         [specs],
     );
-    const canReplaceTrigger = spec?.category === "trigger" && triggerSpecs.length > 1;
+    const canReplaceTrigger = spec?.category === "trigger" && triggerSpecs.length > 0;
     const handleReplaceTrigger = useCallback(
         (newType: string) => {
-            if (newType === type) return;
             const newSpec = bySpecName.get(newType);
             if (!newSpec) return;
             const newData = buildDataFromSpec(newSpec) as Partial<FlowNodeData> &
@@ -510,7 +511,7 @@ export const GenericNode = memo(({ data, selected, id, type }: GenericNodeProps)
                 data: newData as unknown as FlowNodeData,
             });
         },
-        [id, type, bySpecName, updateNode],
+        [id, bySpecName, updateNode],
     );
 
     // ── Form state ─────────────────────────────────────────────────────
@@ -695,7 +696,6 @@ export const GenericNode = memo(({ data, selected, id, type }: GenericNodeProps)
                                 {triggerSpecs.map((triggerSpec) => (
                                     <DropdownMenuItem
                                         key={triggerSpec.name}
-                                        disabled={triggerSpec.name === type}
                                         onClick={() =>
                                             handleReplaceTrigger(triggerSpec.name)
                                         }
@@ -703,7 +703,7 @@ export const GenericNode = memo(({ data, selected, id, type }: GenericNodeProps)
                                         {triggerSpec.display_name}
                                         {triggerSpec.name === type && (
                                             <span className="ml-auto text-xs text-muted-foreground">
-                                                current
+                                                reset
                                             </span>
                                         )}
                                     </DropdownMenuItem>
