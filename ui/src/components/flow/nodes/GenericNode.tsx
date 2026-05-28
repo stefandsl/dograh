@@ -494,11 +494,27 @@ export const GenericNode = memo(({ data, selected, id, type }: GenericNodeProps)
     // ship, the dropdown grows automatically. Pairs with the AddNodePanel
     // guard that prevents *adding* a second trigger.
     const updateNode = useWorkflowStore((state) => state.updateNode);
+    const allNodes = useWorkflowStore((state) => state.nodes);
     const triggerSpecs = useMemo(
         () => specs.filter((s) => s.category === "trigger"),
         [specs],
     );
+    const triggerSpecNames = useMemo(
+        () => new Set(triggerSpecs.map((s) => s.name)),
+        [triggerSpecs],
+    );
+    const triggerNodeCount = useMemo(
+        () => allNodes.filter((n) => triggerSpecNames.has(n.type ?? "")).length,
+        [allNodes, triggerSpecNames],
+    );
     const canReplaceTrigger = spec?.category === "trigger" && triggerSpecs.length > 0;
+    // Normally start nodes can't be deleted (workflow always needs one),
+    // but if the canvas somehow has more than one we surface the delete
+    // button on every trigger so the user can prune the duplicates —
+    // recovery path for paste/import/legacy DB rows that escaped the
+    // AddNodePanel + saveWorkflow guards.
+    const isStartLikeNode = spec?.category === "trigger";
+    const canDeleteNode = !isStartLikeNode || triggerNodeCount > 1;
     const handleReplaceTrigger = useCallback(
         (newType: string) => {
             const newSpec = bySpecName.get(newType);
@@ -711,12 +727,16 @@ export const GenericNode = memo(({ data, selected, id, type }: GenericNodeProps)
                             </DropdownMenuContent>
                         </DropdownMenu>
                     )}
-                    {/* Start nodes can't be deleted (workflow always needs one). */}
-                    {type !== "startCall" && (
+                    {canDeleteNode && (
                         <Button
                             onClick={handleDeleteNode}
                             variant="outline"
                             size="icon"
+                            title={
+                                isStartLikeNode
+                                    ? "Delete duplicate start node"
+                                    : undefined
+                            }
                         >
                             <Trash2Icon />
                         </Button>
