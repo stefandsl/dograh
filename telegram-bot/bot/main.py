@@ -27,7 +27,7 @@ import signal
 from contextlib import suppress
 from typing import Any, Awaitable, Callable
 
-from aiogram import Bot, Dispatcher, Router
+from aiogram import Bot, Dispatcher, F, Router
 from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
 from aiogram.filters import Command
@@ -168,12 +168,11 @@ def build_router() -> Router:
             )
         )
 
-    @r.message()
+    # Fallback for non-command text outside chat mode. The ~startswith("/")
+    # filter is critical — without it this catch-all swallows /menu and
+    # every other command handled by sub-routers (handlers.py).
+    @r.message(F.text & ~F.text.startswith("/"))
     async def on_text(message: Message) -> None:
-        # Fallback for text outside chat mode (handlers.py owns the
-        # ChatStates.chatting branch). Nudge toward the menu.
-        if not message.text:
-            return
         await message.answer(
             "📝 Not in chat mode. Open <b>💬 Chat with Agent</b> from /menu "
             "to start a workflow conversation."
