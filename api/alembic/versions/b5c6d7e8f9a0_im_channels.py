@@ -14,7 +14,6 @@ from typing import Sequence, Union
 import sqlalchemy as sa
 from alembic import op
 
-
 revision: str = "b5c6d7e8f9a0"
 down_revision: Union[str, None] = "a4b5c6d7e8f9"
 branch_labels: Union[str, Sequence[str], None] = None
@@ -81,7 +80,5 @@ def upgrade() -> None:
 
 def downgrade() -> None:
     op.drop_index("ix_im_channels_org_type_enabled", table_name="im_channels")
-    op.drop_constraint(
-        "uq_im_channels_org_type_name", "im_channels", type_="unique"
-    )
+    op.drop_constraint("uq_im_channels_org_type_name", "im_channels", type_="unique")
     op.drop_table("im_channels")

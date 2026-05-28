@@ -25,7 +25,6 @@ from dataclasses import dataclass
 from typing import Any, Dict, Optional
 
 import aiohttp
-from loguru import logger
 
 from ..sip_gateway import (
     GatewayCallHandle,
@@ -83,6 +82,7 @@ class AsteriskARIGateway:
                     return {}
                 try:
                     import json
+
                     return json.loads(text)
                 except json.JSONDecodeError:
                     return {"raw": text}

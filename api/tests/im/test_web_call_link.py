@@ -16,8 +16,10 @@ def fresh_module(monkeypatch):
     """Reload the module so its Fernet key is rebuilt from a known secret."""
     monkeypatch.setenv("OSS_JWT_SECRET", "test-secret-12345")
     import api.constants
+
     importlib.reload(api.constants)
     import api.services.im.web_call_link as mod
+
     importlib.reload(mod)
     return mod
 

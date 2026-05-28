@@ -27,7 +27,6 @@ from api.db.models import ImChannelModel
 
 from .encryption import fernet
 
-
 RELOAD_CHANNEL = "im:channels:reload"
 
 
@@ -191,9 +190,7 @@ async def update_telegram_channel(
     return _row_to_record(row)
 
 
-async def delete_channel(
-    *, organization_id: int, channel_id: int
-) -> bool:
+async def delete_channel(*, organization_id: int, channel_id: int) -> bool:
     async with db_client.async_session() as s:
         result = await s.execute(
             select(ImChannelModel).where(

@@ -413,9 +413,7 @@ class TestInitiateCall:
             )
 
             with pytest.raises(HTTPException):
-                await provider.initiate_call(
-                    to_number="+390212345678", webhook_url=""
-                )
+                await provider.initiate_call(to_number="+390212345678", webhook_url="")
 
         # Sanity: we actually captured at least one log line.
         assert captured, "expected provider.initiate_call to log at least once"
@@ -508,9 +506,7 @@ class TestInboundSurface:
 
     def test_validate_account_id_is_permissive(self):
         # No account-id matching on MessageNet — see SPEC.account_id_credential_field.
-        assert (
-            MessagenetProvider.validate_account_id({}, "anything-goes-here") is True
-        )
+        assert MessagenetProvider.validate_account_id({}, "anything-goes-here") is True
 
     @pytest.mark.asyncio
     async def test_start_inbound_stream_returns_204(self):

@@ -47,7 +47,7 @@ _FRAME_AUDIO = 0x10
 _FRAME_ERROR = 0xFF
 
 _AUDIO_BYTES_PER_20MS_PCM16 = 320  # 8000 Hz * 0.020 s * 2 bytes/sample
-_AUDIO_BYTES_PER_20MS_ULAW = 160   # 8000 Hz * 0.020 s * 1 byte/sample
+_AUDIO_BYTES_PER_20MS_ULAW = 160  # 8000 Hz * 0.020 s * 1 byte/sample
 
 
 @dataclass
@@ -55,7 +55,9 @@ class _CallRouting:
     workflow_id: str
     user_id: str
     workflow_run_id: str
-    registered_at: float = field(default_factory=lambda: asyncio.get_event_loop().time())
+    registered_at: float = field(
+        default_factory=lambda: asyncio.get_event_loop().time()
+    )
 
 
 class AudioSocketServer:
@@ -220,9 +222,7 @@ class AudioSocketServer:
                     # /ws/ari endpoint + AsteriskFrameSerializer expect
                     # µ-law on the wire. Transcode here.
                     if self.ws_ulaw:
-                        ulaw_payload, ulaw_state = audioop.lin2ulaw(
-                            body, 2
-                        ), ulaw_state
+                        ulaw_payload, ulaw_state = audioop.lin2ulaw(body, 2), ulaw_state
                         await ws.send(ulaw_payload)
                     else:
                         await ws.send(body)

@@ -1321,9 +1321,7 @@ class ImChannelModel(Base):
     type = Column(String(16), nullable=False)  # 'telegram', 'whatsapp', 'discord'
     name = Column(String(64), nullable=False)
     config_encrypted = Column(Text, nullable=False)  # Fernet ciphertext (str)
-    enabled = Column(
-        Boolean, nullable=False, default=True, server_default=text("true")
-    )
+    enabled = Column(Boolean, nullable=False, default=True, server_default=text("true"))
     api_key_id = Column(
         Integer, ForeignKey("api_keys.id", ondelete="SET NULL"), nullable=True
     )
@@ -1340,5 +1338,7 @@ class ImChannelModel(Base):
 
     __table_args__ = (
         Index("ix_im_channels_org_type_enabled", "organization_id", "type", "enabled"),
-        UniqueConstraint("organization_id", "type", "name", name="uq_im_channels_org_type_name"),
+        UniqueConstraint(
+            "organization_id", "type", "name", name="uq_im_channels_org_type_name"
+        ),
     )

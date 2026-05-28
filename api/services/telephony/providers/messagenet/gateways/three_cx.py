@@ -103,8 +103,7 @@ class ThreeCXGateway:
             ) as resp:
                 if resp.status not in (200, 204, 404):
                     raise RuntimeError(
-                        f"3CX hangup failed: HTTP {resp.status} "
-                        f"{await resp.text()}"
+                        f"3CX hangup failed: HTTP {resp.status} {await resp.text()}"
                     )
 
     async def get_call_status(self, call_id: str) -> Dict[str, Any]:
@@ -117,7 +116,6 @@ class ThreeCXGateway:
                     return {"call_id": call_id, "status": "completed"}
                 if resp.status != 200:
                     raise RuntimeError(
-                        f"3CX status failed: HTTP {resp.status} "
-                        f"{await resp.text()}"
+                        f"3CX status failed: HTTP {resp.status} {await resp.text()}"
                     )
                 return await resp.json()

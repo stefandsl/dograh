@@ -29,7 +29,6 @@ import aiohttp
 import websockets
 from loguru import logger
 
-
 _STASIS_APP_DEFAULT = "dograh-messagenet"
 
 
@@ -63,9 +62,7 @@ class MessagenetStasisListener:
         if self._task is not None:
             return
         self._stop.clear()
-        self._task = asyncio.create_task(
-            self._run(), name="messagenet-stasis-listener"
-        )
+        self._task = asyncio.create_task(self._run(), name="messagenet-stasis-listener")
         logger.info(
             f"[MessageNet/Stasis] Listener started for app={self.app_name} "
             f"at {self.ari_base_url}"
@@ -88,10 +85,10 @@ class MessagenetStasisListener:
         # Convert http(s):// → ws(s):// for the ARI WebSocket events URL.
         if self.ari_base_url.startswith("https://"):
             ws_scheme = "wss://"
-            host_path = self.ari_base_url[len("https://"):]
+            host_path = self.ari_base_url[len("https://") :]
         elif self.ari_base_url.startswith("http://"):
             ws_scheme = "ws://"
-            host_path = self.ari_base_url[len("http://"):]
+            host_path = self.ari_base_url[len("http://") :]
         else:
             raise RuntimeError(
                 f"ARI_BASE_URL must start with http:// or https:// "
@@ -357,10 +354,14 @@ class MessagenetStasisListener:
     def _auth(self) -> aiohttp.BasicAuth:
         return aiohttp.BasicAuth(self.ari_user, self.ari_password)
 
-    async def _ari(self, method: str, path: str, **kwargs: Any) -> Optional[Dict[str, Any]]:
+    async def _ari(
+        self, method: str, path: str, **kwargs: Any
+    ) -> Optional[Dict[str, Any]]:
         url = f"{self.ari_base_url}/ari{path}"
         async with aiohttp.ClientSession() as session:
-            async with session.request(method, url, auth=self._auth(), **kwargs) as resp:
+            async with session.request(
+                method, url, auth=self._auth(), **kwargs
+            ) as resp:
                 text = await resp.text()
                 if resp.status >= 400:
                     logger.error(
@@ -389,8 +390,9 @@ class MessagenetStasisListener:
         # 500s in andrius/asterisk:21, see docs troubleshooting. We
         # pre-register a UUID with the AudioSocket server so the
         # inbound TCP connection can be routed back to this workflow run.
-        from .audiosocket_server import get_audiosocket_server
         import uuid as uuid_lib
+
+        from .audiosocket_server import get_audiosocket_server
 
         srv = get_audiosocket_server()
         if srv is None:

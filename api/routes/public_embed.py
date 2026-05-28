@@ -121,6 +121,16 @@ def get_request_origin(request: Request) -> str:
     return origin
 
 
+def _origin_check_required(embed_token) -> bool:
+    """Internal embed tokens (e.g. Telegram WebApp voice-call page) bypass
+    origin validation. Their embed_session is minted server-side after a
+    Fernet-signed link is verified, so there is no third-party iframe
+    origin we could meaningfully whitelist. Marker lives in
+    ``settings['source']`` per ADR-101's no-migration guardrail.
+    """
+    return (embed_token.settings or {}).get("source") != "telegram-internal"
+
+
 @router.post("/init", response_model=InitEmbedResponse)
 async def initialize_embed_session(request: Request, init_request: InitEmbedRequest):
     """Initialize an embed session with token validation and domain checking.
@@ -151,8 +161,10 @@ async def initialize_embed_session(request: Request, init_request: InitEmbedRequ
     if embed_token.usage_limit and embed_token.usage_count >= embed_token.usage_limit:
         raise HTTPException(status_code=403, detail="Embed token usage limit exceeded")
 
-    # Validate domain
-    if not validate_origin(origin, embed_token.allowed_domains or []):
+    # Validate domain (skipped for internal tokens — see _origin_check_required)
+    if _origin_check_required(embed_token) and not validate_origin(
+        origin, embed_token.allowed_domains or []
+    ):
         logger.warning(
             f"Domain validation failed: {origin} not in {embed_token.allowed_domains}"
         )
@@ -222,8 +234,10 @@ async def get_embed_config(token: str, request: Request):
     if not embed_token.is_active:
         raise HTTPException(status_code=403, detail="Embed token is inactive")
 
-    # Validate domain
-    if not validate_origin(origin, embed_token.allowed_domains or []):
+    # Validate domain (skipped for internal tokens — see _origin_check_required)
+    if _origin_check_required(embed_token) and not validate_origin(
+        origin, embed_token.allowed_domains or []
+    ):
         raise HTTPException(status_code=403, detail=f"Domain not allowed: {origin}")
 
     # Extract settings with defaults
@@ -288,8 +302,10 @@ async def get_public_turn_credentials(session_token: str, request: Request):
     if not embed_token:
         raise HTTPException(status_code=404, detail="Invalid embed token")
 
-    # Validate domain (empty allowed_domains means allow all)
-    if not validate_origin(origin, embed_token.allowed_domains or []):
+    # Validate domain (empty allowed_domains means allow all; internal tokens skip entirely)
+    if _origin_check_required(embed_token) and not validate_origin(
+        origin, embed_token.allowed_domains or []
+    ):
         logger.warning(
             f"Domain validation failed for TURN credentials: {origin} not in {embed_token.allowed_domains}"
         )

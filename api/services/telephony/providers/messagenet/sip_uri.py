@@ -42,7 +42,9 @@ def parse_sip_uri(uri: str) -> ParsedSipUri:
         raise SipUriError(f"SIP URI missing scheme separator ':' in {value!r}")
     scheme = scheme.lower()
     if scheme not in {"sip", "sips"}:
-        raise SipUriError(f"Unsupported SIP URI scheme {scheme!r}; expected sip or sips")
+        raise SipUriError(
+            f"Unsupported SIP URI scheme {scheme!r}; expected sip or sips"
+        )
 
     # Strip optional ;params and ?headers from the right side.
     for sentinel in (";", "?"):
