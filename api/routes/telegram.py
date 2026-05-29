@@ -251,6 +251,7 @@ _TELEGRAM_CALL_HTML = """<!doctype html>
     <div class="hint hidden" id="hint"></div>
     <div class="timer hidden" id="timer">00:00</div>
     <button id="retry" class="primary hidden">Try Again</button>
+    <button id="resume" class="primary hidden">🔊 Tap to hear agent</button>
     <button id="end" class="hidden">End Call</button>
     <audio id="remote" autoplay playsinline></audio>
   </main>
@@ -269,7 +270,58 @@ _TELEGRAM_CALL_HTML = """<!doctype html>
     const $timer = document.getElementById("timer");
     const $end = document.getElementById("end");
     const $retry = document.getElementById("retry");
+    const $resume = document.getElementById("resume");
     const $remote = document.getElementById("remote");
+    $remote.volume = 1.0;
+    $remote.muted = false;
+
+    // Android Telegram WebView refuses to play WebRTC MediaStreams via the
+    // <audio> element for many users even with autoplay + a user gesture
+    // (still under investigation upstream). Web Audio API is a more
+    // reliable playback path on those WebViews — we route the remote
+    // MediaStream through an AudioContext sink instead. The AudioContext
+    // must be resumed inside a user-gesture handler (the resume button
+    // click) or it stays suspended forever on mobile.
+    let audioContext = null;
+    let audioSource = null;
+    let remoteStream = null;
+
+    function attachToAudioContext(stream) {{
+      try {{
+        if (!audioContext) {{
+          const Ctx = window.AudioContext || window.webkitAudioContext;
+          if (!Ctx) return false;
+          audioContext = new Ctx();
+        }}
+        if (audioSource) {{ try {{ audioSource.disconnect(); }} catch (e) {{}} }}
+        audioSource = audioContext.createMediaStreamSource(stream);
+        audioSource.connect(audioContext.destination);
+        return true;
+      }} catch (e) {{
+        return false;
+      }}
+    }}
+
+    $resume.addEventListener("click", async () => {{
+      $resume.classList.add("hidden");
+      setHint("");
+      // Build the Web Audio graph (the audible output path) if not done yet.
+      if (remoteStream && !audioSource) attachToAudioContext(remoteStream);
+      // The AudioContext starts suspended on mobile; resuming it inside this
+      // click gesture is what actually turns the agent's voice on.
+      if (audioContext) {{
+        try {{ await audioContext.resume(); }} catch (e) {{}}
+      }}
+      // Keep the <audio> element running muted so it pumps samples into the
+      // Web Audio graph — Chromium drops a remote MediaStream's audio unless
+      // the element is also playing. Muted playback is always allowed.
+      $remote.muted = true;
+      $remote.play().catch(() => {{}});
+      if (!audioContext || audioContext.state !== "running") {{
+        $resume.classList.remove("hidden");
+        setHint("Still blocked — tap again, and check the phone's media volume.");
+      }}
+    }});
 
     let pc = null, ws = null, micStream = null, startedAt = 0, timerHandle = 0;
     let inCall = false;
@@ -292,6 +344,8 @@ _TELEGRAM_CALL_HTML = """<!doctype html>
       $timer.classList.remove("hidden");
       $end.classList.remove("hidden");
       $retry.classList.add("hidden");
+      // Resume stays as-is — if autoplay was blocked the user still
+      // needs to tap it. showEnded() clears it on teardown.
       startedAt = Date.now();
       timerHandle = setInterval(() => {{
         $timer.textContent = fmt((Date.now() - startedAt) / 1000);
@@ -302,6 +356,7 @@ _TELEGRAM_CALL_HTML = """<!doctype html>
       $mic.classList.remove("pulse");
       $timer.classList.add("hidden");
       $end.classList.add("hidden");
+      $resume.classList.add("hidden");
       setStatus(reason || "Call ended");
       setHint(opts.hint || "");
       clearInterval(timerHandle);
@@ -378,7 +433,25 @@ _TELEGRAM_CALL_HTML = """<!doctype html>
       pc.createDataChannel("pipecat-control");
 
       pc.ontrack = (ev) => {{
-        if (ev.streams && ev.streams[0]) $remote.srcObject = ev.streams[0];
+        if (!ev.streams || !ev.streams[0]) return;
+        remoteStream = ev.streams[0];
+        $remote.srcObject = remoteStream;
+        // Desktop / iOS Safari: unmuted element playback just works first try.
+        $remote.muted = false;
+        const tryPlay = $remote.play();
+        if (tryPlay && typeof tryPlay.catch === "function") {{
+          tryPlay.catch(() => {{
+            // Autoplay blocked (Android Telegram WebView). Switch the element
+            // to a muted pump and build the Web Audio graph; the agent's voice
+            // goes audible once the user taps the button, which resumes the
+            // AudioContext inside a gesture.
+            $remote.muted = true;
+            $remote.play().catch(() => {{}});
+            attachToAudioContext(remoteStream);
+            $resume.classList.remove("hidden");
+            setHint("Tap to hear the agent");
+          }});
+        }}
       }};
       pc.onconnectionstatechange = () => {{
         if (!pc) return;
