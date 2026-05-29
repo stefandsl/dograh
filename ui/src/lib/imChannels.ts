@@ -48,6 +48,22 @@ function headers(token: string, json = false): HeadersInit {
   return h;
 }
 
+/**
+ * Thrown for any non-2xx HTTP response from the IM channels API.
+ * Carries the status code so callers can route on auth/permission/etc.
+ * without parsing the human-readable message.
+ */
+export class ImChannelsApiError extends Error {
+  readonly status: number;
+  readonly detail: string;
+  constructor(status: number, detail: string) {
+    super(`HTTP ${status} ${detail}`);
+    this.name = 'ImChannelsApiError';
+    this.status = status;
+    this.detail = detail;
+  }
+}
+
 async function ok<T>(res: Response): Promise<T> {
   if (!res.ok) {
     let detail = '';
@@ -57,7 +73,7 @@ async function ok<T>(res: Response): Promise<T> {
     } catch {
       detail = await res.text();
     }
-    throw new Error(`HTTP ${res.status} ${detail || res.statusText}`);
+    throw new ImChannelsApiError(res.status, detail || res.statusText);
   }
   return (await res.json()) as T;
 }
@@ -113,7 +129,7 @@ export async function deleteTelegramChannel(
     headers: headers(token),
   });
   if (!res.ok && res.status !== 204) {
-    throw new Error(`HTTP ${res.status} ${await res.text()}`);
+    throw new ImChannelsApiError(res.status, await res.text());
   }
 }
 
@@ -210,7 +226,7 @@ export async function deleteWhatsAppChannel(
     headers: headers(token),
   });
   if (!res.ok && res.status !== 204) {
-    throw new Error(`HTTP ${res.status} ${await res.text()}`);
+    throw new ImChannelsApiError(res.status, await res.text());
   }
 }
 

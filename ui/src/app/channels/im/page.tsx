@@ -32,6 +32,7 @@ import {
   createWhatsAppChannel,
   deleteTelegramChannel,
   deleteWhatsAppChannel,
+  ImChannelsApiError,
   listTelegramChannels,
   listWhatsAppChannels,
   TelegramChannel,
@@ -44,8 +45,21 @@ import {
 } from '@/lib/imChannels';
 
 export default function IMChannelsPage() {
-  const { user, getAccessToken, loading: authLoading } = useAuth();
+  const { user, getAccessToken, loading: authLoading, redirectToLogin } = useAuth();
   const hasFetched = useRef(false);
+
+  // Route a 401 from any IM channels API call straight to the login page.
+  // Without this, the catch handlers below toast a generic "Failed to
+  // load channels" message and leave the page on its empty-state
+  // placeholder — which makes an expired JWT look identical to "you
+  // haven't registered any bots", which is confusing.
+  const handleApiError = (err: unknown, fallbackMessage: string) => {
+    if (err instanceof ImChannelsApiError && err.status === 401) {
+      redirectToLogin();
+      return;
+    }
+    toast.error(err instanceof Error ? err.message : fallbackMessage);
+  };
 
   const [channels, setChannels] = useState<TelegramChannel[]>([]);
   const [waChannels, setWaChannels] = useState<WhatsAppChannel[]>([]);
@@ -67,7 +81,7 @@ export default function IMChannelsPage() {
       setChannels(rows);
       setWaChannels(waRows);
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Failed to load channels');
+      handleApiError(err, 'Failed to load channels');
     } finally {
       setLoading(false);
     }
@@ -80,7 +94,7 @@ export default function IMChannelsPage() {
       setWaChannels((prev) => prev.map((c) => (c.id === updated.id ? updated : c)));
       toast.success(`${updated.name} ${updated.enabled ? 'enabled' : 'disabled'}`);
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Toggle failed');
+      handleApiError(err, 'Toggle failed');
     }
   };
 
@@ -96,7 +110,7 @@ export default function IMChannelsPage() {
         toast.error(`Test failed: ${result.error ?? 'unknown error'}`);
       }
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Test request failed');
+      handleApiError(err, 'Test request failed');
     }
   };
 
@@ -108,7 +122,7 @@ export default function IMChannelsPage() {
       setWaChannels((prev) => prev.filter((c) => c.id !== ch.id));
       toast.success(`Deleted ${ch.name}`);
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Delete failed');
+      handleApiError(err, 'Delete failed');
     }
   };
 
@@ -128,7 +142,7 @@ export default function IMChannelsPage() {
       setChannels((prev) => prev.map((c) => (c.id === updated.id ? updated : c)));
       toast.success(`${updated.name} ${updated.enabled ? 'enabled' : 'disabled'}`);
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Toggle failed');
+      handleApiError(err, 'Toggle failed');
     }
   };
 
@@ -142,7 +156,7 @@ export default function IMChannelsPage() {
         toast.error(`Test failed: ${result.error ?? 'unknown error'}`);
       }
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Test request failed');
+      handleApiError(err, 'Test request failed');
     }
   };
 
@@ -154,7 +168,7 @@ export default function IMChannelsPage() {
       setChannels((prev) => prev.filter((c) => c.id !== ch.id));
       toast.success(`Deleted ${ch.name}`);
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Delete failed');
+      handleApiError(err, 'Delete failed');
     }
   };
 
@@ -329,7 +343,7 @@ function CreateTelegramDialog({
   onOpenChange: (v: boolean) => void;
   onCreated: (ch: TelegramChannel) => void;
 }) {
-  const { getAccessToken } = useAuth();
+  const { getAccessToken, redirectToLogin } = useAuth();
   const [name, setName] = useState('');
   const [token, setToken] = useState('');
   const [allowed, setAllowed] = useState('');
@@ -368,6 +382,10 @@ function CreateTelegramDialog({
       onCreated(created);
       reset();
     } catch (err) {
+      if (err instanceof ImChannelsApiError && err.status === 401) {
+        redirectToLogin();
+        return;
+      }
       toast.error(err instanceof Error ? err.message : 'Create failed');
     } finally {
       setSaving(false);
@@ -442,7 +460,7 @@ function CreateWhatsAppDialog({
   onOpenChange: (v: boolean) => void;
   onCreated: (ch: WhatsAppChannel) => void;
 }) {
-  const { getAccessToken } = useAuth();
+  const { getAccessToken, redirectToLogin } = useAuth();
   const [name, setName] = useState('');
   const [phoneNumberId, setPhoneNumberId] = useState('');
   const [accessToken, setAccessToken] = useState('');
@@ -497,6 +515,10 @@ function CreateWhatsAppDialog({
       onCreated(created);
       reset();
     } catch (err) {
+      if (err instanceof ImChannelsApiError && err.status === 401) {
+        redirectToLogin();
+        return;
+      }
       toast.error(err instanceof Error ? err.message : 'Create failed');
     } finally {
       setSaving(false);
