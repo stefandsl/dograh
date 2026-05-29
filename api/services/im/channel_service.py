@@ -54,10 +54,18 @@ class ImChannelRecord:
     config: dict[str, Any]
 
     def to_public_dict(self) -> dict[str, Any]:
-        """UI-safe shape — masks the bot token to last 6 chars."""
+        """UI-safe shape — masks every per-channel secret to last 6 chars."""
         cfg = dict(self.config)
-        if isinstance(cfg.get("bot_token"), str) and cfg["bot_token"]:
-            cfg["bot_token"] = "***" + cfg["bot_token"][-6:]
+        for secret_field in (
+            "bot_token",  # telegram
+            "access_token",  # whatsapp meta cloud api
+            "app_secret",  # whatsapp meta cloud api
+            "verify_token",  # whatsapp meta cloud api
+            "api_key",  # service-account key (shared across types)
+        ):
+            value = cfg.get(secret_field)
+            if isinstance(value, str) and value:
+                cfg[secret_field] = "***" + value[-6:]
         return {
             "id": self.id,
             "organization_id": self.organization_id,
@@ -93,6 +101,23 @@ async def get_channel(
                 ImChannelModel.id == channel_id,
                 ImChannelModel.organization_id == organization_id,
             )
+        )
+        row = result.scalars().first()
+    return _row_to_record(row) if row else None
+
+
+async def get_channel_by_id_unscoped(channel_id: int) -> Optional[ImChannelRecord]:
+    """Fetch a channel without org scoping.
+
+    Used only by public webhook endpoints (WhatsApp Meta verify + receive)
+    where the channel_id is in the URL path and access control is provided
+    by the channel's own verify_token / app_secret rather than a user
+    session. Never call this from authenticated routes — use
+    ``get_channel`` instead.
+    """
+    async with db_client.async_session() as s:
+        result = await s.execute(
+            select(ImChannelModel).where(ImChannelModel.id == channel_id)
         )
         row = result.scalars().first()
     return _row_to_record(row) if row else None
@@ -272,6 +297,130 @@ async def publish_reload() -> None:
             await r.aclose()
     except Exception as exc:  # noqa: BLE001
         logger.warning(f"[im/channel_service] Redis publish failed: {exc!r}")
+
+
+# --- whatsapp -------------------------------------------------------------
+# WhatsApp Cloud API receives messages via HTTP webhooks (not long-polling
+# like Telegram), so there is no separate bot container and no service-
+# account API key auto-mint here — the webhook handler lives inside the
+# api container and looks up the channel row directly. The encrypted
+# config stores only Meta credentials.
+async def create_whatsapp_channel(
+    *,
+    organization_id: int,
+    user_id: Optional[int],
+    name: str,
+    phone_number_id: str,
+    access_token: str,
+    app_secret: str,
+    verify_token: str,
+    business_account_id: Optional[str] = None,
+    graph_version: str = "v20.0",
+    enabled: bool = True,
+) -> ImChannelRecord:
+    """Create a WhatsApp Cloud API channel."""
+    config = {
+        "phone_number_id": phone_number_id,
+        "access_token": access_token,
+        "app_secret": app_secret,
+        "verify_token": verify_token,
+        "business_account_id": business_account_id,
+        "graph_version": graph_version,
+    }
+    async with db_client.async_session() as s:
+        row = ImChannelModel(
+            organization_id=organization_id,
+            type="whatsapp",
+            name=name,
+            config_encrypted=encrypt_config(config),
+            enabled=enabled,
+            api_key_id=None,
+            created_by=user_id,
+        )
+        s.add(row)
+        await s.commit()
+        await s.refresh(row)
+    # WhatsApp doesn't use the bot-side reload pub/sub (no bot process to
+    # notify), but firing it is harmless and keeps future multi-channel
+    # admin consoles consistent.
+    await publish_reload()
+    return _row_to_record(row)
+
+
+async def update_whatsapp_channel(
+    *,
+    organization_id: int,
+    channel_id: int,
+    enabled: Optional[bool] = None,
+    name: Optional[str] = None,
+    phone_number_id: Optional[str] = None,
+    access_token: Optional[str] = None,
+    app_secret: Optional[str] = None,
+    verify_token: Optional[str] = None,
+    business_account_id: Optional[str] = None,
+    graph_version: Optional[str] = None,
+) -> Optional[ImChannelRecord]:
+    async with db_client.async_session() as s:
+        result = await s.execute(
+            select(ImChannelModel).where(
+                ImChannelModel.id == channel_id,
+                ImChannelModel.organization_id == organization_id,
+                ImChannelModel.type == "whatsapp",
+            )
+        )
+        row = result.scalars().first()
+        if row is None:
+            return None
+        config = decrypt_config(row.config_encrypted)
+        if phone_number_id is not None:
+            config["phone_number_id"] = phone_number_id
+        if access_token is not None:
+            config["access_token"] = access_token
+        if app_secret is not None:
+            config["app_secret"] = app_secret
+        if verify_token is not None:
+            config["verify_token"] = verify_token
+        if business_account_id is not None:
+            config["business_account_id"] = business_account_id
+        if graph_version is not None:
+            config["graph_version"] = graph_version
+        if name is not None:
+            row.name = name
+        if enabled is not None:
+            row.enabled = enabled
+        row.config_encrypted = encrypt_config(config)
+        await s.commit()
+        await s.refresh(row)
+    await publish_reload()
+    return _row_to_record(row)
+
+
+async def get_whatsapp_channel_by_phone_number_id(
+    phone_number_id: str,
+) -> Optional[ImChannelRecord]:
+    """Look up the channel row a Meta webhook is addressed to.
+
+    The webhook arrives at our endpoint with a body whose
+    ``entry[].changes[].value.metadata.phone_number_id`` identifies which
+    of our channels Meta is delivering to. We pick by phone_number_id
+    inside the encrypted config; unfortunately the encrypted column can't
+    be SQL-indexed, so this scans all enabled WhatsApp rows. Acceptable
+    while the per-deployment WhatsApp channel count is small — once it
+    isn't, denormalise ``phone_number_id`` to a plaintext column.
+    """
+    async with db_client.async_session() as s:
+        result = await s.execute(
+            select(ImChannelModel).where(
+                ImChannelModel.type == "whatsapp",
+                ImChannelModel.enabled.is_(True),
+            )
+        )
+        rows = result.scalars().all()
+    for row in rows:
+        cfg = decrypt_config(row.config_encrypted)
+        if str(cfg.get("phone_number_id") or "") == phone_number_id:
+            return _row_to_record(row)
+    return None
 
 
 # --- secret bundle (internal-only) ----------------------------------------
