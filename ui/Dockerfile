@@ -55,6 +55,14 @@ WORKDIR /app
 # Environment variables will be provided by docker-compose
 ENV NODE_ENV=production
 
+# Next.js standalone server.js binds to process.env.HOSTNAME (falling back to
+# 0.0.0.0). Under Docker, HOSTNAME defaults to the container id, which resolves
+# to the container's eth0 IP — so the server listens ONLY on that IP and not on
+# loopback. External traffic via the published port still works, but anything
+# hitting the container on localhost (e.g. the compose healthcheck) is refused.
+# Pin it to 0.0.0.0 so the server binds all interfaces, loopback included.
+ENV HOSTNAME=0.0.0.0
+
 # Create a non-root user
 RUN addgroup --system --gid 1001 nodejs && \
     adduser --system --uid 1001 nextjs
