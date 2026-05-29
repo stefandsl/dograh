@@ -10,6 +10,7 @@ import { EdgeChange, NodeChange } from "@xyflow/system";
 import { useRouter } from "next/navigation";
 import posthog from "posthog-js";
 import { useCallback, useEffect, useRef } from "react";
+import { toast } from "sonner";
 
 import { useWorkflowStore } from "@/app/workflow/[workflowId]/stores/workflowStore";
 import {
@@ -19,6 +20,7 @@ import {
 } from "@/client";
 import { NodeSpec, WorkflowError } from "@/client/types.gen";
 import { useNodeSpecs } from "@/components/flow/renderer";
+import { buildDataFromSpec } from "@/components/flow/spec-defaults";
 import { FlowEdge, FlowNode, FlowNodeData, NodeType } from "@/components/flow/types";
 import { PostHogEvent } from "@/constants/posthog-events";
 import logger from '@/lib/logger';
@@ -40,20 +42,6 @@ function extractWorkflowErrors(payload: unknown): WorkflowError[] {
     if (p.is_valid === false && p.errors) return p.errors;
     if (typeof p.detail === "object" && p.detail?.errors) return p.detail.errors;
     return [];
-}
-
-// Build initial node data from spec defaults. Replaces the per-type
-// hardcoded `getNewNode` switch — adding a new node type is now zero
-// frontend code: declare the spec on the backend and the defaults flow
-// through here.
-function buildDataFromSpec(spec: NodeSpec): Record<string, unknown> {
-    const data: Record<string, unknown> = {};
-    for (const prop of spec.properties) {
-        if (prop.default !== undefined && prop.default !== null) {
-            data[prop.name] = prop.default;
-        }
-    }
-    return data;
 }
 
 function buildNewNode(
@@ -306,6 +294,25 @@ export const useWorkflowState = ({
         // This avoids a race condition where rfInstance.toObject() may return
         // stale node data if React hasn't re-rendered yet after a store update.
         const { nodes: currentNodes, edges: currentEdges } = useWorkflowStore.getState();
+        // Client-side preflight: refuse to ship a workflow definition with
+        // more than one trigger. The backend validator rejects it too
+        // (`Workflow has N start nodes — exactly one is required`), but
+        // doing the check here saves a round-trip and surfaces a clean
+        // toast instead of a generic save failure. AddNodePanel already
+        // disables the trigger spec when one exists, so this catches
+        // pasted/imported workflows and anything edited outside the UI.
+        if (updateWorkflowDefinition) {
+            const triggerCount = currentNodes.reduce((n, node) => {
+                const spec = bySpecName.get(node.type ?? "");
+                return spec?.category === "trigger" ? n + 1 : n;
+            }, 0);
+            if (triggerCount > 1) {
+                toast.error(
+                    `Workflow has ${triggerCount} start nodes — exactly one is required. Remove the extras before saving.`,
+                );
+                return;
+            }
+        }
         const viewport = rfInstance.current.getViewport();
         const flow = { nodes: currentNodes, edges: currentEdges, viewport };
         let result: { versionNumber?: number; versionStatus?: string } | undefined;
@@ -372,6 +379,7 @@ export const useWorkflowState = ({
         user,
         validateWorkflow,
         applyWorkflowErrors,
+        bySpecName,
     ]);
 
     // Set up keyboard shortcut for save (Cmd/Ctrl + S)

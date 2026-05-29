@@ -1,16 +1,26 @@
 import { NodeProps, NodeToolbar, Position } from "@xyflow/react";
 import * as LucideIcons from "lucide-react";
-import { Check, Circle, Copy, Edit, type LucideIcon, Trash2Icon } from "lucide-react";
+import { Check, Circle, Copy, Edit, type LucideIcon, RefreshCw, Trash2Icon } from "lucide-react";
 import Link from "next/link";
 import { memo, useCallback, useEffect, useMemo, useState } from "react";
 
 import { useWorkflow } from "@/app/workflow/[workflowId]/contexts/WorkflowContext";
+import { useWorkflowStore } from "@/app/workflow/[workflowId]/stores/workflowStore";
 import type { NodeSpec } from "@/client/types.gen";
 import { DocumentBadges } from "@/components/flow/DocumentBadges";
 import { NodeEditForm, useNodeSpecs } from "@/components/flow/renderer";
+import { buildDataFromSpec } from "@/components/flow/spec-defaults";
 import { ToolBadges } from "@/components/flow/ToolBadges";
 import { FlowNodeData } from "@/components/flow/types";
 import { Button } from "@/components/ui/button";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { NODE_DOCUMENTATION_URLS } from "@/constants/documentation";
 import { cn } from "@/lib/utils";
@@ -473,8 +483,52 @@ export const GenericNode = memo(({ data, selected, id, type }: GenericNodeProps)
         additionalData,
     });
     const { saveWorkflow, tools, documents, recordings } = useWorkflow();
-    const { bySpecName } = useNodeSpecs();
+    const { bySpecName, specs } = useNodeSpecs();
     const spec = bySpecName.get(type);
+
+    // Replace-trigger affordance: swap an existing trigger for a
+    // different trigger type in-place (same id, same position, same
+    // outgoing edges). Surfaced on every trigger node — even when only
+    // one trigger spec exists today, because selecting the current type
+    // is also useful as a "reset to defaults". When new trigger types
+    // ship, the dropdown grows automatically. Pairs with the AddNodePanel
+    // guard that prevents *adding* a second trigger.
+    const updateNode = useWorkflowStore((state) => state.updateNode);
+    const allNodes = useWorkflowStore((state) => state.nodes);
+    const triggerSpecs = useMemo(
+        () => specs.filter((s) => s.category === "trigger"),
+        [specs],
+    );
+    const triggerSpecNames = useMemo(
+        () => new Set(triggerSpecs.map((s) => s.name)),
+        [triggerSpecs],
+    );
+    const triggerNodeCount = useMemo(
+        () => allNodes.filter((n) => triggerSpecNames.has(n.type ?? "")).length,
+        [allNodes, triggerSpecNames],
+    );
+    const canReplaceTrigger = spec?.category === "trigger" && triggerSpecs.length > 0;
+    // Normally start nodes can't be deleted (workflow always needs one),
+    // but if the canvas somehow has more than one we surface the delete
+    // button on every trigger so the user can prune the duplicates —
+    // recovery path for paste/import/legacy DB rows that escaped the
+    // AddNodePanel + saveWorkflow guards.
+    const isStartLikeNode = spec?.category === "trigger";
+    const canDeleteNode = !isStartLikeNode || triggerNodeCount > 1;
+    const handleReplaceTrigger = useCallback(
+        (newType: string) => {
+            const newSpec = bySpecName.get(newType);
+            if (!newSpec) return;
+            const newData = buildDataFromSpec(newSpec) as Partial<FlowNodeData> &
+                Record<string, unknown>;
+            newData.is_start = true;
+            updateNode(id, {
+                type: newType,
+                data: newData as unknown as FlowNodeData,
+            });
+        },
+        [id, bySpecName, updateNode],
+    );
 
     // ── Form state ─────────────────────────────────────────────────────
     // mcp_tool_filters is not a spec property, so seedValues won't carry it;
@@ -636,12 +690,53 @@ export const GenericNode = memo(({ data, selected, id, type }: GenericNodeProps)
                     <Button onClick={() => setOpen(true)} variant="outline" size="icon">
                         <Edit />
                     </Button>
-                    {/* Start nodes can't be deleted (workflow always needs one). */}
-                    {type !== "startCall" && (
+                    {/* Replace-trigger affordance for trigger nodes when the */}
+                    {/* catalog has more than one trigger spec. Mirrors */}
+                    {/* Activepieces' "pencil icon to swap" pattern. */}
+                    {canReplaceTrigger && (
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button
+                                    variant="outline"
+                                    size="icon"
+                                    title="Replace trigger"
+                                >
+                                    <RefreshCw />
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent side="right" align="start">
+                                <DropdownMenuLabel>
+                                    Replace with…
+                                </DropdownMenuLabel>
+                                <DropdownMenuSeparator />
+                                {triggerSpecs.map((triggerSpec) => (
+                                    <DropdownMenuItem
+                                        key={triggerSpec.name}
+                                        onClick={() =>
+                                            handleReplaceTrigger(triggerSpec.name)
+                                        }
+                                    >
+                                        {triggerSpec.display_name}
+                                        {triggerSpec.name === type && (
+                                            <span className="ml-auto text-xs text-muted-foreground">
+                                                reset
+                                            </span>
+                                        )}
+                                    </DropdownMenuItem>
+                                ))}
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    )}
+                    {canDeleteNode && (
                         <Button
                             onClick={handleDeleteNode}
                             variant="outline"
                             size="icon"
+                            title={
+                                isStartLikeNode
+                                    ? "Delete duplicate start node"
+                                    : undefined
+                            }
                         >
                             <Trash2Icon />
                         </Button>
