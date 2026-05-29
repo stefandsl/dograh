@@ -30,7 +30,7 @@ from typing import Any, Awaitable, Callable
 from aiogram import Bot, Dispatcher, F, Router
 from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
-from aiogram.filters import Command
+from aiogram.filters import Command, StateFilter
 from aiogram.types import (
     InlineKeyboardButton,
     InlineKeyboardMarkup,
@@ -171,7 +171,15 @@ def build_router() -> Router:
     # Fallback for non-command text outside chat mode. The ~startswith("/")
     # filter is critical — without it this catch-all swallows /menu and
     # every other command handled by sub-routers (handlers.py).
-    @r.message(F.text & ~F.text.startswith("/"))
+    #
+    # StateFilter(None) is equally critical: this handler lives on the PARENT
+    # router, and aiogram runs a router's own handlers before its included
+    # sub-routers. The chat handler (ChatStates.chatting) lives in the menu
+    # sub-router, so without a state guard this catch-all shadows it — every
+    # message in chat mode would hit "Not in chat mode" instead of reaching
+    # the agent. Restricting to the stateless case lets chat-mode messages
+    # fall through to on_chat_message in handlers.py.
+    @r.message(F.text & ~F.text.startswith("/"), StateFilter(None))
     async def on_text(message: Message) -> None:
         await message.answer(
             "📝 Not in chat mode. Open <b>💬 Chat with Agent</b> from /menu "
