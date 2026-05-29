@@ -201,13 +201,20 @@ async def execute_pending_text_chat_turn(
             checkpoint=checkpoint,
         )
     except Exception as e:
+        # Surface the underlying cause in both the response and the logs.
+        # The previous generic "Failed to execute text chat assistant turn"
+        # message made things like workflow validation errors invisible to
+        # the caller; the underlying message is still recorded on
+        # workflow_run_text_sessions.session_data via _mark_pending_turn_failed,
+        # but only the API logs and the DB row had it.
+        logger.exception(f"Text chat pending turn execution failed for run {run_id}")
         await _mark_pending_turn_failed(
             run_id=run_id,
             text_session=text_session,
             error_message=str(e),
         )
         raise TextChatSessionExecutionError(
-            "Failed to execute text chat assistant turn"
+            f"Failed to execute text chat assistant turn: {e}"
         ) from e
 
     completed_session_data = normalize_text_chat_session_data(text_session.session_data)
