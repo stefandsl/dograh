@@ -194,7 +194,23 @@ class TelegramChannelManager:
         )
 
     async def _stop_bot(self, rb: _RunningBot) -> None:
-        rb.task.cancel()
+        # Stop polling *gracefully* through aiogram's own API rather than just
+        # cancelling the runner task. ``start_polling`` awaits
+        # ``asyncio.wait(<inner _polling task(s)>, ...)`` and only cancels those
+        # inner tasks on its normal return path. Cancelling the runner task
+        # raises CancelledError out of ``asyncio.wait`` — which, per asyncio
+        # semantics, leaves its pending children running — so the inner
+        # ``_polling`` loop is orphaned and keeps calling ``getUpdates`` with
+        # this token (its backoff-retry survives session close). A second loop
+        # on the same token then collides forever with "terminated by other
+        # getUpdates request". ``stop_polling`` sets the stop signal so
+        # ``start_polling`` returns normally and tears its children down.
+        with suppress(Exception):
+            await rb.dispatcher.stop_polling()
+        # Belt-and-suspenders: if the runner somehow didn't finish (e.g. polling
+        # had not fully started yet), cancel it as a fallback.
+        if not rb.task.done():
+            rb.task.cancel()
         with suppress(asyncio.CancelledError, Exception):
             await rb.task
         with suppress(Exception):
