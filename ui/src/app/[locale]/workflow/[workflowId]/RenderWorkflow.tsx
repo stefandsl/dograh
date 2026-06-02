@@ -8,6 +8,7 @@ import {
 } from "@xyflow/react";
 import { BrushCleaning, Maximize2, Minus, Plus, Settings } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { createWorkflowDraftApiV1WorkflowWorkflowIdCreateDraftPost, getWorkflowVersionsApiV1WorkflowWorkflowIdVersionsGet, listDocumentsApiV1KnowledgeBaseDocumentsGet, listRecordingsApiV1WorkflowRecordingsGet, listToolsApiV1ToolsGet } from '@/client';
@@ -73,6 +74,7 @@ function RenderWorkflow({
     initialVersionStatus,
     user,
 }: RenderWorkflowProps) {
+    const t = useTranslations("components.renderWorkflow");
     const router = useRouter();
     const { specs } = useNodeSpecs();
     const { hasCompletedAction } = useOnboarding();
@@ -277,30 +279,30 @@ function RenderWorkflow({
         if (activeVersionId && versions.length > 0) {
             const v = versions.find((ver) => ver.id === activeVersionId);
             if (v) {
-                const statusSuffix = v.status === "draft" ? " (Draft)" : v.status === "published" ? " (Published)" : "";
+                const statusSuffix = v.status === "draft" ? t("statusDraft") : v.status === "published" ? t("statusPublished") : "";
                 return `v${v.version_number}${statusSuffix}`;
             }
         }
         // Otherwise use the immediately-available version info from save responses
         if (currentVersionNumber != null) {
-            const statusSuffix = currentVersionStatus === "draft" ? " (Draft)" : currentVersionStatus === "published" ? " (Published)" : "";
+            const statusSuffix = currentVersionStatus === "draft" ? t("statusDraft") : currentVersionStatus === "published" ? t("statusPublished") : "";
             return `v${currentVersionNumber}${statusSuffix}`;
         }
         return undefined;
-    }, [activeVersionId, versions, currentVersionNumber, currentVersionStatus]);
+    }, [activeVersionId, versions, currentVersionNumber, currentVersionStatus, t]);
 
     const testerDisabledReason = useMemo(() => {
         if (isViewingHistoricalVersion) {
-            return "Return to the draft before starting a new test session.";
+            return t("testerDisabledHistorical");
         }
         if (isDirty) {
-            return "Save the latest draft before testing so the session uses the workflow you are looking at.";
+            return t("testerDisabledDirty");
         }
         if (workflowValidationErrors.length > 0) {
-            return "Resolve the current validation errors before starting another test.";
+            return t("testerDisabledValidation");
         }
         return null;
-    }, [isDirty, isViewingHistoricalVersion, workflowValidationErrors.length]);
+    }, [isDirty, isViewingHistoricalVersion, workflowValidationErrors.length, t]);
 
     const handleOpenTester = useCallback(() => {
         if (window.innerWidth >= 1280) {
@@ -555,7 +557,7 @@ function RenderWorkflow({
                                                         </Button>
                                                     </TooltipTrigger>
                                                     <TooltipContent side="left">
-                                                        <p>Add node</p>
+                                                        <p>{t("addNode")}</p>
                                                     </TooltipContent>
                                                 </Tooltip>
 
@@ -571,7 +573,7 @@ function RenderWorkflow({
                                                         </Button>
                                                     </TooltipTrigger>
                                                     <TooltipContent side="left">
-                                                        <p>Workflow settings</p>
+                                                        <p>{t("workflowSettings")}</p>
                                                     </TooltipContent>
                                                 </Tooltip>
                                             </div>
@@ -595,7 +597,7 @@ function RenderWorkflow({
                                             </Button>
                                         </TooltipTrigger>
                                         <TooltipContent side="top">
-                                            <p>Zoom in</p>
+                                            <p>{t("zoomIn")}</p>
                                         </TooltipContent>
                                     </Tooltip>
 
@@ -611,7 +613,7 @@ function RenderWorkflow({
                                             </Button>
                                         </TooltipTrigger>
                                         <TooltipContent side="top">
-                                            <p>Zoom out</p>
+                                            <p>{t("zoomOut")}</p>
                                         </TooltipContent>
                                     </Tooltip>
 
@@ -627,7 +629,7 @@ function RenderWorkflow({
                                             </Button>
                                         </TooltipTrigger>
                                         <TooltipContent side="top">
-                                            <p>Fit view</p>
+                                            <p>{t("fitView")}</p>
                                         </TooltipContent>
                                     </Tooltip>
 
@@ -647,7 +649,7 @@ function RenderWorkflow({
                                                 </Button>
                                             </TooltipTrigger>
                                             <TooltipContent side="top">
-                                                <p>Tidy Up</p>
+                                                <p>{t("tidyUp")}</p>
                                             </TooltipContent>
                                         </Tooltip>
                                     )}

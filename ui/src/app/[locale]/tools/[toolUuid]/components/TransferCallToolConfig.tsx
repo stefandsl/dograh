@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import {useState } from "react";
 
 import type { RecordingResponseSchema } from "@/client/types.gen";
@@ -47,6 +48,7 @@ export function TransferCallToolConfig({
     timeout,
     onTimeoutChange,
 }: TransferCallToolConfigProps) {
+    const t = useTranslations("components.transferCallToolConfig");
     const [sipMode, setSipMode] = useState(() => /^(PJSIP|SIP)\//i.test(destination));
 
     // Validation patterns
@@ -66,11 +68,11 @@ export function TransferCallToolConfig({
         if (sipMode) {
             return isValidSipEndpoint(destination)
                 ? null
-                : "Please enter a valid SIP endpoint (e.g., PJSIP/1234 or SIP/extension@domain.com)";
+                : t("sipValidationError");
         } else {
             return isValidPhoneNumber(destination)
                 ? null
-                : "Please enter a valid phone number in E.164 format (e.g., +1234567890)";
+                : t("phoneValidationError");
         }
     };
 
@@ -84,49 +86,49 @@ export function TransferCallToolConfig({
     return (
         <Card>
             <CardHeader>
-                <CardTitle>Transfer Call Configuration</CardTitle>
+                <CardTitle>{t("title")}</CardTitle>
                 <CardDescription>
-                    Configure call transfer settings. Supports phone numbers (Twilio) and SIP endpoints (Asterisk ARI).
+                    {t("cardDescription")}
                 </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
                 <div className="grid gap-2">
-                    <Label>Tool Name</Label>
+                    <Label>{t("toolNameLabel")}</Label>
                     <Label className="text-xs text-muted-foreground">
-                        A descriptive name for this tool
+                        {t("toolNameHint")}
                     </Label>
                     <Input
                         value={name}
                         onChange={(e) => onNameChange(e.target.value)}
-                        placeholder="e.g., Transfer Call"
+                        placeholder={t("toolNamePlaceholder")}
                     />
                 </div>
 
                 <div className="grid gap-2">
-                    <Label>Description</Label>
+                    <Label>{t("descriptionLabel")}</Label>
                     <Label className="text-xs text-muted-foreground">
-                        Helps the LLM understand when to use this tool
+                        {t("descriptionHint")}
                     </Label>
                     <Textarea
                         value={description}
                         onChange={(e) => onDescriptionChange(e.target.value)}
-                        placeholder="When should the AI transfer the call?"
+                        placeholder={t("descriptionPlaceholder")}
                         rows={3}
                     />
                 </div>
 
                 <div className="grid gap-2 pt-4 border-t">
-                    <Label>Transfer Destination</Label>
+                    <Label>{t("destinationLabel")}</Label>
                     <Label className="text-xs text-muted-foreground">
                         {sipMode
-                            ? "SIP endpoint to transfer the call to (e.g., PJSIP/1234 or SIP/extension@domain.com)"
-                            : "Phone number to transfer the call to (E.164 format with country code)"
+                            ? t("destinationHintSip")
+                            : t("destinationHintPhone")
                         }
                     </Label>
                     <Input
                         value={destination}
                         onChange={(e) => onDestinationChange(e.target.value)}
-                        placeholder={sipMode ? "PJSIP/1234 or SIP/extension@domain.com" : "+1234567890"}
+                        placeholder={sipMode ? t("destinationPlaceholderSip") : t("destinationPlaceholderPhone")}
                         className={destinationError ? "border-red-500 focus:border-red-500" : ""}
                     />
                     {destinationError && (
@@ -139,14 +141,14 @@ export function TransferCallToolConfig({
                         className="text-xs text-muted-foreground hover:text-foreground underline w-fit"
                         onClick={handleSipModeToggle}
                     >
-                        {sipMode ? "Use phone number instead" : "Use SIP endpoint instead"}
+                        {sipMode ? t("usePhoneInstead") : t("useSipInstead")}
                     </button>
                 </div>
 
                 <div className="grid gap-4 pt-4 border-t">
-                    <Label>Pre-Transfer Message</Label>
+                    <Label>{t("preTransferMessageLabel")}</Label>
                     <Label className="text-xs text-muted-foreground">
-                        Choose whether to play a message before transferring
+                        {t("preTransferMessageHint")}
                     </Label>
                     <RadioGroup
                         value={messageType}
@@ -159,18 +161,18 @@ export function TransferCallToolConfig({
                         >
                             <RadioGroupItem value="none" id="none" />
                             <div className="flex-1">
-                                <span className="font-medium">No Message</span>
+                                <span className="font-medium">{t("noMessageTitle")}</span>
                                 <p className="text-xs text-muted-foreground">
-                                    Transfer the call immediately without any message
+                                    {t("noMessageDescription")}
                                 </p>
                             </div>
                         </label>
                         <div className="flex items-start space-x-3 p-3 border rounded-lg hover:bg-muted/50">
                             <RadioGroupItem value="custom" id="custom" className="mt-1" />
                             <label htmlFor="custom" className="flex-1 space-y-2 cursor-pointer">
-                                <span className="font-medium">Custom Message</span>
+                                <span className="font-medium">{t("customMessageTitle")}</span>
                                 <p className="text-xs text-muted-foreground">
-                                    Play a custom message before transferring
+                                    {t("customMessageDescription")}
                                 </p>
                             </label>
                         </div>
@@ -180,7 +182,7 @@ export function TransferCallToolConfig({
                                 <Textarea
                                     value={customMessage}
                                     onChange={(e) => onCustomMessageChange(e.target.value)}
-                                    placeholder="e.g., Please hold while I transfer your call."
+                                    placeholder={t("customMessagePlaceholder")}
                                     rows={2}
                                 />
                             </div>
@@ -188,9 +190,9 @@ export function TransferCallToolConfig({
                         <div className="flex items-start space-x-3 p-3 border rounded-lg hover:bg-muted/50">
                             <RadioGroupItem value="audio" id="audio" className="mt-1" />
                             <label htmlFor="audio" className="flex-1 space-y-2 cursor-pointer">
-                                <span className="font-medium">Pre-recorded Audio</span>
+                                <span className="font-medium">{t("audioMessageTitle")}</span>
                                 <p className="text-xs text-muted-foreground">
-                                    Play a pre-recorded audio file before transferring
+                                    {t("audioMessageDescription")}
                                 </p>
                             </label>
                         </div>
@@ -207,9 +209,9 @@ export function TransferCallToolConfig({
                 </div>
 
                 <div className="grid gap-2 pt-4 border-t">
-                    <Label>Transfer Timeout</Label>
+                    <Label>{t("timeoutLabel")}</Label>
                     <Label className="text-xs text-muted-foreground">
-                        Maximum time to wait for destination to answer (5-120 seconds)
+                        {t("timeoutHint")}
                     </Label>
                     <Input
                         type="number"
@@ -226,7 +228,7 @@ export function TransferCallToolConfig({
                         className="w-32"
                     />
                     <Label className="text-xs text-muted-foreground">
-                        Default: 30 seconds
+                        {t("timeoutDefault")}
                     </Label>
                 </div>
             </CardContent>

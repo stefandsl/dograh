@@ -1,4 +1,7 @@
+"use client";
+
 import { AlertCircle, CreditCard, Key } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -20,11 +23,14 @@ export const ApiKeyErrorDialog = ({
     onNavigateToCredits,
     onNavigateToModelConfig,
 }: ApiKeyErrorDialogProps) => {
+    const t = useTranslations("components.apiKeyErrorDialog");
+    const tb = useTranslations("brand");
+
     const isQuotaError = errorCode === 'quota_exceeded';
 
-    const title = isQuotaError ? "Insufficient Credits" : "API Configuration Error";
+    const title = isQuotaError ? t("insufficientCreditsTitle") : t("apiConfigErrorTitle");
     const icon = isQuotaError ? <CreditCard className="h-5 w-5 text-orange-500" /> : <Key className="h-5 w-5 text-red-500" />;
-    const buttonText = isQuotaError ? "Add Credits" : "Go to Model Configurations";
+    const buttonText = isQuotaError ? t("addCredits") : t("goToModelConfigurations");
     const onNavigate = isQuotaError ? onNavigateToCredits : onNavigateToModelConfig;
 
     return (
@@ -42,7 +48,7 @@ export const ApiKeyErrorDialog = ({
                                 <p className="font-medium text-foreground">{error}</p>
                                 {isQuotaError && (
                                     <p className="text-muted-foreground">
-                                        Your Dograh service credits are too low to start a call.
+                                        {t("lowCreditsMessage", { brand: tb("name") })}
                                     </p>
                                 )}
                             </div>
@@ -51,7 +57,7 @@ export const ApiKeyErrorDialog = ({
                 </DialogHeader>
                 <DialogFooter>
                     <Button variant="outline" onClick={() => onOpenChange(false)}>
-                        Cancel
+                        {t("cancel")}
                     </Button>
                     <Button onClick={onNavigate}>
                         {buttonText}

@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useState } from "react";
 
 import { getWorkflowApiV1WorkflowFetchWorkflowIdGet, getWorkflowRunsApiV1WorkflowWorkflowIdRunsGet } from "@/client/sdk.gen";
@@ -16,6 +17,7 @@ interface WorkflowExecutionsProps {
 }
 
 export function WorkflowExecutions({ workflowId, searchParams }: WorkflowExecutionsProps) {
+    const t = useTranslations("components.workflowExecutions");
     const router = useRouter();
     const [workflowRuns, setWorkflowRuns] = useState<WorkflowRunResponseSchema[]>([]);
     const [loading, setLoading] = useState(true);
@@ -127,11 +129,11 @@ export function WorkflowExecutions({ workflowId, searchParams }: WorkflowExecuti
             setError(null);
         } catch (err) {
             console.error("Error fetching workflow runs:", err);
-            setError("Failed to load workflow runs");
+            setError(t("loadError"));
         } finally {
             setLoading(false);
         }
-    }, [workflowId, isAuthenticated]);
+    }, [workflowId, isAuthenticated, t]);
 
     const updatePageInUrl = useCallback((page: number, filters?: ActiveFilter[], sortByParam?: string | null, sortOrderParam?: 'asc' | 'desc') => {
         const params = new URLSearchParams();

@@ -2,6 +2,7 @@
 
 import { formatDistanceToNow } from "date-fns";
 import { FileText, LoaderCircle, X } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useEffect } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -29,12 +30,6 @@ interface VersionHistoryPanelProps {
     onLoadMore: () => void;
 }
 
-const statusLabel: Record<string, string> = {
-    draft: "Draft",
-    published: "Published",
-    archived: "Archived",
-};
-
 const statusColor: Record<string, string> = {
     draft: "bg-yellow-500/20 text-yellow-400 border-yellow-500/30",
     published: "bg-green-500/20 text-green-400 border-green-500/30",
@@ -52,6 +47,12 @@ export const VersionHistoryPanel = ({
     loadingMore,
     onLoadMore,
 }: VersionHistoryPanelProps) => {
+    const t = useTranslations("components.versionHistoryPanel");
+    const statusLabel: Record<string, string> = {
+        draft: t("statusDraft"),
+        published: t("statusPublished"),
+        archived: t("statusArchived"),
+    };
     useEffect(() => {
         const handleKeyDown = (event: KeyboardEvent) => {
             if (event.key === "Escape" && isOpen) {
@@ -71,7 +72,7 @@ export const VersionHistoryPanel = ({
             <div className="p-4 h-full overflow-y-auto">
                 <div className="flex justify-between items-center mb-6">
                     <h2 className="text-lg font-semibold text-white">
-                        Version History
+                        {t("title")}
                     </h2>
                     <Button
                         variant="ghost"
@@ -89,7 +90,7 @@ export const VersionHistoryPanel = ({
                     </div>
                 ) : versions.length === 0 ? (
                     <p className="text-sm text-gray-500 text-center py-8">
-                        No versions found.
+                        {t("noVersionsFound")}
                     </p>
                 ) : (
                     <div className="space-y-2">
@@ -110,7 +111,9 @@ export const VersionHistoryPanel = ({
                                         <div className="flex items-center gap-2">
                                             <FileText className="w-4 h-4 text-gray-400" />
                                             <span className="text-sm font-medium text-white">
-                                                v{version.version_number}
+                                                {t("versionLabel", {
+                                                    number: version.version_number,
+                                                })}
                                             </span>
                                         </div>
                                         {version.status !== "archived" && (
@@ -141,7 +144,7 @@ export const VersionHistoryPanel = ({
                                 {loadingMore ? (
                                     <LoaderCircle className="w-4 h-4 animate-spin" />
                                 ) : (
-                                    "Load more"
+                                    t("loadMore")
                                 )}
                             </Button>
                         )}

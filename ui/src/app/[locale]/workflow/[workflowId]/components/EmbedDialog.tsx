@@ -1,4 +1,5 @@
 import { Check, Copy, ExternalLink, Loader2, Mic, Plus, Rocket, Trash2 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useState } from "react";
 
 import {
@@ -53,6 +54,7 @@ export function EmbedDialog({
     workflowId,
     workflowName,
 }: EmbedDialogProps) {
+    const t = useTranslations("components.embedDialog");
     const [loading, setLoading] = useState(false);
     const [saving, setSaving] = useState(false);
     const [embedToken, setEmbedToken] = useState<EmbedToken | null>(null);
@@ -181,7 +183,7 @@ export function EmbedDialog({
                     <div className="flex items-center justify-between">
                         <DialogTitle className="flex items-center gap-2">
                             <Rocket className="h-5 w-5" />
-                            Configure Widget
+                            {t("title")}
                         </DialogTitle>
                         <a
                             href={WIDGET_MODE_DOCUMENTATION_URLS[embedMode]}
@@ -189,12 +191,12 @@ export function EmbedDialog({
                             rel="noopener noreferrer"
                             className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors pr-6"
                         >
-                            Docs
+                            {t("docs")}
                             <ExternalLink className="h-3.5 w-3.5" />
                         </a>
                     </div>
                     <DialogDescription>
-                        Add &quot;{workflowName}&quot; to any website with a simple script tag.
+                        {t("description", { workflowName })}
                     </DialogDescription>
                 </DialogHeader>
 
@@ -207,9 +209,9 @@ export function EmbedDialog({
                         {/* Enable/Disable Toggle */}
                         <div className="flex items-center justify-between">
                             <div className="space-y-0.5">
-                                <Label htmlFor="embed-enabled">Enable Embedding</Label>
+                                <Label htmlFor="embed-enabled">{t("enableEmbedding")}</Label>
                                 <p className="text-sm text-muted-foreground">
-                                    Allow this workflow to be embedded on external websites
+                                    {t("enableEmbeddingDescription")}
                                 </p>
                             </div>
                             <Switch
@@ -226,16 +228,16 @@ export function EmbedDialog({
                                 {/* Allowed Domains */}
                                 <div className="space-y-3">
                                     <Label>
-                                        Allowed Domains
+                                        {t("allowedDomains")}
                                         <span className="text-xs text-muted-foreground ml-2">
-                                            (leave empty to allow all domains)
+                                            {t("allowedDomainsHint")}
                                         </span>
                                     </Label>
 
                                     {/* Domain Input */}
                                     <div className="flex gap-2">
                                         <Input
-                                            placeholder="example.com or *.example.com"
+                                            placeholder={t("domainPlaceholder")}
                                             value={newDomain}
                                             onChange={(e) => setNewDomain(e.target.value)}
                                             onKeyPress={handleKeyPress}
@@ -277,7 +279,7 @@ export function EmbedDialog({
 
                                 {/* Embed Mode Selection */}
                                 <div className="space-y-4">
-                                    <Label>Embed Mode</Label>
+                                    <Label>{t("embedMode")}</Label>
                                     <div className="grid grid-cols-3 gap-4">
                                         <button
                                             type="button"
@@ -289,9 +291,9 @@ export function EmbedDialog({
                                             }`}
                                         >
                                             <div className="space-y-2">
-                                                <div className="font-medium">Floating Widget</div>
+                                                <div className="font-medium">{t("floatingWidget")}</div>
                                                 <div className="text-xs text-muted-foreground">
-                                                    Shows as a button in corner of the page
+                                                    {t("floatingWidgetDescription")}
                                                 </div>
                                             </div>
                                         </button>
@@ -305,9 +307,9 @@ export function EmbedDialog({
                                             }`}
                                         >
                                             <div className="space-y-2">
-                                                <div className="font-medium">Inline Component</div>
+                                                <div className="font-medium">{t("inlineComponent")}</div>
                                                 <div className="text-xs text-muted-foreground">
-                                                    Embeds directly in your page content
+                                                    {t("inlineComponentDescription")}
                                                 </div>
                                             </div>
                                         </button>
@@ -321,9 +323,9 @@ export function EmbedDialog({
                                             }`}
                                         >
                                             <div className="space-y-2">
-                                                <div className="font-medium">Headless (Bring Your Own UI)</div>
+                                                <div className="font-medium">{t("headless")}</div>
                                                 <div className="text-xs text-muted-foreground">
-                                                    No UI — drive calls from your own buttons via the JS API
+                                                    {t("headlessDescription")}
                                                 </div>
                                             </div>
                                         </button>
@@ -332,23 +334,23 @@ export function EmbedDialog({
 
                                 {/* Configuration based on mode */}
                                 <div className="space-y-4">
-                                    <Label>Configuration</Label>
+                                    <Label>{t("configuration")}</Label>
 
                                     {/* Shared: Button Text + Button Color (skipped in headless — host renders its own UI) */}
                                     {embedMode !== "headless" && (
                                         <div className="grid grid-cols-2 gap-4">
                                             <div className="space-y-2">
-                                                <Label htmlFor="button-text" className="text-sm">Button Text</Label>
+                                                <Label htmlFor="button-text" className="text-sm">{t("buttonText")}</Label>
                                                 <Input
                                                     id="button-text"
                                                     value={buttonText}
                                                     onChange={(e) => setButtonText(e.target.value)}
-                                                    placeholder="Talk to Agent"
+                                                    placeholder={t("buttonTextPlaceholder")}
                                                     maxLength={40}
                                                 />
                                             </div>
                                             <div className="space-y-2">
-                                                <Label htmlFor="button-color" className="text-sm">Button Color</Label>
+                                                <Label htmlFor="button-color" className="text-sm">{t("buttonColor")}</Label>
                                                 <div className="flex gap-2">
                                                     <Input
                                                         id="button-color-picker"
@@ -372,16 +374,16 @@ export function EmbedDialog({
                                     {/* Floating mode: Position */}
                                     {embedMode === "floating" && (
                                         <div className="space-y-2">
-                                            <Label htmlFor="position" className="text-sm">Position</Label>
+                                            <Label htmlFor="position" className="text-sm">{t("position")}</Label>
                                             <Select value={position} onValueChange={setPosition}>
                                                 <SelectTrigger id="position">
                                                     <SelectValue />
                                                 </SelectTrigger>
                                                 <SelectContent>
-                                                    <SelectItem value="bottom-right">Bottom Right</SelectItem>
-                                                    <SelectItem value="bottom-left">Bottom Left</SelectItem>
-                                                    <SelectItem value="top-right">Top Right</SelectItem>
-                                                    <SelectItem value="top-left">Top Left</SelectItem>
+                                                    <SelectItem value="bottom-right">{t("positionBottomRight")}</SelectItem>
+                                                    <SelectItem value="bottom-left">{t("positionBottomLeft")}</SelectItem>
+                                                    <SelectItem value="top-right">{t("positionTopRight")}</SelectItem>
+                                                    <SelectItem value="top-left">{t("positionTopLeft")}</SelectItem>
                                                 </SelectContent>
                                             </Select>
                                         </div>
@@ -390,12 +392,12 @@ export function EmbedDialog({
                                     {/* Inline mode: Call to Action Text */}
                                     {embedMode === "inline" && (
                                         <div className="space-y-2">
-                                            <Label htmlFor="cta-text" className="text-sm">Call to Action Text</Label>
+                                            <Label htmlFor="cta-text" className="text-sm">{t("callToActionText")}</Label>
                                             <Input
                                                 id="cta-text"
                                                 value={callToActionText}
                                                 onChange={(e) => setCallToActionText(e.target.value)}
-                                                placeholder="Click to start voice conversation"
+                                                placeholder={t("callToActionTextPlaceholder")}
                                             />
                                         </div>
                                     )}
@@ -408,7 +410,7 @@ export function EmbedDialog({
                                                 style={{ backgroundColor: buttonColor }}
                                             >
                                                 <Mic className="h-4 w-4" />
-                                                {buttonText || "Talk to Agent"}
+                                                {buttonText || t("buttonTextPlaceholder")}
                                             </button>
                                         </div>
                                     ) : (
@@ -417,7 +419,7 @@ export function EmbedDialog({
                                                 <svg className="w-16 h-16 mx-auto mb-4 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
                                                     <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
                                                 </svg>
-                                                <p className="text-lg font-medium text-foreground mb-1">Ready to Connect</p>
+                                                <p className="text-lg font-medium text-foreground mb-1">{t("readyToConnect")}</p>
                                                 <p className="text-sm text-muted-foreground mb-5">{callToActionText}</p>
                                                 <button
                                                     className="px-8 py-3 rounded-lg font-semibold text-white shadow-md"
@@ -433,21 +435,21 @@ export function EmbedDialog({
                                     {embedMode === "headless" && (
                                         <div className="space-y-3">
                                             <div className="rounded-lg bg-muted/50 p-4">
-                                                <h4 className="font-medium mb-2">Integration Instructions</h4>
+                                                <h4 className="font-medium mb-2">{t("integrationInstructions")}</h4>
                                                 <ul className="text-sm space-y-2 text-muted-foreground">
-                                                    <li>• Add the embed script tag to your page (see below).</li>
-                                                    <li>• The widget renders no UI — render your own buttons.</li>
-                                                    <li>• Call <code className="text-xs">window.DograhWidget.start()</code> to begin a call.</li>
-                                                    <li>• Call <code className="text-xs">window.DograhWidget.end()</code> to end it.</li>
-                                                    <li>• Subscribe to <code className="text-xs">onCallStart</code>, <code className="text-xs">onCallEnd</code>, <code className="text-xs">onStatusChange</code>, <code className="text-xs">onError</code> to drive your UI.</li>
-                                                    <li>• <code className="text-xs">start()</code> must run inside a user-gesture handler (click) so the browser grants microphone access.</li>
+                                                    <li>• {t("headlessStep1")}</li>
+                                                    <li>• {t("headlessStep2")}</li>
+                                                    <li>• {t.rich("headlessStep3", { code: (c) => <code className="text-xs">{c}</code> })}</li>
+                                                    <li>• {t.rich("headlessStep4", { code: (c) => <code className="text-xs">{c}</code> })}</li>
+                                                    <li>• {t.rich("headlessStep5", { code: (c) => <code className="text-xs">{c}</code> })}</li>
+                                                    <li>• {t.rich("headlessStep6", { code: (c) => <code className="text-xs">{c}</code> })}</li>
                                                 </ul>
                                             </div>
 
                                             <div className="rounded-lg bg-blue-50 dark:bg-blue-950/20 p-4 border border-blue-200 dark:border-blue-800">
-                                                <h4 className="font-medium mb-2 text-blue-900 dark:text-blue-100">Example — track status in your own state</h4>
+                                                <h4 className="font-medium mb-2 text-blue-900 dark:text-blue-100">{t("headlessExampleTitle")}</h4>
                                                 <p className="text-xs text-blue-900/80 dark:text-blue-100/80 mb-2">
-                                                    Mirror the call status into a variable you control, then render whatever UI you like from it. The status values are <code className="text-xs">idle</code>, <code className="text-xs">connecting</code>, <code className="text-xs">connected</code>, <code className="text-xs">failed</code>.
+                                                    {t.rich("headlessExampleDescription", { code: (c) => <code className="text-xs">{c}</code> })}
                                                 </p>
                                                 <pre className="text-xs overflow-x-auto">
                                                     <code className="text-blue-800 dark:text-blue-200">{`// Vanilla JS — keep your own state, render however you want
@@ -466,7 +468,7 @@ document.getElementById('talk-btn').addEventListener('click', () => {
   }
 });`}</code>
                                                 </pre>
-                                                <p className="text-xs text-blue-900/80 dark:text-blue-100/80 mt-3 mb-2">React:</p>
+                                                <p className="text-xs text-blue-900/80 dark:text-blue-100/80 mt-3 mb-2">{t("reactLabel")}</p>
                                                 <pre className="text-xs overflow-x-auto">
                                                     <code className="text-blue-800 dark:text-blue-200">{`function TalkButton() {
   const [status, setStatus] = useState('idle');
@@ -491,18 +493,18 @@ document.getElementById('talk-btn').addEventListener('click', () => {
                                     {embedMode === "inline" && (
                                         <div className="space-y-3">
                                             <div className="rounded-lg bg-muted/50 p-4">
-                                                <h4 className="font-medium mb-2">Integration Instructions</h4>
+                                                <h4 className="font-medium mb-2">{t("integrationInstructions")}</h4>
                                                 <ul className="text-sm space-y-2 text-muted-foreground">
-                                                    <li>• Add a div with id=&quot;dograh-inline-container&quot; where you want the widget</li>
-                                                    <li>• The widget will render inside this container</li>
-                                                    <li>• You have full control over the container&apos;s styling</li>
-                                                    <li>• Call window.DograhWidget.start() to begin the call</li>
-                                                    <li>• Call window.DograhWidget.end() to end the call</li>
+                                                    <li>• {t("inlineStep1")}</li>
+                                                    <li>• {t("inlineStep2")}</li>
+                                                    <li>• {t("inlineStep3")}</li>
+                                                    <li>• {t("inlineStep4")}</li>
+                                                    <li>• {t("inlineStep5")}</li>
                                                 </ul>
                                             </div>
 
                                             <div className="rounded-lg bg-blue-50 dark:bg-blue-950/20 p-4 border border-blue-200 dark:border-blue-800">
-                                                <h4 className="font-medium mb-2 text-blue-900 dark:text-blue-100">Example React Component</h4>
+                                                <h4 className="font-medium mb-2 text-blue-900 dark:text-blue-100">{t("inlineExampleTitle")}</h4>
                                                 <pre className="text-xs overflow-x-auto">
                                                     <code className="text-blue-800 dark:text-blue-200">{`export function DograhAgent() {
   const [isCallActive, setIsCallActive] = useState(false);
@@ -546,10 +548,10 @@ document.getElementById('talk-btn').addEventListener('click', () => {
                                         {saving ? (
                                             <>
                                                 <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                                                Saving...
+                                                {t("saving")}
                                             </>
                                         ) : (
-                                            "Save Configurations"
+                                            t("saveConfigurations")
                                         )}
                                     </Button>
                                 </div>
@@ -560,7 +562,7 @@ document.getElementById('talk-btn').addEventListener('click', () => {
                                         <Separator />
                                         <div className="space-y-3">
                                             <div className="flex items-center justify-between">
-                                                <Label>Embed Code</Label>
+                                                <Label>{t("embedCode")}</Label>
                                                 <Button
                                                     size="sm"
                                                     variant="outline"
@@ -569,12 +571,12 @@ document.getElementById('talk-btn').addEventListener('click', () => {
                                                     {copied ? (
                                                         <>
                                                             <Check className="h-4 w-4 mr-1" />
-                                                            Copied!
+                                                            {t("copied")}
                                                         </>
                                                     ) : (
                                                         <>
                                                             <Copy className="h-4 w-4 mr-1" />
-                                                            Copy Code
+                                                            {t("copyCode")}
                                                         </>
                                                     )}
                                                 </Button>
@@ -585,8 +587,7 @@ document.getElementById('talk-btn').addEventListener('click', () => {
                                                 </pre>
                                             </div>
                                             <p className="text-xs text-muted-foreground">
-                                                Add this script to your website&apos;s HTML to enable the voice widget.
-                                                Configuration changes will apply automatically without re-embedding.
+                                                {t("embedScriptHelp")}
                                             </p>
                                         </div>
                                     </>
@@ -594,9 +595,9 @@ document.getElementById('talk-btn').addEventListener('click', () => {
                                     <>
                                         <Separator />
                                         <div className="space-y-3">
-                                            <Label className="text-muted-foreground">Embed Code</Label>
+                                            <Label className="text-muted-foreground">{t("embedCode")}</Label>
                                             <div className="rounded-lg border border-dashed bg-muted/30 px-4 py-8 text-center text-sm text-muted-foreground">
-                                                Click <span className="font-medium">Save Configurations</span> to generate your embed script.
+                                                {t.rich("embedCodePlaceholder", { b: (c) => <span className="font-medium">{c}</span> })}
                                             </div>
                                         </div>
                                     </>

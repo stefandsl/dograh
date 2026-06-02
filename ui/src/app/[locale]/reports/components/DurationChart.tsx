@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import {
   Bar,
   BarChart,
@@ -35,6 +36,7 @@ const COLORS = {
 };
 
 export function DurationChart({ data }: DurationChartProps) {
+  const t = useTranslations('components.durationChart');
   const chartData = data.map((item) => ({
     ...item,
     label: `${item.bucket}s`,
@@ -47,8 +49,8 @@ export function DurationChart({ data }: DurationChartProps) {
       return (
         <div className="bg-background border rounded-lg shadow-lg p-3">
           <p className="font-semibold">{data.label}</p>
-          <p className="text-sm">Calls: {data.count}</p>
-          <p className="text-sm">{data.percentage}% of total</p>
+          <p className="text-sm">{t('calls', { count: data.count })}</p>
+          <p className="text-sm">{t('percentOfTotal', { percentage: data.percentage })}</p>
         </div>
       );
     }
@@ -58,12 +60,12 @@ export function DurationChart({ data }: DurationChartProps) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Call Duration Distribution</CardTitle>
+        <CardTitle>{t('title')}</CardTitle>
       </CardHeader>
       <CardContent>
         {data.length === 0 ? (
           <div className="h-[300px] flex items-center justify-center text-muted-foreground">
-            No duration data available
+            {t('noData')}
           </div>
         ) : (
           <ResponsiveContainer width="100%" height={300}>

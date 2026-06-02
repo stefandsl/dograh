@@ -1,6 +1,7 @@
 'use client';
 
 import { useParams, useSearchParams } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import posthog from 'posthog-js';
 import { useEffect, useMemo, useState } from 'react';
 
@@ -17,6 +18,7 @@ import { DEFAULT_WORKFLOW_CONFIGURATIONS, WorkflowConfigurations } from '@/types
 import WorkflowLayout from '../WorkflowLayout';
 
 export default function WorkflowDetailPage() {
+    const t = useTranslations('pages.workflow.workflowId');
     const params = useParams();
     const searchParams = useSearchParams();
     const [workflow, setWorkflow] = useState<WorkflowResponse | undefined>(undefined);
@@ -47,7 +49,7 @@ export default function WorkflowDetailPage() {
                     workflow_name: workflow?.name,
                 });
             } catch (err) {
-                setError('Failed to fetch workflow');
+                setError(t('failedToFetchWorkflow'));
                 logger.error(`Error fetching workflow: ${err}`);
             } finally {
                 setLoading(false);
@@ -73,7 +75,7 @@ export default function WorkflowDetailPage() {
         return (
             <WorkflowLayout showFeaturesNav={false}>
                 <div className="flex items-center justify-center min-h-screen">
-                    <div className="text-lg text-destructive">{error || 'Workflow not found'}</div>
+                    <div className="text-lg text-destructive">{error || t('workflowNotFound')}</div>
                 </div>
             </WorkflowLayout>
         );

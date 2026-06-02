@@ -2,6 +2,7 @@
 
 import { ChevronLeft, ChevronRight, Download, Globe } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useId, useState } from 'react';
 import TimezoneSelect, { type ITimezoneOption } from 'react-timezone-select';
 import { toast } from 'sonner';
@@ -34,6 +35,8 @@ import { ActiveFilter, DateRangeValue } from '@/types/filters';
 const getLocalTimezone = () => Intl.DateTimeFormat().resolvedOptions().timeZone;
 
 export default function UsagePage() {
+    const t = useTranslations("pages.usage");
+    const tb = useTranslations("brand");
     const router = useRouter();
     const searchParams = useSearchParams();
     const { userConfig, saveUserConfig, loading: userConfigLoading, organizationPricing } = useUserConfig();
@@ -189,11 +192,11 @@ export default function UsagePage() {
                 a.remove();
                 window.URL.revokeObjectURL(url);
             } else {
-                toast.error('Failed to download report');
+                toast.error(t('downloadReportError'));
             }
         } catch (error) {
             console.error('Failed to download usage report:', error);
-            toast.error('Failed to download report');
+            toast.error(t('downloadReportError'));
         } finally {
             setIsDownloadingReport(false);
         }
@@ -330,8 +333,8 @@ export default function UsagePage() {
             <div>
                 <div className="flex justify-between items-start">
                     <div>
-                        <h1 className="text-3xl font-bold mb-2">Agent Runs</h1>
-                        <p className="text-muted-foreground">See all your Agent Runs across all Voice Agents. You can use filters to filter out required Agent Runs.</p>
+                        <h1 className="text-3xl font-bold mb-2">{t('title')}</h1>
+                        <p className="text-muted-foreground">{t('description')}</p>
                     </div>
                         <div className="flex items-center gap-2">
                             <Globe className="h-4 w-4 text-muted-foreground" />
@@ -341,7 +344,7 @@ export default function UsagePage() {
                                     value={selectedTimezone}
                                     onChange={handleTimezoneChange}
                                     isDisabled={savingTimezone || userConfigLoading}
-                                    placeholder={userConfigLoading ? "Loading..." : "Select timezone"}
+                                    placeholder={userConfigLoading ? t('loading') : t('selectTimezone')}
                                     styles={{
                                         control: (base, state) => ({
                                             ...base,
@@ -412,9 +415,9 @@ export default function UsagePage() {
                 {/* MPS Credits Card */}
                 <Card className="mb-6">
                     <CardHeader>
-                        <CardTitle>Dograh Model Credits</CardTitle>
+                        <CardTitle>{t('mpsCreditsTitle', { brand: tb('name') })}</CardTitle>
                         <CardDescription>
-                            These track usage of Dograh models using Dograh Service Keys.
+                            {t('mpsCreditsDescription', { brand: tb('name') })}
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
@@ -431,11 +434,11 @@ export default function UsagePage() {
                                         <p className="text-2xl font-bold">
                                             {mpsCredits.total_credits_used.toFixed(2)} <span className="text-lg font-normal text-muted-foreground">/ {mpsCredits.total_quota.toFixed(2)}</span>
                                         </p>
-                                        <p className="text-sm text-muted-foreground">Credits Used</p>
+                                        <p className="text-sm text-muted-foreground">{t('creditsUsed')}</p>
                                     </div>
                                     <div className="text-right">
                                         <p className="text-lg font-semibold">{mpsCredits.remaining_credits.toFixed(2)}</p>
-                                        <p className="text-sm text-muted-foreground">Remaining</p>
+                                        <p className="text-sm text-muted-foreground">{t('remaining')}</p>
                                     </div>
                                 </div>
 
@@ -444,7 +447,7 @@ export default function UsagePage() {
                                 )}
                             </div>
                         ) : (
-                            <p className="text-muted-foreground">No Dograh service keys configured. Set up a service key in your model configuration to see usage.</p>
+                            <p className="text-muted-foreground">{t('noServiceKeys', { brand: tb('name') })}</p>
                         )}
                     </CardContent>
                 </Card>
@@ -478,7 +481,7 @@ export default function UsagePage() {
                                 disabled={isDownloadingReport}
                             >
                                 <Download className="h-4 w-4 mr-2" />
-                                {isDownloadingReport ? 'Preparing...' : 'Download Filtered Results'}
+                                {isDownloadingReport ? t('preparing') : t('downloadFilteredResults')}
                             </Button>
                         </div>
                     )}
@@ -489,9 +492,9 @@ export default function UsagePage() {
                     <CardHeader>
                         <div className="flex justify-between items-start">
                             <div className="space-y-1.5">
-                                <CardTitle>All Runs</CardTitle>
+                                <CardTitle>{t('allRunsTitle')}</CardTitle>
                                 <CardDescription>
-                                    Every agent run across your organization, with usage details
+                                    {t('allRunsDescription')}
                                 </CardDescription>
                             </div>
                         </div>
@@ -509,17 +512,17 @@ export default function UsagePage() {
                                     <Table>
                                         <TableHeader>
                                             <TableRow className="bg-muted/50">
-                                                <TableHead className="font-semibold">Run ID</TableHead>
-                                                <TableHead className="font-semibold">Agent Name</TableHead>
-                                                <TableHead className="font-semibold">Call Type</TableHead>
-                                                <TableHead className="font-semibold">Phone Number</TableHead>
-                                                <TableHead className="font-semibold">Disposition</TableHead>
-                                                <TableHead className="font-semibold">Date</TableHead>
-                                                <TableHead className="font-semibold text-right">Duration</TableHead>
+                                                <TableHead className="font-semibold">{t('columnRunId')}</TableHead>
+                                                <TableHead className="font-semibold">{t('columnAgentName')}</TableHead>
+                                                <TableHead className="font-semibold">{t('columnCallType')}</TableHead>
+                                                <TableHead className="font-semibold">{t('columnPhoneNumber')}</TableHead>
+                                                <TableHead className="font-semibold">{t('columnDisposition')}</TableHead>
+                                                <TableHead className="font-semibold">{t('columnDate')}</TableHead>
+                                                <TableHead className="font-semibold text-right">{t('columnDuration')}</TableHead>
                                                 <TableHead className="font-semibold text-right">
-                                                    {organizationPricing?.price_per_second_usd ? 'Cost (USD)' : 'Tokens'}
+                                                    {organizationPricing?.price_per_second_usd ? t('columnCostUsd') : t('columnTokens')}
                                                 </TableHead>
-                                                <TableHead className="font-semibold">Actions</TableHead>
+                                                <TableHead className="font-semibold">{t('columnActions')}</TableHead>
                                             </TableRow>
                                         </TableHeader>
                                         <TableBody>
@@ -533,7 +536,7 @@ export default function UsagePage() {
                                                     >
                                                         #{run.id}
                                                     </TableCell>
-                                                    <TableCell>{run.workflow_name || 'Unknown'}</TableCell>
+                                                    <TableCell>{run.workflow_name || t('unknown')}</TableCell>
                                                     <TableCell>
                                                         <CallTypeCell mode={run.mode} callType={run.call_type} />
                                                     </TableCell>
@@ -579,8 +582,8 @@ export default function UsagePage() {
                                 {appliedFilters.length > 0 && (
                                     <div className="mt-4 p-3 bg-muted rounded-md">
                                         <p className="text-sm text-muted-foreground">
-                                            Total for filtered period: <span className="font-semibold text-foreground">
-                                                {usageHistory.total_dograh_tokens.toLocaleString()} Dograh Tokens
+                                            {t('totalForFilteredPeriod')} <span className="font-semibold text-foreground">
+                                                {t('tokensSummary', { brand: tb('name'), count: usageHistory.total_dograh_tokens.toLocaleString() })}
                                             </span>
                                             {' • '}
                                             <span className="font-semibold text-foreground">
@@ -594,7 +597,7 @@ export default function UsagePage() {
                                 {usageHistory.total_pages > 1 && (
                                     <div className="flex items-center justify-between mt-6">
                                         <p className="text-sm text-muted-foreground">
-                                            Page {usageHistory.page} of {usageHistory.total_pages} ({usageHistory.total_count} total runs)
+                                            {t('pagination', { page: usageHistory.page, totalPages: usageHistory.total_pages, totalCount: usageHistory.total_count })}
                                         </p>
                                         <div className="flex gap-2">
                                             <Button
@@ -604,7 +607,7 @@ export default function UsagePage() {
                                                 disabled={currentPage === 1}
                                             >
                                                 <ChevronLeft className="h-4 w-4" />
-                                                Previous
+                                                {t('previous')}
                                             </Button>
                                             <Button
                                                 variant="outline"
@@ -612,7 +615,7 @@ export default function UsagePage() {
                                                 onClick={() => handlePageChange(currentPage + 1)}
                                                 disabled={currentPage === usageHistory.total_pages}
                                             >
-                                                Next
+                                                {t('next')}
                                                 <ChevronRight className="h-4 w-4" />
                                             </Button>
                                         </div>
@@ -620,7 +623,7 @@ export default function UsagePage() {
                                 )}
                             </>
                         ) : (
-                            <p className="text-center py-8 text-muted-foreground">No runs found</p>
+                            <p className="text-center py-8 text-muted-foreground">{t('noRunsFound')}</p>
                         )}
                     </CardContent>
                 </Card>

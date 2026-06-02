@@ -2,6 +2,7 @@
 
 import { ArrowLeft } from 'lucide-react';
 import { useParams, useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useState } from 'react';
 import type { ITimezoneOption } from 'react-timezone-select';
 import { toast } from 'sonner';
@@ -22,6 +23,7 @@ import { useAuth } from '@/lib/auth';
 import CampaignAdvancedSettings, { getTimezoneValue, type TimeSlot } from '../../CampaignAdvancedSettings';
 
 export default function EditCampaignPage() {
+    const t = useTranslations("pages.campaigns.campaignId.edit");
     const { user, getAccessToken, redirectToLogin, loading } = useAuth();
     const router = useRouter();
     const params = useParams();
@@ -121,12 +123,12 @@ export default function EditCampaignPage() {
             }
         } catch (error) {
             console.error('Failed to fetch campaign:', error);
-            toast.error('Failed to load campaign');
+            toast.error(t('loadFailed'));
             router.replace(`/campaigns/${campaignId}`);
         } finally {
             setIsLoading(false);
         }
-    }, [user, getAccessToken, campaignId, router]);
+    }, [user, getAccessToken, campaignId, router, t]);
 
     // Fetch campaign limits
     const fetchCampaignDefaults = useCallback(async () => {
@@ -165,7 +167,7 @@ export default function EditCampaignPage() {
         setSubmitError(null);
 
         if (!campaignName.trim()) {
-            toast.error('Campaign name is required');
+            toast.error(t('nameRequired'));
             return;
         }
 
@@ -173,14 +175,14 @@ export default function EditCampaignPage() {
         const maxConcurrencyValue = maxConcurrency ? parseInt(maxConcurrency) : null;
         if (maxConcurrencyValue !== null) {
             if (isNaN(maxConcurrencyValue) || maxConcurrencyValue < 1 || maxConcurrencyValue > 100) {
-                toast.error('Max concurrent calls must be between 1 and 100');
+                toast.error(t('maxConcurrencyRange'));
                 return;
             }
             if (maxConcurrencyValue > effectiveLimit) {
                 if (fromNumbersCount > 0 && fromNumbersCount < orgConcurrentLimit) {
-                    toast.error(`Max concurrent calls cannot exceed ${effectiveLimit}. You have ${fromNumbersCount} phone number(s) configured - add more CLIs to increase concurrency.`);
+                    toast.error(t('maxConcurrencyExceedsNumbers', { effectiveLimit, fromNumbersCount }));
                 } else {
-                    toast.error(`Max concurrent calls cannot exceed organization limit (${effectiveLimit})`);
+                    toast.error(t('maxConcurrencyExceedsOrg', { effectiveLimit }));
                 }
                 return;
             }
@@ -189,12 +191,12 @@ export default function EditCampaignPage() {
         // Validate schedule slots if enabled
         if (scheduleEnabled) {
             if (timeSlots.length === 0) {
-                toast.error('Add at least one time slot');
+                toast.error(t('addTimeSlot'));
                 return;
             }
             for (const slot of timeSlots) {
                 if (slot.start_time >= slot.end_time) {
-                    toast.error('Start time must be before end time for each slot');
+                    toast.error(t('startBeforeEnd'));
                     return;
                 }
             }
@@ -249,19 +251,19 @@ export default function EditCampaignPage() {
 
             if (response.error) {
                 const errorDetail = (response.error as { detail?: string })?.detail;
-                const errorMessage = errorDetail || 'Failed to update campaign';
+                const errorMessage = errorDetail || t('updateFailed');
                 setSubmitError(errorMessage);
                 toast.error(errorMessage);
                 return;
             }
 
             if (response.data) {
-                toast.success('Campaign updated successfully');
+                toast.success(t('updateSuccess'));
                 router.push(`/campaigns/${campaignId}`);
             }
         } catch (error) {
             console.error('Failed to update campaign:', error);
-            const errorMessage = 'Failed to update campaign';
+            const errorMessage = t('updateFailed');
             setSubmitError(errorMessage);
             toast.error(errorMessage);
         } finally {
@@ -287,7 +289,7 @@ export default function EditCampaignPage() {
     if (!campaign) {
         return (
             <div className="container mx-auto p-6 space-y-6 max-w-2xl">
-                <p className="text-center text-muted-foreground">Campaign not found</p>
+                <p className="text-center text-muted-foreground">{t('notFound')}</p>
             </div>
         );
     }
@@ -301,27 +303,27 @@ export default function EditCampaignPage() {
                     className="mb-4"
                 >
                     <ArrowLeft className="h-4 w-4 mr-2" />
-                    Back to Campaign
+                    {t('backToCampaign')}
                 </Button>
-                <h1 className="text-3xl font-bold mb-2">Edit Campaign</h1>
-                <p className="text-muted-foreground">Modify campaign settings</p>
+                <h1 className="text-3xl font-bold mb-2">{t('title')}</h1>
+                <p className="text-muted-foreground">{t('subtitle')}</p>
             </div>
 
             <Card>
                 <CardHeader>
-                    <CardTitle>Campaign Settings</CardTitle>
+                    <CardTitle>{t('settingsTitle')}</CardTitle>
                     <CardDescription>
-                        Update name, concurrency, retry, and schedule configuration
+                        {t('settingsDescription')}
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
                     <form onSubmit={handleSubmit} className="space-y-6">
                         {/* Campaign Name */}
                         <div className="space-y-2">
-                            <Label htmlFor="campaign-name">Campaign Name</Label>
+                            <Label htmlFor="campaign-name">{t('campaignNameLabel')}</Label>
                             <Input
                                 id="campaign-name"
-                                placeholder="Enter campaign name"
+                                placeholder={t('campaignNamePlaceholder')}
                                 value={campaignName}
                                 onChange={(e) => setCampaignName(e.target.value)}
                                 maxLength={255}
@@ -376,7 +378,7 @@ export default function EditCampaignPage() {
                                 type="submit"
                                 disabled={isSubmitting || !campaignName.trim()}
                             >
-                                {isSubmitting ? 'Saving...' : 'Save Changes'}
+                                {isSubmitting ? t('saving') : t('saveChanges')}
                             </Button>
                             <Button
                                 type="button"
@@ -384,7 +386,7 @@ export default function EditCampaignPage() {
                                 onClick={handleBack}
                                 disabled={isSubmitting}
                             >
-                                Cancel
+                                {t('cancel')}
                             </Button>
                         </div>
                     </form>

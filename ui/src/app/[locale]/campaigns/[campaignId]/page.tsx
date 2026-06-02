@@ -3,6 +3,7 @@
 import { format } from 'date-fns';
 import { AlertCircle, AlertTriangle, ArrowLeft, CalendarIcon, Check, Clock, Download, Info, Pause, Pencil, Phone, Play, RefreshCw, X } from 'lucide-react';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
@@ -30,6 +31,7 @@ import { CampaignRuns } from '@/components/workflow-runs';
 import { useAuth } from '@/lib/auth';
 
 export default function CampaignDetailPage() {
+    const t = useTranslations("pages.campaigns.campaignId");
     const { user, getAccessToken, redirectToLogin, loading } = useAuth();
     const router = useRouter();
     const params = useParams();
@@ -86,11 +88,11 @@ export default function CampaignDetailPage() {
             }
         } catch (error) {
             console.error('Failed to fetch campaign:', error);
-            toast.error('Failed to load campaign details');
+            toast.error(t('failedToLoadCampaign'));
         } finally {
             setIsLoadingCampaign(false);
         }
-    }, [user, getAccessToken, campaignId]);
+    }, [user, getAccessToken, campaignId, t]);
 
     // Initial load
     useEffect(() => {
@@ -128,11 +130,11 @@ export default function CampaignDetailPage() {
                 // Open download URL in new tab
                 window.open(response.data.download_url, '_blank');
             } else {
-                toast.error('Failed to get download URL');
+                toast.error(t('failedToGetDownloadUrl'));
             }
         } catch (error) {
             console.error('Failed to download CSV:', error);
-            toast.error('Failed to download CSV file');
+            toast.error(t('failedToDownloadCsv'));
         }
     };
 
@@ -180,11 +182,11 @@ export default function CampaignDetailPage() {
                 a.remove();
                 window.URL.revokeObjectURL(url);
             } else {
-                toast.error('Failed to download report');
+                toast.error(t('failedToDownloadReport'));
             }
         } catch (error) {
             console.error('Failed to download report:', error);
-            toast.error('Failed to download report');
+            toast.error(t('failedToDownloadReport'));
         } finally {
             setIsDownloadingReport(false);
         }
@@ -214,10 +216,10 @@ export default function CampaignDetailPage() {
 
             if (response.data) {
                 setCampaign(response.data);
-                toast.success('Campaign started');
+                toast.success(t('campaignStarted'));
             } else if (response.error) {
                 // Extract error message from response
-                let errorMsg = 'Failed to start campaign';
+                let errorMsg = t('failedToStartCampaign');
                 if (typeof response.error === 'string') {
                     errorMsg = response.error;
                 } else if (response.error && typeof response.error === 'object') {
@@ -227,7 +229,7 @@ export default function CampaignDetailPage() {
             }
         } catch (error) {
             console.error('Failed to start campaign:', error);
-            toast.error('Failed to start campaign');
+            toast.error(t('failedToStartCampaign'));
         } finally {
             setIsExecutingAction(false);
         }
@@ -250,10 +252,10 @@ export default function CampaignDetailPage() {
 
             if (response.data) {
                 setCampaign(response.data);
-                toast.success('Campaign resumed');
+                toast.success(t('campaignResumed'));
             } else if (response.error) {
                 // Extract error message from response
-                let errorMsg = 'Failed to resume campaign';
+                let errorMsg = t('failedToResumeCampaign');
                 if (typeof response.error === 'string') {
                     errorMsg = response.error;
                 } else if (response.error && typeof response.error === 'object') {
@@ -263,7 +265,7 @@ export default function CampaignDetailPage() {
             }
         } catch (error) {
             console.error('Failed to resume campaign:', error);
-            toast.error('Failed to resume campaign');
+            toast.error(t('failedToResumeCampaign'));
         } finally {
             setIsExecutingAction(false);
         }
@@ -272,7 +274,7 @@ export default function CampaignDetailPage() {
     // Open redial dialog with default name
     const openRedialDialog = () => {
         if (!campaign) return;
-        setRedialName(`${campaign.name} (Redial)`);
+        setRedialName(t('redialDefaultName', { name: campaign.name }));
         setRedialOnVoicemail(true);
         setRedialOnNoAnswer(true);
         setRedialOnBusy(true);
@@ -283,7 +285,7 @@ export default function CampaignDetailPage() {
     const handleRedial = async () => {
         if (!user || !campaign) return;
         if (!redialOnVoicemail && !redialOnNoAnswer && !redialOnBusy) {
-            toast.error('Select at least one reason to redial');
+            toast.error(t('selectAtLeastOneReason'));
             return;
         }
         setIsRedialing(true);
@@ -305,11 +307,11 @@ export default function CampaignDetailPage() {
             });
 
             if (response.data) {
-                toast.success('Redial campaign created');
+                toast.success(t('redialCampaignCreated'));
                 setIsRedialDialogOpen(false);
                 router.push(`/campaigns/${response.data.id}`);
             } else if (response.error) {
-                let errorMsg = 'Failed to create redial campaign';
+                let errorMsg = t('failedToCreateRedial');
                 if (typeof response.error === 'string') {
                     errorMsg = response.error;
                 } else if (response.error && typeof response.error === 'object') {
@@ -319,7 +321,7 @@ export default function CampaignDetailPage() {
             }
         } catch (error) {
             console.error('Failed to redial campaign:', error);
-            toast.error('Failed to create redial campaign');
+            toast.error(t('failedToCreateRedial'));
         } finally {
             setIsRedialing(false);
         }
@@ -342,11 +344,11 @@ export default function CampaignDetailPage() {
 
             if (response.data) {
                 setCampaign(response.data);
-                toast.success('Campaign paused');
+                toast.success(t('campaignPaused'));
             }
         } catch (error) {
             console.error('Failed to pause campaign:', error);
-            toast.error('Failed to pause campaign');
+            toast.error(t('failedToPauseCampaign'));
         } finally {
             setIsExecutingAction(false);
         }
@@ -420,7 +422,7 @@ export default function CampaignDetailPage() {
         const editButton = canEdit ? (
             <Button variant="outline" onClick={() => router.push(`/campaigns/${campaignId}/edit`)}>
                 <Pencil className="h-4 w-4 mr-2" />
-                Edit Campaign
+                {t('editCampaign')}
             </Button>
         ) : null;
 
@@ -431,7 +433,7 @@ export default function CampaignDetailPage() {
                         {editButton}
                         <Button onClick={handleStart} disabled={isExecutingAction}>
                             <Play className="h-4 w-4 mr-2" />
-                            Start Campaign
+                            {t('startCampaign')}
                         </Button>
                     </div>
                 );
@@ -441,7 +443,7 @@ export default function CampaignDetailPage() {
                         {editButton}
                         <Button onClick={handlePause} disabled={isExecutingAction}>
                             <Pause className="h-4 w-4 mr-2" />
-                            Pause Campaign
+                            {t('pauseCampaign')}
                         </Button>
                     </div>
                 );
@@ -451,7 +453,7 @@ export default function CampaignDetailPage() {
                         {editButton}
                         <Button onClick={handleResume} disabled={isExecutingAction}>
                             <RefreshCw className="h-4 w-4 mr-2" />
-                            Resume Campaign
+                            {t('resumeCampaign')}
                         </Button>
                     </div>
                 );
@@ -462,7 +464,7 @@ export default function CampaignDetailPage() {
                 return (
                     <Button onClick={openRedialDialog}>
                         <Phone className="h-4 w-4 mr-2" />
-                        Redial Campaign
+                        {t('redialCampaign')}
                     </Button>
                 );
             default:
@@ -484,7 +486,7 @@ export default function CampaignDetailPage() {
     if (!campaign) {
         return (
             <div className="container mx-auto p-6 space-y-6">
-                <p className="text-center text-muted-foreground">Campaign not found</p>
+                <p className="text-center text-muted-foreground">{t('campaignNotFound')}</p>
             </div>
         );
     }
@@ -498,7 +500,7 @@ export default function CampaignDetailPage() {
                     className="mb-4"
                 >
                     <ArrowLeft className="h-4 w-4 mr-2" />
-                    Back to Campaigns
+                    {t('backToCampaigns')}
                 </Button>
                 <div className="flex justify-between items-start">
                     <div>
@@ -508,7 +510,7 @@ export default function CampaignDetailPage() {
                                     {campaign.state}
                                 </Badge>
                                 <span className="text-muted-foreground">
-                                    Created {formatDate(campaign.created_at)}
+                                    {t('createdAt', { date: formatDate(campaign.created_at) })}
                                 </span>
                             </div>
                         </div>
@@ -517,21 +519,21 @@ export default function CampaignDetailPage() {
                                 <PopoverTrigger asChild>
                                     <Button variant="outline" disabled={isDownloadingReport}>
                                         <Download className="h-4 w-4 mr-2" />
-                                        Download Report
+                                        {t('downloadReport')}
                                     </Button>
                                 </PopoverTrigger>
                                 <PopoverContent className="w-auto p-4" align="end">
                                     <div className="space-y-4">
-                                        <div className="text-sm font-medium">Filter by date range</div>
+                                        <div className="text-sm font-medium">{t('filterByDateRange')}</div>
                                         <div className="grid gap-3">
                                             <div className="space-y-1.5">
-                                                <Label className="text-xs">From</Label>
+                                                <Label className="text-xs">{t('from')}</Label>
                                                 <div className="flex gap-2">
                                                     <Popover>
                                                         <PopoverTrigger asChild>
                                                             <Button variant="outline" size="sm" className="w-[140px] justify-start text-left font-normal">
                                                                 <CalendarIcon className="mr-2 h-3.5 w-3.5" />
-                                                                {reportStartDate ? format(reportStartDate, 'MMM dd, yyyy') : 'Start date'}
+                                                                {reportStartDate ? format(reportStartDate, 'MMM dd, yyyy') : t('startDate')}
                                                             </Button>
                                                         </PopoverTrigger>
                                                         <PopoverContent className="w-auto p-0" align="start">
@@ -552,13 +554,13 @@ export default function CampaignDetailPage() {
                                                 </div>
                                             </div>
                                             <div className="space-y-1.5">
-                                                <Label className="text-xs">To</Label>
+                                                <Label className="text-xs">{t('to')}</Label>
                                                 <div className="flex gap-2">
                                                     <Popover>
                                                         <PopoverTrigger asChild>
                                                             <Button variant="outline" size="sm" className="w-[140px] justify-start text-left font-normal">
                                                                 <CalendarIcon className="mr-2 h-3.5 w-3.5" />
-                                                                {reportEndDate ? format(reportEndDate, 'MMM dd, yyyy') : 'End date'}
+                                                                {reportEndDate ? format(reportEndDate, 'MMM dd, yyyy') : t('endDate')}
                                                             </Button>
                                                         </PopoverTrigger>
                                                         <PopoverContent className="w-auto p-0" align="start">
@@ -582,11 +584,11 @@ export default function CampaignDetailPage() {
                                         <Separator />
                                         <div className="flex justify-between">
                                             <Button variant="ghost" size="sm" onClick={handleClearDateRange}>
-                                                Clear
+                                                {t('clear')}
                                             </Button>
                                             <Button size="sm" onClick={handleDownloadReport} disabled={isDownloadingReport}>
                                                 <Download className="h-3.5 w-3.5 mr-1.5" />
-                                                {reportStartDate || reportEndDate ? 'Download Filtered' : 'Download All'}
+                                                {reportStartDate || reportEndDate ? t('downloadFiltered') : t('downloadAll')}
                                             </Button>
                                         </div>
                                     </div>
@@ -600,15 +602,15 @@ export default function CampaignDetailPage() {
                 {/* Campaign Details */}
                 <Card className="mb-6">
                     <CardHeader>
-                        <CardTitle>Campaign Details</CardTitle>
+                        <CardTitle>{t('campaignDetails')}</CardTitle>
                         <CardDescription>
-                            Configuration and source information
+                            {t('campaignDetailsDescription')}
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
                         <dl className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
-                                <dt className="text-sm font-medium">Workflow</dt>
+                                <dt className="text-sm font-medium">{t('workflow')}</dt>
                                 <dd className="mt-1">
                                     <button
                                         onClick={handleWorkflowClick}
@@ -619,12 +621,12 @@ export default function CampaignDetailPage() {
                                 </dd>
                             </div>
                             <div>
-                                <dt className="text-sm font-medium">Source Type</dt>
+                                <dt className="text-sm font-medium">{t('sourceType')}</dt>
                                 <dd className="mt-1 capitalize">{campaign.source_type.replace('-', ' ')}</dd>
                             </div>
                             <div>
                                 <dt className="text-sm font-medium">
-                                    {campaign.source_type === 'csv' ? 'Source File' : 'Source Sheet'}
+                                    {campaign.source_type === 'csv' ? t('sourceFile') : t('sourceSheet')}
                                 </dt>
                                 <dd className="mt-1">
                                     {campaign.source_type === 'csv' ? (
@@ -647,65 +649,65 @@ export default function CampaignDetailPage() {
                                 </dd>
                             </div>
                             <div>
-                                <dt className="text-sm font-medium">Telephony Configuration</dt>
+                                <dt className="text-sm font-medium">{t('telephonyConfiguration')}</dt>
                                 <dd className="mt-1">
                                     {campaign.telephony_configuration_id ? (
                                         <button
                                             onClick={() => router.push(`/telephony-configurations/${campaign.telephony_configuration_id}`)}
                                             className="text-blue-600 hover:text-blue-800 hover:underline"
                                         >
-                                            {campaign.telephony_configuration_name || `Configuration #${campaign.telephony_configuration_id}`}
+                                            {campaign.telephony_configuration_name || t('configurationNumber', { id: campaign.telephony_configuration_id })}
                                         </button>
                                     ) : (
-                                        <span className="text-muted-foreground">Not assigned</span>
+                                        <span className="text-muted-foreground">{t('notAssigned')}</span>
                                     )}
                                 </dd>
                             </div>
                             <div>
-                                <dt className="text-sm font-medium">State</dt>
+                                <dt className="text-sm font-medium">{t('state')}</dt>
                                 <dd className="mt-1 capitalize">{campaign.state}</dd>
                             </div>
                             <div>
-                                <dt className="text-sm font-medium">Progress</dt>
+                                <dt className="text-sm font-medium">{t('progress')}</dt>
                                 <dd className="mt-1">
                                     {campaign.executed_count} / {campaign.total_queued_count}
                                 </dd>
                             </div>
                             {campaign.parent_campaign_id && (
                                 <div>
-                                    <dt className="text-sm font-medium">Redial Of</dt>
+                                    <dt className="text-sm font-medium">{t('redialOf')}</dt>
                                     <dd className="mt-1">
                                         <button
                                             onClick={() => router.push(`/campaigns/${campaign.parent_campaign_id}`)}
                                             className="text-blue-600 hover:text-blue-800 hover:underline"
                                         >
-                                            Campaign #{campaign.parent_campaign_id}
+                                            {t('campaignNumber', { id: campaign.parent_campaign_id })}
                                         </button>
                                     </dd>
                                 </div>
                             )}
                             {campaign.redialed_campaign_id && (
                                 <div>
-                                    <dt className="text-sm font-medium">Redialed As</dt>
+                                    <dt className="text-sm font-medium">{t('redialedAs')}</dt>
                                     <dd className="mt-1">
                                         <button
                                             onClick={() => router.push(`/campaigns/${campaign.redialed_campaign_id}`)}
                                             className="text-blue-600 hover:text-blue-800 hover:underline"
                                         >
-                                            Campaign #{campaign.redialed_campaign_id}
+                                            {t('campaignNumber', { id: campaign.redialed_campaign_id })}
                                         </button>
                                     </dd>
                                 </div>
                             )}
                             {campaign.started_at && (
                                 <div>
-                                    <dt className="text-sm font-medium">Started At</dt>
+                                    <dt className="text-sm font-medium">{t('startedAt')}</dt>
                                     <dd className="mt-1">{formatDateTime(campaign.started_at)}</dd>
                                 </div>
                             )}
                             {campaign.completed_at && (
                                 <div>
-                                    <dt className="text-sm font-medium">Completed At</dt>
+                                    <dt className="text-sm font-medium">{t('completedAt')}</dt>
                                     <dd className="mt-1">{formatDateTime(campaign.completed_at)}</dd>
                                 </div>
                             )}
@@ -716,20 +718,20 @@ export default function CampaignDetailPage() {
                 {/* Campaign Settings */}
                 <Card className="mb-6">
                     <CardHeader>
-                        <CardTitle>Campaign Settings</CardTitle>
+                        <CardTitle>{t('campaignSettings')}</CardTitle>
                         <CardDescription>
-                            Concurrency and retry configuration
+                            {t('campaignSettingsDescription')}
                         </CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-6">
                         {/* Concurrency Setting */}
                         <div>
-                            <dt className="text-sm font-medium">Max Concurrent Calls</dt>
+                            <dt className="text-sm font-medium">{t('maxConcurrentCalls')}</dt>
                             <dd className="mt-1">
                                 {campaign.max_concurrency ? (
                                     <span>{campaign.max_concurrency}</span>
                                 ) : (
-                                    <span className="text-muted-foreground">Using organization default</span>
+                                    <span className="text-muted-foreground">{t('usingOrganizationDefault')}</span>
                                 )}
                             </dd>
                         </div>
@@ -739,16 +741,16 @@ export default function CampaignDetailPage() {
                         {/* Retry Configuration */}
                         <div className="space-y-4">
                             <div className="flex items-center justify-between">
-                                <span className="text-sm font-medium">Retries Enabled</span>
+                                <span className="text-sm font-medium">{t('retriesEnabled')}</span>
                                 {campaign.retry_config.enabled ? (
                                     <Badge variant="default" className="flex items-center gap-1">
                                         <Check className="h-3 w-3" />
-                                        Enabled
+                                        {t('enabled')}
                                     </Badge>
                                 ) : (
                                     <Badge variant="secondary" className="flex items-center gap-1">
                                         <X className="h-3 w-3" />
-                                        Disabled
+                                        {t('disabled')}
                                     </Badge>
                                 )}
                             </div>
@@ -756,24 +758,24 @@ export default function CampaignDetailPage() {
                             {campaign.retry_config.enabled && (
                                 <div className="grid grid-cols-2 md:grid-cols-3 gap-4 pl-4 border-l-2 border-muted">
                                     <div>
-                                        <dt className="text-sm text-muted-foreground">Max Retries</dt>
+                                        <dt className="text-sm text-muted-foreground">{t('maxRetries')}</dt>
                                         <dd className="mt-1 font-medium">{campaign.retry_config.max_retries}</dd>
                                     </div>
                                     <div>
-                                        <dt className="text-sm text-muted-foreground">Retry Delay</dt>
+                                        <dt className="text-sm text-muted-foreground">{t('retryDelay')}</dt>
                                         <dd className="mt-1 font-medium">{campaign.retry_config.retry_delay_seconds}s</dd>
                                     </div>
                                     <div className="col-span-2 md:col-span-1">
-                                        <dt className="text-sm text-muted-foreground">Retry On</dt>
+                                        <dt className="text-sm text-muted-foreground">{t('retryOn')}</dt>
                                         <dd className="mt-1 flex flex-wrap gap-1">
                                             {campaign.retry_config.retry_on_busy && (
-                                                <Badge variant="outline" className="text-xs">Busy</Badge>
+                                                <Badge variant="outline" className="text-xs">{t('busy')}</Badge>
                                             )}
                                             {campaign.retry_config.retry_on_no_answer && (
-                                                <Badge variant="outline" className="text-xs">No Answer</Badge>
+                                                <Badge variant="outline" className="text-xs">{t('noAnswer')}</Badge>
                                             )}
                                             {campaign.retry_config.retry_on_voicemail && (
-                                                <Badge variant="outline" className="text-xs">Voicemail</Badge>
+                                                <Badge variant="outline" className="text-xs">{t('voicemail')}</Badge>
                                             )}
                                         </dd>
                                     </div>
@@ -786,17 +788,17 @@ export default function CampaignDetailPage() {
                         {/* Call Schedule (read-only) */}
                         <div className="space-y-4">
                             <div className="flex items-center justify-between">
-                                <span className="text-sm font-medium">Call Schedule</span>
+                                <span className="text-sm font-medium">{t('callSchedule')}</span>
                                 <div className="flex items-center gap-2">
                                     {campaign.schedule_config?.enabled ? (
                                         <Badge variant="default" className="flex items-center gap-1">
                                             <Clock className="h-3 w-3" />
-                                            Enabled
+                                            {t('enabled')}
                                         </Badge>
                                     ) : (
                                         <Badge variant="secondary" className="flex items-center gap-1">
                                             <X className="h-3 w-3" />
-                                            Not configured
+                                            {t('notConfigured')}
                                         </Badge>
                                     )}
                                 </div>
@@ -805,14 +807,14 @@ export default function CampaignDetailPage() {
                             {campaign.schedule_config?.enabled && (
                                 <div className="pl-4 border-l-2 border-muted space-y-3">
                                     <div>
-                                        <dt className="text-sm text-muted-foreground">Timezone</dt>
+                                        <dt className="text-sm text-muted-foreground">{t('timezone')}</dt>
                                         <dd className="mt-1 font-medium">{campaign.schedule_config.timezone.replace(/_/g, ' ')}</dd>
                                     </div>
                                     <div>
-                                        <dt className="text-sm text-muted-foreground">Time Slots</dt>
+                                        <dt className="text-sm text-muted-foreground">{t('timeSlots')}</dt>
                                         <dd className="mt-1 flex flex-wrap gap-2">
                                             {campaign.schedule_config.slots.map((slot, index) => {
-                                                const dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+                                                const dayNames = [t('dayMon'), t('dayTue'), t('dayWed'), t('dayThu'), t('dayFri'), t('daySat'), t('daySun')];
                                                 return (
                                                     <div key={index} className="flex items-center gap-1">
                                                         <Badge variant="outline" className="text-xs">{dayNames[slot.day_of_week]}</Badge>
@@ -831,14 +833,14 @@ export default function CampaignDetailPage() {
                 {/* Activity Log */}
                 <Card className="mb-6">
                     <CardHeader>
-                        <CardTitle>Activity Log</CardTitle>
+                        <CardTitle>{t('activityLog')}</CardTitle>
                         <CardDescription>
-                            Recent state transitions and failures. Newest first.
+                            {t('activityLogDescription')}
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
                         {sortedLogs.length === 0 ? (
-                            <p className="text-sm text-muted-foreground">No events recorded yet.</p>
+                            <p className="text-sm text-muted-foreground">{t('noEventsRecorded')}</p>
                         ) : (
                             <ul className="space-y-3">
                                 {sortedLogs.map((entry, idx) => (
@@ -863,7 +865,7 @@ export default function CampaignDetailPage() {
                                             {entry.details && Object.keys(entry.details).length > 0 && (
                                                 <details className="mt-1.5">
                                                     <summary className="text-xs text-muted-foreground cursor-pointer hover:text-foreground">
-                                                        Details
+                                                        {t('details')}
                                                     </summary>
                                                     <pre className="mt-1.5 text-xs bg-muted rounded p-2 overflow-x-auto whitespace-pre-wrap break-words">
                                                         {JSON.stringify(entry.details, null, 2)}
@@ -888,25 +890,23 @@ export default function CampaignDetailPage() {
                 <Dialog open={isRedialDialogOpen} onOpenChange={setIsRedialDialogOpen}>
                     <DialogContent>
                         <DialogHeader>
-                            <DialogTitle>Redial Campaign</DialogTitle>
+                            <DialogTitle>{t('redialCampaign')}</DialogTitle>
                             <DialogDescription>
-                                Creates a new campaign that re-dials unique subscribers whose
-                                last call ended with one of the selected outcomes. Subscribers
-                                who were successfully reached on a retry are skipped.
+                                {t('redialDialogDescription')}
                             </DialogDescription>
                         </DialogHeader>
                         <div className="space-y-4 py-2">
                             <div className="space-y-1.5">
-                                <Label htmlFor="redial-name">Name</Label>
+                                <Label htmlFor="redial-name">{t('name')}</Label>
                                 <Input
                                     id="redial-name"
                                     value={redialName}
                                     onChange={(e) => setRedialName(e.target.value)}
-                                    placeholder="Campaign name"
+                                    placeholder={t('campaignNamePlaceholder')}
                                 />
                             </div>
                             <div className="space-y-3">
-                                <Label>Redial when last call was</Label>
+                                <Label>{t('redialWhenLastCallWas')}</Label>
                                 <div className="flex items-center gap-2">
                                     <Checkbox
                                         id="redial-voicemail"
@@ -914,7 +914,7 @@ export default function CampaignDetailPage() {
                                         onCheckedChange={(v) => setRedialOnVoicemail(v === true)}
                                     />
                                     <Label htmlFor="redial-voicemail" className="font-normal">
-                                        Voicemail
+                                        {t('voicemail')}
                                     </Label>
                                 </div>
                                 <div className="flex items-center gap-2">
@@ -924,7 +924,7 @@ export default function CampaignDetailPage() {
                                         onCheckedChange={(v) => setRedialOnNoAnswer(v === true)}
                                     />
                                     <Label htmlFor="redial-no-answer" className="font-normal">
-                                        No Answer
+                                        {t('noAnswer')}
                                     </Label>
                                 </div>
                                 <div className="flex items-center gap-2">
@@ -934,7 +934,7 @@ export default function CampaignDetailPage() {
                                         onCheckedChange={(v) => setRedialOnBusy(v === true)}
                                     />
                                     <Label htmlFor="redial-busy" className="font-normal">
-                                        Busy
+                                        {t('busy')}
                                     </Label>
                                 </div>
                             </div>
@@ -945,10 +945,10 @@ export default function CampaignDetailPage() {
                                 onClick={() => setIsRedialDialogOpen(false)}
                                 disabled={isRedialing}
                             >
-                                Cancel
+                                {t('cancel')}
                             </Button>
                             <Button onClick={handleRedial} disabled={isRedialing}>
-                                {isRedialing ? 'Creating...' : 'Create Redial Campaign'}
+                                {isRedialing ? t('creating') : t('createRedialCampaign')}
                             </Button>
                         </DialogFooter>
                     </DialogContent>

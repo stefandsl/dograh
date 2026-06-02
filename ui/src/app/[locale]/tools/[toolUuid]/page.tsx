@@ -2,6 +2,7 @@
 
 import { ArrowLeft, Code, ExternalLink, Loader2, Save } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useState } from "react";
 
 import {
@@ -68,6 +69,7 @@ function normalizeParameterType(value: string | null | undefined): ParameterType
 }
 
 export default function ToolDetailPage() {
+    const t = useTranslations("pages.tools.toolUuid");
     const { toolUuid } = useParams<{ toolUuid: string }>();
     const { user, getAccessToken, redirectToLogin, loading } = useAuth();
     const router = useRouter();
@@ -153,12 +155,12 @@ export default function ToolDetailPage() {
                 populateFormFromTool(response.data);
             }
         } catch (err) {
-            setError("Failed to fetch tool");
+            setError(t("errorFetchTool"));
             console.error("Error fetching tool:", err);
         } finally {
             setIsLoading(false);
         }
-    }, [loading, user, toolUuid, getAccessToken]);
+    }, [loading, user, toolUuid, getAccessToken, t]);
 
     const populateFormFromTool = (tool: ToolResponse) => {
         setName(tool.name);
@@ -301,31 +303,31 @@ export default function ToolDetailPage() {
             const isValidSip = sipPattern.test(transferDestination);
 
             if (!transferDestination || (!isValidE164 && !isValidSip)) {
-                setError("Please enter a valid phone number (E.164 format) or SIP endpoint (e.g., PJSIP/1234)");
+                setError(t("errorInvalidDestination"));
                 return;
             }
         } else if (tool.category === "mcp") {
             // Validate MCP server URL (must be http(s))
             if (!mcpUrl.trim()) {
-                setError("Please enter the MCP server URL");
+                setError(t("errorMcpUrlRequired"));
                 return;
             }
             if (!MCP_URL_PATTERN.test(mcpUrl.trim())) {
-                setError("MCP server URL must start with http:// or https://");
+                setError(t("errorMcpUrlInvalid"));
                 return;
             }
         } else if (tool.category !== "end_call") {
             // Validate URL for HTTP API tools
             const urlValidation = validateUrl(url);
             if (!urlValidation.valid) {
-                setError(urlValidation.error || "Invalid URL");
+                setError(urlValidation.error || t("errorInvalidUrl"));
                 return;
             }
 
             // Validate parameters have names
             const invalidParams = parameters.filter((p) => !p.name.trim());
             if (invalidParams.length > 0) {
-                setError("All parameters must have a name");
+                setError(t("errorParamsNeedName"));
                 return;
             }
 
@@ -333,7 +335,7 @@ export default function ToolDetailPage() {
                 (p) => !p.name.trim() || !p.valueTemplate.trim()
             );
             if (invalidPresetParams.length > 0) {
-                setError("All preset parameters must have a name and a value");
+                setError(t("errorPresetParamsNeedNameValue"));
                 return;
             }
         }
@@ -451,7 +453,7 @@ export default function ToolDetailPage() {
             });
 
             if (response.error) {
-                setError(detailFromError(response.error, "Failed to save tool"));
+                setError(detailFromError(response.error, t("errorSaveTool")));
                 return;
             }
 
@@ -461,7 +463,7 @@ export default function ToolDetailPage() {
                 setTimeout(() => setSaveSuccess(false), 3000);
             }
         } catch (err) {
-            setError("Failed to save tool");
+            setError(t("errorSaveTool"));
             console.error("Error saving tool:", err);
         } finally {
             setIsSaving(false);
@@ -505,7 +507,7 @@ export default function ToolDetailPage() {
             (parameters.length > 0 || presetParameters.length > 0);
 
         return `// ${tool.name}
-// ${tool.description || "HTTP API Tool"}
+// ${tool.description || t("httpApiToolComment")}
 
 const response = await fetch("${url}", {
     method: "${httpMethod}",
@@ -545,10 +547,10 @@ const data = await response.json();`;
             <div className="min-h-screen bg-background">
                 <div className="container mx-auto px-4 py-8">
                     <div className="max-w-4xl mx-auto text-center">
-                        <h1 className="text-2xl font-bold mb-4">Tool not found</h1>
+                        <h1 className="text-2xl font-bold mb-4">{t("toolNotFound")}</h1>
                         <Button onClick={() => router.push("/tools")}>
                             <ArrowLeft className="w-4 h-4 mr-2" />
-                            Back to Tools
+                            {t("backToTools")}
                         </Button>
                     </div>
                 </div>
@@ -575,7 +577,7 @@ const data = await response.json();`;
                                 onClick={() => router.push("/tools")}
                             >
                                 <ArrowLeft className="w-4 h-4 mr-2" />
-                                Back
+                                {t("back")}
                             </Button>
                             <div className="flex items-center gap-3">
                                 <div
@@ -601,7 +603,7 @@ const data = await response.json();`;
                                     onClick={() => setShowCodeDialog(true)}
                                 >
                                     <Code className="w-4 h-4 mr-2" />
-                                    View Code
+                                    {t("viewCode")}
                                 </Button>
                             )}
                             {TOOL_DOCUMENTATION_URLS[tool.category] && (
@@ -611,7 +613,7 @@ const data = await response.json();`;
                                     rel="noopener noreferrer"
                                     className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors"
                                 >
-                                    Docs
+                                    {t("docs")}
                                     <ExternalLink className="h-3.5 w-3.5" />
                                 </a>
                             )}
@@ -624,8 +626,8 @@ const data = await response.json();`;
                             onNameChange={setName}
                             description={description}
                             onDescriptionChange={setDescription}
-                            title="Calculator Configuration"
-                            subtitle="Built-in calculator for arithmetic operations. No additional configuration needed."
+                            title={t("calculatorConfigTitle")}
+                            subtitle={t("calculatorConfigSubtitle")}
                         />
                     ) : isEndCallTool ? (
                         <EndCallToolConfig
@@ -666,38 +668,38 @@ const data = await response.json();`;
                     ) : isMcpTool ? (
                         <Card>
                             <CardHeader>
-                                <CardTitle>MCP Server Configuration</CardTitle>
+                                <CardTitle>{t("mcpConfigTitle")}</CardTitle>
                                 <CardDescription>
-                                    Configure the MCP server endpoint. Its tools become available to the agent.
+                                    {t("mcpConfigDescription")}
                                 </CardDescription>
                             </CardHeader>
                             <CardContent className="space-y-6">
                                 <div className="space-y-2">
-                                    <Label htmlFor="mcp-name">Tool Name</Label>
+                                    <Label htmlFor="mcp-name">{t("mcpNameLabel")}</Label>
                                     <Input
                                         id="mcp-name"
                                         value={name}
                                         onChange={(e) => setName(e.target.value)}
-                                        placeholder="e.g., Customer MCP Server"
+                                        placeholder={t("mcpNamePlaceholder")}
                                     />
                                 </div>
 
                                 <div className="space-y-2">
-                                    <Label htmlFor="mcp-description">Description</Label>
+                                    <Label htmlFor="mcp-description">{t("descriptionLabel")}</Label>
                                     <p className="text-xs text-muted-foreground">
-                                        Provide a description which makes it easy for LLM to understand what this tool does
+                                        {t("mcpDescriptionHint")}
                                     </p>
                                     <Textarea
                                         id="mcp-description"
                                         value={description}
                                         onChange={(e) => setDescription(e.target.value)}
-                                        placeholder="What does this MCP server provide?"
+                                        placeholder={t("mcpDescriptionPlaceholder")}
                                         rows={3}
                                     />
                                 </div>
 
                                 <div className="space-y-2">
-                                    <Label htmlFor="mcp-url">MCP Server URL</Label>
+                                    <Label htmlFor="mcp-url">{t("mcpUrlLabel")}</Label>
                                     <Input
                                         id="mcp-url"
                                         value={mcpUrl}
@@ -707,7 +709,7 @@ const data = await response.json();`;
                                 </div>
 
                                 <div className="space-y-2">
-                                    <Label>Transport</Label>
+                                    <Label>{t("transportLabel")}</Label>
                                     <Input
                                         value="Streamable HTTP"
                                         disabled
@@ -718,20 +720,20 @@ const data = await response.json();`;
                                 <CredentialSelector
                                     value={mcpCredentialUuid}
                                     onChange={setMcpCredentialUuid}
-                                    label="Credential (Optional)"
-                                    description="Select a credential for authenticating with the MCP server, or leave empty for no auth."
+                                    label={t("credentialLabel")}
+                                    description={t("credentialDescription")}
                                 />
 
                                 <div className="space-y-2">
-                                    <Label htmlFor="mcp-tools-filter">Tools Filter (Optional)</Label>
+                                    <Label htmlFor="mcp-tools-filter">{t("toolsFilterLabel")}</Label>
                                     <Input
                                         id="mcp-tools-filter"
                                         value={mcpToolsFilter}
                                         onChange={(e) => setMcpToolsFilter(e.target.value)}
-                                        placeholder="e.g., tool_one, tool_two"
+                                        placeholder={t("toolsFilterPlaceholder")}
                                     />
                                     <p className="text-xs text-muted-foreground">
-                                        Comma-separated list of tool names to allow. Leave empty to expose all tools from the server.
+                                        {t("toolsFilterHint")}
                                     </p>
                                 </div>
                             </CardContent>
@@ -774,7 +776,7 @@ const data = await response.json();`;
 
                     {saveSuccess && (
                         <div className="mt-4 p-4 bg-green-500/10 border border-green-500/20 rounded-lg text-green-600">
-                            Tool saved successfully!
+                            {t("saveSuccess")}
                         </div>
                     )}
 
@@ -783,12 +785,12 @@ const data = await response.json();`;
                             {isSaving ? (
                                 <>
                                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                                    Saving...
+                                    {t("saving")}
                                 </>
                             ) : (
                                 <>
                                     <Save className="w-4 h-4 mr-2" />
-                                    Save
+                                    {t("save")}
                                 </>
                             )}
                         </Button>
@@ -800,9 +802,9 @@ const data = await response.json();`;
             <Dialog open={showCodeDialog} onOpenChange={setShowCodeDialog}>
                 <DialogContent className="max-w-2xl">
                     <DialogHeader>
-                        <DialogTitle>Code Preview</DialogTitle>
+                        <DialogTitle>{t("codePreviewTitle")}</DialogTitle>
                         <DialogDescription>
-                            JavaScript code to make this API call
+                            {t("codePreviewDescription")}
                         </DialogDescription>
                     </DialogHeader>
                     <div className="bg-muted rounded-lg p-4 font-mono text-sm overflow-auto max-h-96">

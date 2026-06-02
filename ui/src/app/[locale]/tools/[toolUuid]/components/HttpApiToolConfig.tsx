@@ -1,5 +1,7 @@
 "use client";
 
+import { useTranslations } from "next-intl";
+
 import type { RecordingResponseSchema } from "@/client/types.gen";
 import { StaticTextWarning, TextOrAudioInput } from "@/components/flow/TextOrAudioInput";
 import {
@@ -75,58 +77,60 @@ export function HttpApiToolConfig({
     onCustomMessageRecordingIdChange,
     recordings = [],
 }: HttpApiToolConfigProps) {
+    const t = useTranslations("components.httpApiToolConfig");
+    const tb = useTranslations("brand");
     return (
         <Card>
             <CardHeader>
-                <CardTitle>Tool Configuration</CardTitle>
+                <CardTitle>{t("title")}</CardTitle>
                 <CardDescription>
-                    Configure the HTTP API endpoint and request settings
+                    {t("description")}
                 </CardDescription>
             </CardHeader>
             <CardContent>
                 <Tabs defaultValue="settings" className="w-full">
                     <TabsList className="grid w-full grid-cols-3">
-                        <TabsTrigger value="settings">Settings</TabsTrigger>
-                        <TabsTrigger value="auth">Authentication</TabsTrigger>
-                        <TabsTrigger value="parameters">Parameters</TabsTrigger>
+                        <TabsTrigger value="settings">{t("tabSettings")}</TabsTrigger>
+                        <TabsTrigger value="auth">{t("tabAuthentication")}</TabsTrigger>
+                        <TabsTrigger value="parameters">{t("tabParameters")}</TabsTrigger>
                     </TabsList>
 
                     <TabsContent value="settings" className="space-y-4 mt-4">
                         <div className="grid gap-2">
-                            <Label>Tool Name</Label>
+                            <Label>{t("toolNameLabel")}</Label>
                             <Label className="text-xs text-muted-foreground">
-                                Use a descriptive name, like &quot;Get Weather using API&quot; for a tool that fetches weather
+                                {t("toolNameHint")}
                             </Label>
                             <Input
                                 value={name}
                                 onChange={(e) => onNameChange(e.target.value)}
-                                placeholder="e.g., Book Appointment"
+                                placeholder={t("toolNamePlaceholder")}
                             />
                         </div>
 
                         <div className="grid gap-2">
-                            <Label>Description</Label>
+                            <Label>{t("descriptionLabel")}</Label>
                             <Label className="text-xs text-muted-foreground">
-                                Provide a description which makes it easy for LLM to understand what this tool does
+                                {t("descriptionHint")}
                             </Label>
                             <Textarea
                                 value={description}
                                 onChange={(e) => onDescriptionChange(e.target.value)}
-                                placeholder="What does this tool do?"
+                                placeholder={t("descriptionPlaceholder")}
                                 rows={3}
                             />
                         </div>
 
                         <div className="grid grid-cols-2 gap-4">
                             <div className="grid gap-2">
-                                <Label>HTTP Method</Label>
+                                <Label>{t("httpMethodLabel")}</Label>
                                 <HttpMethodSelector
                                     value={httpMethod}
                                     onChange={onHttpMethodChange}
                                 />
                             </div>
                             <div className="grid gap-2">
-                                <Label>Timeout (ms)</Label>
+                                <Label>{t("timeoutLabel")}</Label>
                                 <Input
                                     type="number"
                                     value={timeoutMs}
@@ -140,7 +144,7 @@ export function HttpApiToolConfig({
                         </div>
 
                         <div className="grid gap-2">
-                            <Label>Endpoint URL</Label>
+                            <Label>{t("endpointUrlLabel")}</Label>
                             <UrlInput
                                 value={url}
                                 onChange={onUrlChange}
@@ -150,9 +154,9 @@ export function HttpApiToolConfig({
                         </div>
 
                         <div className="grid gap-2 pt-4 border-t">
-                            <Label>Custom Message</Label>
+                            <Label>{t("customMessageLabel")}</Label>
                             <Label className="text-xs text-muted-foreground">
-                                Optional message the AI will speak or play before executing this tool.
+                                {t("customMessageHint")}
                             </Label>
                             <TextOrAudioInput
                                 type={customMessageType}
@@ -166,7 +170,7 @@ export function HttpApiToolConfig({
                                     <Textarea
                                         value={customMessage}
                                         onChange={(e) => onCustomMessageChange(e.target.value)}
-                                        placeholder="e.g., Let me check that for you, one moment please."
+                                        placeholder={t("customMessagePlaceholder")}
                                         rows={2}
                                     />
                                 </>
@@ -183,10 +187,9 @@ export function HttpApiToolConfig({
 
                     <TabsContent value="parameters" className="space-y-4 mt-4">
                         <div className="grid gap-2">
-                            <Label>LLM Parameters</Label>
+                            <Label>{t("llmParametersLabel")}</Label>
                             <Label className="text-xs text-muted-foreground">
-                                Define the parameters that the LLM will provide when calling this tool.
-                                These will be sent as JSON body for POST/PUT/PATCH or as URL query params for GET/DELETE.
+                                {t("llmParametersHint")}
                             </Label>
                             <ParameterEditor
                                 parameters={parameters}
@@ -195,10 +198,9 @@ export function HttpApiToolConfig({
                         </div>
 
                         <div className="grid gap-2 pt-4 border-t">
-                            <Label>Preset Parameters</Label>
+                            <Label>{t("presetParametersLabel")}</Label>
                             <Label className="text-xs text-muted-foreground">
-                                Add values that Dograh should inject at runtime. These are not exposed to the LLM and can use
-                                workflow templates like {`{{initial_context.phone_number}}`} or fixed literals.
+                                {t("presetParametersHint", { brand: tb("name"), template: "{{initial_context.phone_number}}" })}
                             </Label>
                             <PresetParameterEditor
                                 parameters={presetParameters}
@@ -207,16 +209,16 @@ export function HttpApiToolConfig({
                         </div>
 
                         <div className="grid gap-2 pt-4 border-t">
-                            <Label>Custom Headers</Label>
+                            <Label>{t("customHeadersLabel")}</Label>
                             <Label className="text-xs text-muted-foreground">
-                                Add custom headers to include in the request (optional)
+                                {t("customHeadersHint")}
                             </Label>
                             <KeyValueEditor
                                 items={headers}
                                 onChange={onHeadersChange}
-                                keyPlaceholder="Header name"
-                                valuePlaceholder="Header value"
-                                addButtonText="Add Header"
+                                keyPlaceholder={t("headerNamePlaceholder")}
+                                valuePlaceholder={t("headerValuePlaceholder")}
+                                addButtonText={t("addHeaderButton")}
                             />
                         </div>
                     </TabsContent>

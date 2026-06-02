@@ -1,3 +1,5 @@
+import { useTranslations } from "next-intl";
+
 import { ServiceConfigurationForm } from "@/components/ServiceConfigurationForm";
 import {
     Dialog,
@@ -23,20 +25,22 @@ export const ModelConfigurationDialog = ({
     workflowName,
     onSave,
 }: ModelConfigurationDialogProps) => {
+    const t = useTranslations("components.modelConfigurationDialog");
+
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
                 <DialogHeader>
-                    <DialogTitle>Model Configuration</DialogTitle>
+                    <DialogTitle>{t("title")}</DialogTitle>
                     <DialogDescription>
-                        Override global model settings for this workflow. Toggle individual services to customize.
+                        {t("description")}
                     </DialogDescription>
                 </DialogHeader>
 
                 <ServiceConfigurationForm
                     mode="override"
                     currentOverrides={workflowConfigurations?.model_overrides}
-                    submitLabel="Save"
+                    submitLabel={t("save")}
                     onSave={async (config) => {
                         await onSave(
                             {

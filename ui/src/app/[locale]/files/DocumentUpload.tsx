@@ -1,6 +1,7 @@
 'use client';
 
 import { FileText, Info, Upload, X } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { useRef, useState } from 'react';
 import { toast } from 'sonner';
 
@@ -24,6 +25,8 @@ const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 const ACCEPTED_FILE_TYPES = ['.pdf', '.docx', '.doc', '.txt', '.json'];
 
 export default function DocumentUpload({ onUploadSuccess }: DocumentUploadProps) {
+  const t = useTranslations('components.documentUpload');
+  const tb = useTranslations('brand');
   const { config } = useAppConfig();
   const isOSS = config?.deploymentMode === 'oss';
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -37,12 +40,9 @@ export default function DocumentUpload({ onUploadSuccess }: DocumentUploadProps)
     <div className="flex gap-3 rounded-lg border border-amber-200 bg-amber-50 p-3 dark:border-amber-900/50 dark:bg-amber-950/30">
       <Info className="h-4 w-4 flex-shrink-0 text-amber-600 dark:text-amber-400 mt-0.5" />
       <div className="text-xs text-amber-900 dark:text-amber-200">
-        <p className="font-medium">Processed by an external service</p>
+        <p className="font-medium">{t('ossNoticeTitle')}</p>
         <p className="mt-1">
-          Uploaded documents are sent to Dograh&apos;s managed Model Proxy Service for
-          parsing and chunking. Dograh Model Proxy Service does not store or read your documents -
-          the extracted text and embeddings are returned and stored locally in your
-          self-hosted database.
+          {t('ossNoticeBody', { brand: tb('name') })}
         </p>
       </div>
     </div>
@@ -51,12 +51,12 @@ export default function DocumentUpload({ onUploadSuccess }: DocumentUploadProps)
   const validateFile = (file: File): boolean => {
     const fileExtension = '.' + file.name.split('.').pop()?.toLowerCase();
     if (!ACCEPTED_FILE_TYPES.includes(fileExtension)) {
-      toast.error(`Please select a supported file type: ${ACCEPTED_FILE_TYPES.join(', ')}`);
+      toast.error(t('errorUnsupportedType', { types: ACCEPTED_FILE_TYPES.join(', ') }));
       return false;
     }
 
     if (file.size > MAX_FILE_SIZE) {
-      toast.error('File size must be less than 5MB');
+      toast.error(t('errorFileTooLarge'));
       return false;
     }
 
@@ -101,7 +101,7 @@ export default function DocumentUpload({ onUploadSuccess }: DocumentUploadProps)
       });
 
       if (uploadUrlResponse.error || !uploadUrlResponse.data) {
-        throw new Error('Failed to get upload URL');
+        throw new Error(t('errorGetUploadUrl'));
       }
 
       const uploadData: DocumentUploadResponseSchema = uploadUrlResponse.data;
@@ -116,7 +116,7 @@ export default function DocumentUpload({ onUploadSuccess }: DocumentUploadProps)
       });
 
       if (!uploadResponse.ok) {
-        throw new Error('Failed to upload file to storage');
+        throw new Error(t('errorUploadToStorage'));
       }
 
       setUploadProgress(75);
@@ -130,16 +130,16 @@ export default function DocumentUpload({ onUploadSuccess }: DocumentUploadProps)
       });
 
       if (processResponse.error) {
-        throw new Error('Failed to trigger processing');
+        throw new Error(t('errorTriggerProcessing'));
       }
 
       setUploadProgress(100);
-      toast.success(`File uploaded: ${selectedFile.name}. Processing started.`);
+      toast.success(t('uploadSuccess', { filename: selectedFile.name }));
       clearSelectedFile();
       onUploadSuccess();
     } catch (error) {
       logger.error('Error uploading document:', error);
-      toast.error(error instanceof Error ? error.message : 'Failed to upload document');
+      toast.error(error instanceof Error ? error.message : t('errorUploadFailed'));
     } finally {
       setUploading(false);
       setUploadProgress(0);
@@ -199,7 +199,7 @@ export default function DocumentUpload({ onUploadSuccess }: DocumentUploadProps)
 
         {/* Retrieval mode selection */}
         <div className="space-y-3">
-          <Label className="text-sm font-medium">How should the agent use this document?</Label>
+          <Label className="text-sm font-medium">{t('retrievalModeQuestion')}</Label>
           <RadioGroup value={retrievalMode} onValueChange={setRetrievalMode}>
             <label
               htmlFor="full_document"
@@ -209,10 +209,9 @@ export default function DocumentUpload({ onUploadSuccess }: DocumentUploadProps)
             >
               <RadioGroupItem value="full_document" id="full_document" className="mt-0.5" />
               <div>
-                <p className="font-medium text-sm">Full Document</p>
+                <p className="font-medium text-sm">{t('fullDocumentTitle')}</p>
                 <p className="text-xs text-muted-foreground">
-                  The entire document is provided to the agent on each retrieval.
-                  Best for menus, price lists, FAQs, and other small reference documents.
+                  {t('fullDocumentDescription')}
                 </p>
               </div>
             </label>
@@ -224,10 +223,9 @@ export default function DocumentUpload({ onUploadSuccess }: DocumentUploadProps)
             >
               <RadioGroupItem value="chunked" id="chunked" className="mt-0.5" />
               <div>
-                <p className="font-medium text-sm">Chunked Search</p>
+                <p className="font-medium text-sm">{t('chunkedTitle')}</p>
                 <p className="text-xs text-muted-foreground">
-                  The document is split into chunks and the most relevant ones are retrieved.
-                  Better for large documents like manuals or policies.
+                  {t('chunkedDescription')}
                 </p>
               </div>
             </label>
@@ -236,7 +234,7 @@ export default function DocumentUpload({ onUploadSuccess }: DocumentUploadProps)
 
         {/* Upload button */}
         <Button onClick={uploadFile} className="w-full">
-          Upload & Process
+          {t('uploadAndProcess')}
         </Button>
       </div>
     );
@@ -269,13 +267,13 @@ export default function DocumentUpload({ onUploadSuccess }: DocumentUploadProps)
       >
         <Upload className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
         <p className="text-lg font-medium mb-2">
-          {uploading ? 'Uploading...' : 'Drop your document here'}
+          {uploading ? t('uploading') : t('dropHere')}
         </p>
         <p className="text-sm text-muted-foreground mb-4">
-          or click to browse
+          {t('orClickToBrowse')}
         </p>
         <p className="text-xs text-muted-foreground">
-          Supported formats: {ACCEPTED_FILE_TYPES.join(', ')} (Max 5MB)
+          {t('supportedFormats', { types: ACCEPTED_FILE_TYPES.join(', ') })}
         </p>
       </div>
 
@@ -283,7 +281,7 @@ export default function DocumentUpload({ onUploadSuccess }: DocumentUploadProps)
       {uploading && (
         <div className="space-y-2">
           <div className="flex justify-between text-sm">
-            <span>Uploading...</span>
+            <span>{t('uploading')}</span>
             <span>{uploadProgress}%</span>
           </div>
           <Progress value={uploadProgress} />
@@ -298,7 +296,7 @@ export default function DocumentUpload({ onUploadSuccess }: DocumentUploadProps)
             variant="outline"
             onClick={handleButtonClick}
           >
-            Choose File
+            {t('chooseFile')}
           </Button>
         </div>
       )}

@@ -1,4 +1,5 @@
 import { Trash2Icon } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -17,6 +18,7 @@ export const ContextVariablesSection = ({
     setInitialContext,
     disabled = false
 }: ContextVariablesSectionProps) => {
+    const t = useTranslations("components.contextVariablesSection");
     const [newKey, setNewKey] = useState("");
     const [newValue, setNewValue] = useState("");
 
@@ -41,13 +43,13 @@ export const ContextVariablesSection = ({
     return (
         <Card>
             <CardHeader>
-                <CardTitle className="text-lg">Template Context Variables</CardTitle>
+                <CardTitle className="text-lg">{t("title")}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
                 {/* Existing Variables */}
                 {Object.entries(initialContext).length > 0 && (
                     <div className="space-y-2">
-                        <Label className="text-sm font-medium">Current Variables</Label>
+                        <Label className="text-sm font-medium">{t("currentVariables")}</Label>
                         {Object.entries(initialContext).map(([key, value]) => (
                             <div key={key} className="flex items-center gap-2 p-3 border rounded-md bg-muted">
                                 <div className="flex-1">
@@ -74,11 +76,11 @@ export const ContextVariablesSection = ({
 
                 {/* Add New Variable */}
                 <div className="space-y-3">
-                    <Label className="text-sm font-medium">Add New Variable</Label>
+                    <Label className="text-sm font-medium">{t("addNewVariable")}</Label>
                     <div className="flex gap-2">
                         <div className="flex-1">
                             <Input
-                                placeholder="Variable key"
+                                placeholder={t("variableKeyPlaceholder")}
                                 value={newKey}
                                 onChange={(e) => setNewKey(e.target.value)}
                                 disabled={disabled}
@@ -86,7 +88,7 @@ export const ContextVariablesSection = ({
                         </div>
                         <div className="flex-1">
                             <Input
-                                placeholder="Variable value"
+                                placeholder={t("variableValuePlaceholder")}
                                 value={newValue}
                                 onChange={(e) => setNewValue(e.target.value)}
                                 disabled={disabled}
@@ -96,11 +98,11 @@ export const ContextVariablesSection = ({
                             onClick={handleAddContextVar}
                             disabled={!newKey || !newValue || disabled || !!initialContext[newKey]}
                         >
-                            Add
+                            {t("add")}
                         </Button>
                     </div>
                     {newKey && initialContext[newKey] && (
-                        <p className="text-sm text-red-500">Variable with this key already exists</p>
+                        <p className="text-sm text-red-500">{t("keyAlreadyExists")}</p>
                     )}
                 </div>
             </CardContent>

@@ -1,5 +1,7 @@
 "use client";
 
+import { useTranslations } from "next-intl";
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -22,6 +24,7 @@ export function BuiltinToolConfig({
     title,
     subtitle,
 }: BuiltinToolConfigProps) {
+    const t = useTranslations("components.builtinToolConfig");
     return (
         <Card>
             <CardHeader>
@@ -31,26 +34,26 @@ export function BuiltinToolConfig({
             <CardContent className="space-y-6">
                 {/* Tool Name */}
                 <div className="space-y-2">
-                    <Label htmlFor="tool-name">Tool Name</Label>
+                    <Label htmlFor="tool-name">{t("toolName")}</Label>
                     <Input
                         id="tool-name"
                         value={name}
                         onChange={(e) => onNameChange(e.target.value)}
-                        placeholder="Tool name"
+                        placeholder={t("toolNamePlaceholder")}
                     />
                 </div>
 
                 {/* Tool Description */}
                 <div className="space-y-2">
-                    <Label htmlFor="tool-description">Description</Label>
+                    <Label htmlFor="tool-description">{t("description")}</Label>
                     <p className="text-xs text-muted-foreground">
-                        Provide a description which makes it easy for LLM to understand what this tool does
+                        {t("descriptionHint")}
                     </p>
                     <Textarea
                         id="tool-description"
                         value={description}
                         onChange={(e) => onDescriptionChange(e.target.value)}
-                        placeholder="Describe what this tool does..."
+                        placeholder={t("descriptionPlaceholder")}
                         rows={3}
                     />
                 </div>

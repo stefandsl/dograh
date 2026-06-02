@@ -4,6 +4,7 @@ import 'react-international-phone/style.css';
 
 import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import { PhoneInput } from 'react-international-phone';
 
@@ -47,6 +48,7 @@ export const PhoneCallDialog = ({
     workflowId,
     user,
 }: PhoneCallDialogProps) => {
+    const t = useTranslations("components.phoneCallDialog");
     const router = useRouter();
     const { userConfig, saveUserConfig } = useUserConfig();
     const [phoneNumber, setPhoneNumber] = useState(userConfig?.test_phone_number || "");
@@ -197,7 +199,7 @@ export const PhoneCallDialog = ({
             });
 
             if (response.error) {
-                let errMsg = "Failed to initiate call";
+                let errMsg = t("failedToInitiateCall");
                 if (typeof response.error === "string") {
                     errMsg = response.error;
                 } else if (response.error && typeof response.error === "object") {
@@ -205,11 +207,11 @@ export const PhoneCallDialog = ({
                 }
                 setCallError(errMsg);
             } else {
-                const msg = response.data && (response.data as unknown as { message: string }).message || "Call initiated successfully!";
+                const msg = response.data && (response.data as unknown as { message: string }).message || t("callInitiatedSuccessfully");
                 setCallSuccessMsg(typeof msg === "string" ? msg : JSON.stringify(msg));
             }
         } catch (err: unknown) {
-            setCallError(err instanceof Error ? err.message : "Failed to initiate call");
+            setCallError(err instanceof Error ? err.message : t("failedToInitiateCall"));
         } finally {
             setCallLoading(false);
         }
@@ -219,7 +221,7 @@ export const PhoneCallDialog = ({
     const renderLoading = () => (
         <>
             <DialogHeader>
-                <DialogTitle>Phone Call</DialogTitle>
+                <DialogTitle>{t("phoneCall")}</DialogTitle>
             </DialogHeader>
             <div className="flex items-center justify-center py-8">
                 <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
@@ -231,18 +233,17 @@ export const PhoneCallDialog = ({
     const renderConfigurationNeeded = () => (
         <>
             <DialogHeader>
-                <DialogTitle>Configure Telephony</DialogTitle>
+                <DialogTitle>{t("configureTelephony")}</DialogTitle>
                 <DialogDescription>
-                    You need to configure your telephony settings before making phone calls.
-                    You will be redirected to the telephony configuration page.
+                    {t("configureTelephonyDescription")}
                 </DialogDescription>
             </DialogHeader>
             <DialogFooter>
                 <Button variant="ghost" onClick={() => onOpenChange(false)}>
-                    Do it Later
+                    {t("doItLater")}
                 </Button>
                 <Button onClick={handleConfigureContinue}>
-                    Continue
+                    {t("continue")}
                 </Button>
             </DialogFooter>
         </>
@@ -252,23 +253,23 @@ export const PhoneCallDialog = ({
     const renderPhoneCallForm = () => (
         <>
             <DialogHeader>
-                <DialogTitle>Phone Call</DialogTitle>
+                <DialogTitle>{t("phoneCall")}</DialogTitle>
                 <DialogDescription>
-                    Enter the phone number or SIP endpoint to call. The number will be saved automatically.
+                    {t("phoneCallDescription")}
                 </DialogDescription>
             </DialogHeader>
             {telephonyConfigs.length > 0 && (
                 <div className="flex flex-col gap-1.5">
-                    <Label htmlFor="telephony-config">Telephony configuration</Label>
+                    <Label htmlFor="telephony-config">{t("telephonyConfiguration")}</Label>
                     <Select value={selectedConfigId} onValueChange={setSelectedConfigId}>
                         <SelectTrigger id="telephony-config" className="w-full">
-                            <SelectValue placeholder="Select a configuration" />
+                            <SelectValue placeholder={t("selectAConfiguration")} />
                         </SelectTrigger>
                         <SelectContent>
                             {telephonyConfigs.map((config) => (
                                 <SelectItem key={config.id} value={String(config.id)}>
                                     {config.name} ({config.provider})
-                                    {config.is_default_outbound ? " — default" : ""}
+                                    {config.is_default_outbound ? t("defaultSuffix") : ""}
                                 </SelectItem>
                             ))}
                         </SelectContent>
@@ -277,11 +278,11 @@ export const PhoneCallDialog = ({
             )}
             {selectedConfigId && (
                 <div className="flex flex-col gap-1.5">
-                    <Label htmlFor="from-phone-number">Caller ID (from)</Label>
+                    <Label htmlFor="from-phone-number">{t("callerIdFrom")}</Label>
                     {loadingPhoneNumbers ? (
                         <div className="flex items-center text-sm text-muted-foreground">
                             <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                            Loading phone numbers...
+                            {t("loadingPhoneNumbers")}
                         </div>
                     ) : fromPhoneNumbers.length > 0 ? (
                         <Select
@@ -289,20 +290,20 @@ export const PhoneCallDialog = ({
                             onValueChange={setSelectedFromPhoneNumberId}
                         >
                             <SelectTrigger id="from-phone-number" className="w-full">
-                                <SelectValue placeholder="Select a phone number" />
+                                <SelectValue placeholder={t("selectAPhoneNumber")} />
                             </SelectTrigger>
                             <SelectContent>
                                 {fromPhoneNumbers.map((phone) => (
                                     <SelectItem key={phone.id} value={String(phone.id)}>
                                         {phone.label ? `${phone.label} — ${phone.address}` : phone.address}
-                                        {phone.is_default_caller_id ? " — default" : ""}
+                                        {phone.is_default_caller_id ? t("defaultSuffix") : ""}
                                     </SelectItem>
                                 ))}
                             </SelectContent>
                         </Select>
                     ) : (
                         <div className="text-xs text-muted-foreground">
-                            No phone numbers in this configuration. The provider will pick one automatically.
+                            {t("noPhoneNumbersInConfiguration")}
                         </div>
                     )}
                 </div>
@@ -325,7 +326,7 @@ export const PhoneCallDialog = ({
                 className="text-xs text-muted-foreground hover:text-foreground underline"
                 onClick={() => { setSipMode(!sipMode); setPhoneNumber(""); setPhoneChanged(true); }}
             >
-                {sipMode ? "Use phone number instead" : "Use SIP endpoint instead"}
+                {sipMode ? t("usePhoneNumberInstead") : t("useSipEndpointInstead")}
             </button>
             <DialogFooter className="flex-col sm:flex-row gap-2">
                 <Button
@@ -335,26 +336,26 @@ export const PhoneCallDialog = ({
                         router.push('/telephony-configurations');
                     }}
                 >
-                    Configure Telephony
+                    {t("configureTelephony")}
                 </Button>
                 <div className="flex gap-2 flex-1 justify-end">
                     <DialogClose asChild>
-                        <Button variant="outline">Cancel</Button>
+                        <Button variant="outline">{t("cancel")}</Button>
                     </DialogClose>
                     {!callSuccessMsg ? (
                         <Button
                             onClick={handleStartCall}
                             disabled={callLoading || !phoneNumber}
                         >
-                            {callLoading ? "Calling..." : "Start Call"}
+                            {callLoading ? t("calling") : t("startCall")}
                         </Button>
                     ) : (
                         <>
                             <Button variant="outline" onClick={() => { setCallSuccessMsg(null); setCallError(null); }}>
-                                Call Again
+                                {t("callAgain")}
                             </Button>
                             <Button onClick={() => onOpenChange(false)}>
-                                Close
+                                {t("close")}
                             </Button>
                         </>
                     )}

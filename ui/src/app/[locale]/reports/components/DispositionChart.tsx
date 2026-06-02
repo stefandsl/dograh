@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import {
   Bar,
   BarChart,
@@ -33,6 +34,7 @@ const COLORS = [
 ];
 
 export function DispositionChart({ data }: DispositionChartProps) {
+  const t = useTranslations('components.dispositionChart');
   const chartData = data.map((item, index) => ({
     ...item,
     fill: COLORS[index % COLORS.length],
@@ -44,8 +46,8 @@ export function DispositionChart({ data }: DispositionChartProps) {
       return (
         <div className="bg-background border rounded-lg shadow-lg p-3">
           <p className="font-semibold">{data.disposition}</p>
-          <p className="text-sm">Count: {data.count}</p>
-          <p className="text-sm">{data.percentage}% of total</p>
+          <p className="text-sm">{t('count', { count: data.count })}</p>
+          <p className="text-sm">{t('percentageOfTotal', { percentage: data.percentage })}</p>
         </div>
       );
     }
@@ -55,12 +57,12 @@ export function DispositionChart({ data }: DispositionChartProps) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Disposition Distribution</CardTitle>
+        <CardTitle>{t('title')}</CardTitle>
       </CardHeader>
       <CardContent>
         {data.length === 0 ? (
           <div className="h-[300px] flex items-center justify-center text-muted-foreground">
-            No disposition data available
+            {t('noData')}
           </div>
         ) : (
           <ResponsiveContainer width="100%" height={300}>

@@ -11,6 +11,7 @@
  * are deliberately greyed-out placeholders per `.claude/goals/04-ui-channels.md`.
  */
 
+import { useTranslations } from 'next-intl';
 import { useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 
@@ -45,6 +46,7 @@ import {
 } from '@/lib/imChannels';
 
 export default function IMChannelsPage() {
+  const t = useTranslations('pages.channels.im');
   const { user, getAccessToken, loading: authLoading, redirectToLogin } = useAuth();
   const hasFetched = useRef(false);
 
@@ -81,7 +83,7 @@ export default function IMChannelsPage() {
       setChannels(rows);
       setWaChannels(waRows);
     } catch (err) {
-      handleApiError(err, 'Failed to load channels');
+      handleApiError(err, t('toastLoadFailed'));
     } finally {
       setLoading(false);
     }
@@ -92,9 +94,13 @@ export default function IMChannelsPage() {
       const token = await getAccessToken();
       const updated = await updateWhatsAppChannel(token, ch.id, { enabled: !ch.enabled });
       setWaChannels((prev) => prev.map((c) => (c.id === updated.id ? updated : c)));
-      toast.success(`${updated.name} ${updated.enabled ? 'enabled' : 'disabled'}`);
+      toast.success(
+        updated.enabled
+          ? t('toastEnabled', { name: updated.name })
+          : t('toastDisabled', { name: updated.name }),
+      );
     } catch (err) {
-      handleApiError(err, 'Toggle failed');
+      handleApiError(err, t('toastToggleFailed'));
     }
   };
 
@@ -104,25 +110,28 @@ export default function IMChannelsPage() {
       const result = await testWhatsAppChannel(token, ch.id);
       if (result.ok) {
         toast.success(
-          `Connected as ${result.verified_name ?? 'unknown'} (${result.phone_number ?? 'no number'})`,
+          t('toastConnectedWa', {
+            name: result.verified_name ?? t('valueUnknown'),
+            phone: result.phone_number ?? t('valueNoNumber'),
+          }),
         );
       } else {
-        toast.error(`Test failed: ${result.error ?? 'unknown error'}`);
+        toast.error(t('toastTestFailed', { error: result.error ?? t('valueUnknownError') }));
       }
     } catch (err) {
-      handleApiError(err, 'Test request failed');
+      handleApiError(err, t('toastTestRequestFailed'));
     }
   };
 
   const onWaDelete = async (ch: WhatsAppChannel) => {
-    if (!confirm(`Delete WhatsApp channel "${ch.name}"?`)) return;
+    if (!confirm(t('confirmDeleteWa', { name: ch.name }))) return;
     try {
       const token = await getAccessToken();
       await deleteWhatsAppChannel(token, ch.id);
       setWaChannels((prev) => prev.filter((c) => c.id !== ch.id));
-      toast.success(`Deleted ${ch.name}`);
+      toast.success(t('toastDeleted', { name: ch.name }));
     } catch (err) {
-      handleApiError(err, 'Delete failed');
+      handleApiError(err, t('toastDeleteFailed'));
     }
   };
 
@@ -140,9 +149,13 @@ export default function IMChannelsPage() {
         enabled: !ch.enabled,
       });
       setChannels((prev) => prev.map((c) => (c.id === updated.id ? updated : c)));
-      toast.success(`${updated.name} ${updated.enabled ? 'enabled' : 'disabled'}`);
+      toast.success(
+        updated.enabled
+          ? t('toastEnabled', { name: updated.name })
+          : t('toastDisabled', { name: updated.name }),
+      );
     } catch (err) {
-      handleApiError(err, 'Toggle failed');
+      handleApiError(err, t('toastToggleFailed'));
     }
   };
 
@@ -151,24 +164,24 @@ export default function IMChannelsPage() {
       const token = await getAccessToken();
       const result = await testTelegramChannel(token, ch.id);
       if (result.ok) {
-        toast.success(`Connected as @${result.username ?? 'unknown'}`);
+        toast.success(t('toastConnectedTelegram', { username: result.username ?? t('valueUnknown') }));
       } else {
-        toast.error(`Test failed: ${result.error ?? 'unknown error'}`);
+        toast.error(t('toastTestFailed', { error: result.error ?? t('valueUnknownError') }));
       }
     } catch (err) {
-      handleApiError(err, 'Test request failed');
+      handleApiError(err, t('toastTestRequestFailed'));
     }
   };
 
   const onDelete = async (ch: TelegramChannel) => {
-    if (!confirm(`Delete channel "${ch.name}"? The bot will stop polling.`)) return;
+    if (!confirm(t('confirmDeleteTelegram', { name: ch.name }))) return;
     try {
       const token = await getAccessToken();
       await deleteTelegramChannel(token, ch.id);
       setChannels((prev) => prev.filter((c) => c.id !== ch.id));
-      toast.success(`Deleted ${ch.name}`);
+      toast.success(t('toastDeleted', { name: ch.name }));
     } catch (err) {
-      handleApiError(err, 'Delete failed');
+      handleApiError(err, t('toastDeleteFailed'));
     }
   };
 
@@ -176,41 +189,38 @@ export default function IMChannelsPage() {
     <div className="container mx-auto py-6 space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-semibold">IM Channels</h1>
-          <p className="text-sm text-muted-foreground">
-            Manage messaging-platform integrations. Tokens are stored encrypted;
-            the bot picks them up automatically via Redis hot-reload.
-          </p>
+          <h1 className="text-2xl font-semibold">{t('title')}</h1>
+          <p className="text-sm text-muted-foreground">{t('subtitle')}</p>
         </div>
         {activeTab === 'telegram' && (
-          <Button onClick={() => setDialogOpen(true)}>+ Add Telegram bot</Button>
+          <Button onClick={() => setDialogOpen(true)}>{t('addTelegramBot')}</Button>
         )}
         {activeTab === 'whatsapp' && (
-          <Button onClick={() => setWaDialogOpen(true)}>+ Add WhatsApp number</Button>
+          <Button onClick={() => setWaDialogOpen(true)}>{t('addWhatsAppNumber')}</Button>
         )}
       </div>
 
       {/* Tabs */}
       <div className="flex gap-2 border-b">
-        {(['telegram', 'whatsapp', 'discord'] as const).map((t) => {
-          const isLive = t === 'telegram' || t === 'whatsapp';
+        {(['telegram', 'whatsapp', 'discord'] as const).map((tab) => {
+          const isLive = tab === 'telegram' || tab === 'whatsapp';
           return (
             <button
-              key={t}
+              key={tab}
               type="button"
-              onClick={() => isLive && setActiveTab(t)}
+              onClick={() => isLive && setActiveTab(tab)}
               className={[
                 'px-3 py-2 text-sm capitalize border-b-2 -mb-px',
-                activeTab === t ? 'border-primary text-primary' : 'border-transparent',
+                activeTab === tab ? 'border-primary text-primary' : 'border-transparent',
                 !isLive
                   ? 'opacity-50 cursor-not-allowed'
                   : 'cursor-pointer hover:text-primary',
               ].join(' ')}
               disabled={!isLive}
-              title={!isLive ? 'Coming soon' : undefined}
+              title={!isLive ? t('comingSoon') : undefined}
             >
-              {t}
-              {!isLive ? ' (soon)' : ''}
+              {t(`tab_${tab}`)}
+              {!isLive ? t('soonSuffix') : ''}
             </button>
           );
         })}
@@ -219,10 +229,10 @@ export default function IMChannelsPage() {
       {/* List */}
       {activeTab === 'telegram' &&
         (loading ? (
-          <p className="text-sm text-muted-foreground">Loading…</p>
+          <p className="text-sm text-muted-foreground">{t('loading')}</p>
         ) : channels.length === 0 ? (
           <p className="text-sm text-muted-foreground">
-            No Telegram bots registered yet. Click <em>Add Telegram bot</em> to start.
+            {t.rich('emptyTelegram', { em: (c) => <em>{c}</em> })}
           </p>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -237,20 +247,20 @@ export default function IMChannelsPage() {
                 </CardHeader>
                 <CardContent className="text-sm space-y-2">
                   <div className="text-muted-foreground">
-                    Token: <code>{ch.config.bot_token || '(empty)'}</code>
+                    {t('labelToken')} <code>{ch.config.bot_token || t('valueEmpty')}</code>
                   </div>
                   <div className="text-muted-foreground">
-                    Allowed users:{' '}
+                    {t('labelAllowedUsers')}{' '}
                     {ch.config.allowed_user_ids && ch.config.allowed_user_ids.length > 0
                       ? ch.config.allowed_user_ids.join(', ')
-                      : 'all'}
+                      : t('valueAll')}
                   </div>
                   <div className="flex gap-2 pt-2">
                     <Button size="sm" variant="outline" onClick={() => onTest(ch)}>
-                      Test connection
+                      {t('testConnection')}
                     </Button>
                     <Button size="sm" variant="destructive" onClick={() => onDelete(ch)}>
-                      Delete
+                      {t('delete')}
                     </Button>
                   </div>
                 </CardContent>
@@ -261,11 +271,10 @@ export default function IMChannelsPage() {
 
       {activeTab === 'whatsapp' &&
         (loading ? (
-          <p className="text-sm text-muted-foreground">Loading…</p>
+          <p className="text-sm text-muted-foreground">{t('loading')}</p>
         ) : waChannels.length === 0 ? (
           <p className="text-sm text-muted-foreground">
-            No WhatsApp numbers registered yet. Click <em>Add WhatsApp number</em> to
-            connect one via the Meta Cloud API.
+            {t.rich('emptyWhatsApp', { em: (c) => <em>{c}</em> })}
           </p>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -280,32 +289,30 @@ export default function IMChannelsPage() {
                 </CardHeader>
                 <CardContent className="text-sm space-y-2">
                   <div className="text-muted-foreground">
-                    Phone number id: <code>{ch.config.phone_number_id || '(empty)'}</code>
+                    {t('labelPhoneNumberId')} <code>{ch.config.phone_number_id || t('valueEmpty')}</code>
                   </div>
                   {ch.config.business_account_id && (
                     <div className="text-muted-foreground">
-                      WABA id: <code>{ch.config.business_account_id}</code>
+                      {t('labelWabaId')} <code>{ch.config.business_account_id}</code>
                     </div>
                   )}
                   <div className="text-muted-foreground">
-                    Graph version:{' '}
+                    {t('labelGraphVersion')}{' '}
                     <code>{ch.config.graph_version || 'v20.0'}</code>
                   </div>
                   <div className="text-muted-foreground break-all">
-                    Webhook URL:{' '}
+                    {t('labelWebhookUrl')}{' '}
                     <code className="text-xs">{whatsappWebhookUrl(ch.id)}</code>
                   </div>
                   <p className="text-xs text-muted-foreground">
-                    Paste the webhook URL + the channel&apos;s verify token into the Meta
-                    Developer Console under <em>WhatsApp → Configuration → Webhook</em>,
-                    then click <em>Verify and save</em>.
+                    {t.rich('webhookHelp', { em: (c) => <em>{c}</em> })}
                   </p>
                   <div className="flex gap-2 pt-2">
                     <Button size="sm" variant="outline" onClick={() => onWaTest(ch)}>
-                      Test connection
+                      {t('testConnection')}
                     </Button>
                     <Button size="sm" variant="destructive" onClick={() => onWaDelete(ch)}>
-                      Delete
+                      {t('delete')}
                     </Button>
                   </div>
                 </CardContent>
@@ -343,6 +350,7 @@ function CreateTelegramDialog({
   onOpenChange: (v: boolean) => void;
   onCreated: (ch: TelegramChannel) => void;
 }) {
+  const t = useTranslations('pages.channels.im');
   const { getAccessToken, redirectToLogin } = useAuth();
   const [name, setName] = useState('');
   const [token, setToken] = useState('');
@@ -359,7 +367,7 @@ function CreateTelegramDialog({
 
   const save = async () => {
     if (!name.trim() || !token.trim()) {
-      toast.error('Name and bot token are required');
+      toast.error(t('errorTelegramRequired'));
       return;
     }
     setSaving(true);
@@ -375,10 +383,10 @@ function CreateTelegramDialog({
         allowed_user_ids: allowedIds,
         enabled,
       });
-      toast.success(`Created "${created.name}". API key minted (shown once below).`);
+      toast.success(t('toastTelegramCreated', { name: created.name }));
       // Best-effort surface: show the raw api_key once via a toast. Operator
       // can rotate later via the (planned) rotate-api-key control.
-      toast(`API key: ${created.api_key}`, { duration: 20000 });
+      toast(t('toastApiKey', { key: created.api_key }), { duration: 20000 });
       onCreated(created);
       reset();
     } catch (err) {
@@ -386,7 +394,7 @@ function CreateTelegramDialog({
         redirectToLogin();
         return;
       }
-      toast.error(err instanceof Error ? err.message : 'Create failed');
+      toast.error(err instanceof Error ? err.message : t('toastCreateFailed'));
     } finally {
       setSaving(false);
     }
@@ -396,11 +404,11 @@ function CreateTelegramDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Add a Telegram bot</DialogTitle>
+          <DialogTitle>{t('dialogTelegramTitle')}</DialogTitle>
         </DialogHeader>
         <div className="space-y-3 py-2">
           <div className="space-y-1">
-            <Label htmlFor="name">Name</Label>
+            <Label htmlFor="name">{t('fieldName')}</Label>
             <Input
               id="name"
               placeholder="ops-bot"
@@ -409,7 +417,7 @@ function CreateTelegramDialog({
             />
           </div>
           <div className="space-y-1">
-            <Label htmlFor="token">Bot token</Label>
+            <Label htmlFor="token">{t('fieldBotToken')}</Label>
             <Input
               id="token"
               type="password"
@@ -417,33 +425,29 @@ function CreateTelegramDialog({
               value={token}
               onChange={(e) => setToken(e.target.value)}
             />
-            <p className="text-xs text-muted-foreground">
-              From @BotFather. Stored encrypted; only the last 6 chars shown after save.
-            </p>
+            <p className="text-xs text-muted-foreground">{t('hintBotToken')}</p>
           </div>
           <div className="space-y-1">
-            <Label htmlFor="allowed">Allowed Telegram user IDs (comma-separated)</Label>
+            <Label htmlFor="allowed">{t('fieldAllowedUserIds')}</Label>
             <Input
               id="allowed"
               placeholder="e.g. 123456789, 987654321"
               value={allowed}
               onChange={(e) => setAllowed(e.target.value)}
             />
-            <p className="text-xs text-muted-foreground">
-              Empty = anyone who messages the bot can use it.
-            </p>
+            <p className="text-xs text-muted-foreground">{t('hintAllowedUserIds')}</p>
           </div>
           <div className="flex items-center gap-2">
             <Switch checked={enabled} onCheckedChange={setEnabled} id="enabled" />
-            <Label htmlFor="enabled">Enabled</Label>
+            <Label htmlFor="enabled">{t('fieldEnabled')}</Label>
           </div>
         </div>
         <DialogFooter>
           <Button variant="ghost" onClick={() => onOpenChange(false)}>
-            Cancel
+            {t('cancel')}
           </Button>
           <Button onClick={save} disabled={saving}>
-            {saving ? 'Saving…' : 'Save'}
+            {saving ? t('saving') : t('save')}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -460,6 +464,7 @@ function CreateWhatsAppDialog({
   onOpenChange: (v: boolean) => void;
   onCreated: (ch: WhatsAppChannel) => void;
 }) {
+  const t = useTranslations('pages.channels.im');
   const { getAccessToken, redirectToLogin } = useAuth();
   const [name, setName] = useState('');
   const [phoneNumberId, setPhoneNumberId] = useState('');
@@ -495,7 +500,7 @@ function CreateWhatsAppDialog({
   const save = async () => {
     if (!name.trim() || !phoneNumberId.trim() || !accessToken.trim() ||
         !appSecret.trim() || !verifyToken.trim()) {
-      toast.error('Name, phone number id, access token, app secret, and verify token are required');
+      toast.error(t('errorWhatsAppRequired'));
       return;
     }
     setSaving(true);
@@ -511,7 +516,7 @@ function CreateWhatsAppDialog({
         graph_version: graphVersion.trim() || 'v20.0',
         enabled,
       });
-      toast.success(`Created "${created.name}". Configure the webhook URL in Meta Developer Console.`);
+      toast.success(t('toastWhatsAppCreated', { name: created.name }));
       onCreated(created);
       reset();
     } catch (err) {
@@ -519,7 +524,7 @@ function CreateWhatsAppDialog({
         redirectToLogin();
         return;
       }
-      toast.error(err instanceof Error ? err.message : 'Create failed');
+      toast.error(err instanceof Error ? err.message : t('toastCreateFailed'));
     } finally {
       setSaving(false);
     }
@@ -529,35 +534,31 @@ function CreateWhatsAppDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Add a WhatsApp number</DialogTitle>
+          <DialogTitle>{t('dialogWhatsAppTitle')}</DialogTitle>
         </DialogHeader>
         <div className="space-y-3 py-2 max-h-[60vh] overflow-y-auto">
           <div className="space-y-1">
-            <Label htmlFor="wa-name">Display name</Label>
+            <Label htmlFor="wa-name">{t('fieldDisplayName')}</Label>
             <Input
               id="wa-name"
               placeholder="support-line"
               value={name}
               onChange={(e) => setName(e.target.value)}
             />
-            <p className="text-xs text-muted-foreground">
-              Internal label only — not shown to WhatsApp users.
-            </p>
+            <p className="text-xs text-muted-foreground">{t('hintDisplayName')}</p>
           </div>
           <div className="space-y-1">
-            <Label htmlFor="wa-pnid">Phone number id</Label>
+            <Label htmlFor="wa-pnid">{t('fieldPhoneNumberId')}</Label>
             <Input
               id="wa-pnid"
               placeholder="123456789012345"
               value={phoneNumberId}
               onChange={(e) => setPhoneNumberId(e.target.value)}
             />
-            <p className="text-xs text-muted-foreground">
-              From Meta Business Manager → WhatsApp → API Setup.
-            </p>
+            <p className="text-xs text-muted-foreground">{t('hintPhoneNumberId')}</p>
           </div>
           <div className="space-y-1">
-            <Label htmlFor="wa-token">Access token</Label>
+            <Label htmlFor="wa-token">{t('fieldAccessToken')}</Label>
             <Input
               id="wa-token"
               type="password"
@@ -565,45 +566,38 @@ function CreateWhatsAppDialog({
               value={accessToken}
               onChange={(e) => setAccessToken(e.target.value)}
             />
-            <p className="text-xs text-muted-foreground">
-              Long-lived system-user token. Stored encrypted; only the last 6 chars
-              shown after save.
-            </p>
+            <p className="text-xs text-muted-foreground">{t('hintAccessToken')}</p>
           </div>
           <div className="space-y-1">
-            <Label htmlFor="wa-app-secret">App secret</Label>
+            <Label htmlFor="wa-app-secret">{t('fieldAppSecret')}</Label>
             <Input
               id="wa-app-secret"
               type="password"
-              placeholder="The Meta App Secret"
+              placeholder={t('placeholderAppSecret')}
               value={appSecret}
               onChange={(e) => setAppSecret(e.target.value)}
             />
             <p className="text-xs text-muted-foreground">
-              Used to verify the <code>X-Hub-Signature-256</code> header on inbound
-              webhooks. Found under Meta Developer Console → App Settings → Basic.
+              {t.rich('hintAppSecret', { code: (c) => <code>{c}</code> })}
             </p>
           </div>
           <div className="space-y-1">
-            <Label htmlFor="wa-verify">Webhook verify token</Label>
+            <Label htmlFor="wa-verify">{t('fieldVerifyToken')}</Label>
             <div className="flex gap-2">
               <Input
                 id="wa-verify"
-                placeholder="Any opaque secret you choose"
+                placeholder={t('placeholderVerifyToken')}
                 value={verifyToken}
                 onChange={(e) => setVerifyToken(e.target.value)}
               />
               <Button type="button" variant="outline" onClick={generateVerifyToken}>
-                Generate
+                {t('generate')}
               </Button>
             </div>
-            <p className="text-xs text-muted-foreground">
-              Paste this verbatim into Meta&apos;s webhook subscription form.
-              Stored encrypted; only the last 6 chars shown after save.
-            </p>
+            <p className="text-xs text-muted-foreground">{t('hintVerifyToken')}</p>
           </div>
           <div className="space-y-1">
-            <Label htmlFor="wa-waba">Business account id (optional)</Label>
+            <Label htmlFor="wa-waba">{t('fieldBusinessAccountId')}</Label>
             <Input
               id="wa-waba"
               placeholder="123456789012345"
@@ -612,7 +606,7 @@ function CreateWhatsAppDialog({
             />
           </div>
           <div className="space-y-1">
-            <Label htmlFor="wa-graph">Graph API version</Label>
+            <Label htmlFor="wa-graph">{t('fieldGraphVersion')}</Label>
             <Input
               id="wa-graph"
               placeholder="v20.0"
@@ -622,15 +616,15 @@ function CreateWhatsAppDialog({
           </div>
           <div className="flex items-center gap-2">
             <Switch checked={enabled} onCheckedChange={setEnabled} id="wa-enabled" />
-            <Label htmlFor="wa-enabled">Enabled</Label>
+            <Label htmlFor="wa-enabled">{t('fieldEnabled')}</Label>
           </div>
         </div>
         <DialogFooter>
           <Button variant="ghost" onClick={() => onOpenChange(false)}>
-            Cancel
+            {t('cancel')}
           </Button>
           <Button onClick={save} disabled={saving}>
-            {saving ? 'Saving…' : 'Save'}
+            {saving ? t('saving') : t('save')}
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -1,5 +1,7 @@
 "use client";
 
+import { useTranslations } from "next-intl";
+
 import { Skeleton } from "@/components/ui/skeleton";
 import type { ConversationItem } from "@/components/workflow/conversation";
 import { ConversationTimeline } from "@/components/workflow/conversation";
@@ -29,6 +31,7 @@ export function ManualTextChatPanel({
     onActiveChange,
     onNodeTransition,
 }: ManualTextChatPanelProps) {
+    const t = useTranslations("components.workflowTester.manualTextChatPanel");
     const {
         session,
         started,
@@ -84,8 +87,8 @@ export function ManualTextChatPanel({
                     <div className="flex h-full items-center justify-center px-4 py-10 text-center">
                         <p className="text-sm text-muted-foreground">
                             {disabled
-                                ? (disabledReason ?? "Testing is paused.")
-                                : "Send a message to start the conversation."}
+                                ? (disabledReason ?? t("testingPaused"))
+                                : t("sendMessageToStart")}
                         </p>
                     </div>
                 ) : (
@@ -94,8 +97,8 @@ export function ManualTextChatPanel({
                         autoScroll={true}
                         scrollBehavior="smooth"
                         emptyState={{
-                            title: "No conversation recorded",
-                            subtitle: "Send a message to start the conversation.",
+                            title: t("noConversationRecorded"),
+                            subtitle: t("sendMessageToStart"),
                         }}
                         pendingIndicator={sendingMessage ? <TypingIndicator /> : null}
                         className="py-1"

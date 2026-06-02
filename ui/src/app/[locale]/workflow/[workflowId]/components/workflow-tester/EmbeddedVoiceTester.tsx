@@ -2,6 +2,7 @@
 
 import { Loader2, Phone, RefreshCw } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { useEffect, useRef } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -28,6 +29,7 @@ export function EmbeddedVoiceTester({
     onReset,
     onNodeTransition,
 }: EmbeddedVoiceTesterProps) {
+    const t = useTranslations("components.workflowTester.embeddedVoiceTester");
     const router = useRouter();
     const {
         audioRef,
@@ -64,12 +66,12 @@ export function EmbeddedVoiceTester({
     }, [start]);
 
     const endButtonLabel = connectionActive
-        ? "End Call"
+        ? t("endCall")
         : isCompleted
-            ? "Start Another Test"
+            ? t("startAnotherTest")
             : connectionStatus === "failed"
-                ? "Retry Call"
-                : "Starting Test...";
+                ? t("retryCall")
+                : t("startingTest");
 
     const handleFooterAction = async () => {
         if (connectionActive) {
@@ -112,7 +114,7 @@ export function EmbeddedVoiceTester({
                             {isStarting && connectionStatus !== "failed" ? (
                                 <>
                                     <Loader2 className="h-4 w-4 animate-spin" />
-                                    Starting Test...
+                                    {t("startingTest")}
                                 </>
                             ) : connectionActive ? (
                                 <>

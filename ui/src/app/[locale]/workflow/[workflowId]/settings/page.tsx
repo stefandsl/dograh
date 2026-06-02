@@ -2,8 +2,8 @@
 
 import { format } from "date-fns";
 import { ArrowLeft, BookA, Brain, CalendarIcon, Clipboard, Download, ExternalLink, FileDown, Fingerprint, Loader2, Mic, Pause, PhoneOff, Play, Rocket, Settings, Trash2Icon, Upload, Variable, X } from "lucide-react";
-import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 
@@ -26,6 +26,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { SETTINGS_DOCUMENTATION_URLS } from "@/constants/documentation";
 import { UnsavedChangesProvider, useUnsavedChanges, useUnsavedChangesContext } from "@/context/UnsavedChangesContext";
 import { useAudioPlayback } from "@/hooks/useAudioPlayback";
+import { Link } from "@/i18n/navigation";
 import { useAuth } from "@/lib/auth";
 import logger from "@/lib/logger";
 import {
@@ -73,15 +74,15 @@ Respond with ONLY "CONVERSATION" if a person answered, or "VOICEMAIL" if it's vo
 
 // Sidebar navigation items
 const NAV_ITEMS = [
-    { id: "general", label: "General", icon: Settings },
-    { id: "models", label: "Model Overrides", icon: Brain },
-    { id: "variables", label: "Template Variables", icon: Variable },
-    { id: "dictionary", label: "Dictionary", icon: BookA },
-    { id: "voicemail", label: "Voicemail Detection", icon: PhoneOff },
-    { id: "recordings", label: "Recordings", icon: Mic },
-    { id: "deployment", label: "Add to Website", icon: Rocket },
-    { id: "report", label: "Report", icon: FileDown },
-    { id: "identity", label: "Agent UUID", icon: Fingerprint },
+    { id: "general", labelKey: "navGeneral", icon: Settings },
+    { id: "models", labelKey: "navModelOverrides", icon: Brain },
+    { id: "variables", labelKey: "navTemplateVariables", icon: Variable },
+    { id: "dictionary", labelKey: "navDictionary", icon: BookA },
+    { id: "voicemail", labelKey: "navVoicemailDetection", icon: PhoneOff },
+    { id: "recordings", labelKey: "navRecordings", icon: Mic },
+    { id: "deployment", labelKey: "navAddToWebsite", icon: Rocket },
+    { id: "report", labelKey: "navReport", icon: FileDown },
+    { id: "identity", labelKey: "navAgentUuid", icon: Fingerprint },
 ];
 
 // ---------------------------------------------------------------------------
@@ -89,6 +90,7 @@ const NAV_ITEMS = [
 // ---------------------------------------------------------------------------
 
 function ReportSection({ workflowId }: { workflowId: number }) {
+    const t = useTranslations("pages.workflow.workflowId.settings");
     const [startDate, setStartDate] = useState<Date | undefined>(undefined);
     const [startTime, setStartTime] = useState("00:00");
     const [endDate, setEndDate] = useState<Date | undefined>(undefined);
@@ -128,11 +130,11 @@ function ReportSection({ workflowId }: { workflowId: number }) {
                 a.remove();
                 window.URL.revokeObjectURL(url);
             } else {
-                toast.error("Failed to download report");
+                toast.error(t("reportDownloadError"));
             }
         } catch (err) {
             logger.error(`Failed to download workflow report: ${err}`);
-            toast.error("Failed to download report");
+            toast.error(t("reportDownloadError"));
         } finally {
             setIsDownloading(false);
         }
@@ -150,10 +152,10 @@ function ReportSection({ workflowId }: { workflowId: number }) {
             <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-base">
                     <FileDown className="h-4 w-4" />
-                    Report
+                    {t("reportTitle")}
                 </CardTitle>
                 <CardDescription>
-                    Download a CSV report of completed runs for this agent, optionally filtered by date range.
+                    {t("reportDescription")}
                 </CardDescription>
             </CardHeader>
             <CardFooter className="border-t pt-6">
@@ -161,21 +163,21 @@ function ReportSection({ workflowId }: { workflowId: number }) {
                     <PopoverTrigger asChild>
                         <Button variant="outline" disabled={isDownloading}>
                             <Download className="h-4 w-4 mr-2" />
-                            Download Report
+                            {t("reportDownloadButton")}
                         </Button>
                     </PopoverTrigger>
                     <PopoverContent className="w-auto p-4" align="start">
                         <div className="space-y-4">
-                            <div className="text-sm font-medium">Filter by date range</div>
+                            <div className="text-sm font-medium">{t("reportFilterByDateRange")}</div>
                             <div className="grid gap-3">
                                 <div className="space-y-1.5">
-                                    <Label className="text-xs">From</Label>
+                                    <Label className="text-xs">{t("reportFrom")}</Label>
                                     <div className="flex gap-2">
                                         <Popover>
                                             <PopoverTrigger asChild>
                                                 <Button variant="outline" size="sm" className="w-[140px] justify-start text-left font-normal">
                                                     <CalendarIcon className="mr-2 h-3.5 w-3.5" />
-                                                    {startDate ? format(startDate, "MMM dd, yyyy") : "Start date"}
+                                                    {startDate ? format(startDate, "MMM dd, yyyy") : t("reportStartDate")}
                                                 </Button>
                                             </PopoverTrigger>
                                             <PopoverContent className="w-auto p-0" align="start">
@@ -196,13 +198,13 @@ function ReportSection({ workflowId }: { workflowId: number }) {
                                     </div>
                                 </div>
                                 <div className="space-y-1.5">
-                                    <Label className="text-xs">To</Label>
+                                    <Label className="text-xs">{t("reportTo")}</Label>
                                     <div className="flex gap-2">
                                         <Popover>
                                             <PopoverTrigger asChild>
                                                 <Button variant="outline" size="sm" className="w-[140px] justify-start text-left font-normal">
                                                     <CalendarIcon className="mr-2 h-3.5 w-3.5" />
-                                                    {endDate ? format(endDate, "MMM dd, yyyy") : "End date"}
+                                                    {endDate ? format(endDate, "MMM dd, yyyy") : t("reportEndDate")}
                                                 </Button>
                                             </PopoverTrigger>
                                             <PopoverContent className="w-auto p-0" align="start">
@@ -226,11 +228,11 @@ function ReportSection({ workflowId }: { workflowId: number }) {
                             <Separator />
                             <div className="flex justify-between">
                                 <Button variant="ghost" size="sm" onClick={handleClear}>
-                                    Clear
+                                    {t("reportClear")}
                                 </Button>
                                 <Button size="sm" onClick={handleDownload} disabled={isDownloading}>
                                     <Download className="h-3.5 w-3.5 mr-1.5" />
-                                    {startDate || endDate ? "Download Filtered" : "Download All"}
+                                    {startDate || endDate ? t("reportDownloadFiltered") : t("reportDownloadAll")}
                                 </Button>
                             </div>
                         </div>
@@ -258,6 +260,7 @@ function GeneralSection({
     workflowId: number;
     onSave: (configurations: WorkflowConfigurations, workflowName: string) => Promise<void>;
 }) {
+    const t = useTranslations("pages.workflow.workflowId.settings");
     const [name, setName] = useState(workflowName);
     const [ambientNoiseConfig, setAmbientNoiseConfig] = useState<AmbientNoiseConfiguration>(
         workflowConfigurations.ambient_noise_configuration || DEFAULT_AMBIENT_NOISE_CONFIG,
@@ -294,7 +297,7 @@ function GeneralSection({
 
     const handleAmbientFileUpload = async (file: File) => {
         if (file.size > MAX_AMBIENT_NOISE_FILE_SIZE) {
-            setAudioUploadError(`File too large (${(file.size / (1024 * 1024)).toFixed(1)}MB). Maximum is 10MB.`);
+            setAudioUploadError(t("ambientFileTooLarge", { size: (file.size / (1024 * 1024)).toFixed(1) }));
             return;
         }
 
@@ -313,7 +316,7 @@ function GeneralSection({
             });
 
             if (res.error || !res.data?.upload_url) {
-                throw new Error("Failed to get upload URL");
+                throw new Error(t("ambientGetUploadUrlError"));
             }
 
             const data = res.data;
@@ -325,7 +328,7 @@ function GeneralSection({
                 headers: { "Content-Type": file.type || "audio/wav" },
             });
             if (!uploadRes.ok) {
-                throw new Error("File upload failed");
+                throw new Error(t("ambientFileUploadFailed"));
             }
 
             // 3. Update config with storage reference
@@ -336,7 +339,7 @@ function GeneralSection({
                 original_filename: file.name,
             }));
         } catch (err) {
-            setAudioUploadError(err instanceof Error ? err.message : "Upload failed");
+            setAudioUploadError(err instanceof Error ? err.message : t("ambientUploadFailed"));
         } finally {
             setIsUploadingAudio(false);
             if (ambientFileInputRef.current) ambientFileInputRef.current.value = "";
@@ -377,21 +380,21 @@ function GeneralSection({
             <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-base">
                     <Settings className="h-4 w-4" />
-                    General
+                    {t("generalTitle")}
                 </CardTitle>
-                <CardDescription>Agent name, call behavior, and turn detection.{" "}
-                    <a href={SETTINGS_DOCUMENTATION_URLS.general} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-0.5 underline">Learn more <ExternalLink className="h-3 w-3" /></a>
+                <CardDescription>{t("generalDescription")}{" "}
+                    <a href={SETTINGS_DOCUMENTATION_URLS.general} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-0.5 underline">{t("learnMore")} <ExternalLink className="h-3 w-3" /></a>
                 </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
                 {/* Agent Name */}
                 <div className="space-y-2">
-                    <Label htmlFor="workflow_name" className="text-sm font-medium">Agent Name</Label>
+                    <Label htmlFor="workflow_name" className="text-sm font-medium">{t("agentNameLabel")}</Label>
                     <Input
                         id="workflow_name"
                         value={name}
                         onChange={(e) => setName(e.target.value)}
-                        placeholder="Enter Agent name"
+                        placeholder={t("agentNamePlaceholder")}
                     />
                 </div>
 
@@ -400,13 +403,13 @@ function GeneralSection({
                 {/* Ambient Noise */}
                 <div className="space-y-4">
                     <div>
-                        <h3 className="text-sm font-medium">Ambient Noise</h3>
+                        <h3 className="text-sm font-medium">{t("ambientNoiseTitle")}</h3>
                         <p className="text-xs text-muted-foreground mt-0.5">
-                            Add background ambient noise to make the conversation sound more natural.
+                            {t("ambientNoiseDescription")}
                         </p>
                     </div>
                     <div className="flex items-center justify-between">
-                        <Label htmlFor="ambient-noise-enabled" className="text-sm">Use Ambient Noise</Label>
+                        <Label htmlFor="ambient-noise-enabled" className="text-sm">{t("ambientUseLabel")}</Label>
                         <Switch
                             id="ambient-noise-enabled"
                             checked={ambientNoiseConfig.enabled}
@@ -418,7 +421,7 @@ function GeneralSection({
                     {ambientNoiseConfig.enabled && (
                         <div className="space-y-4">
                             <div className="space-y-2">
-                                <Label htmlFor="ambient-volume" className="text-xs">Volume</Label>
+                                <Label htmlFor="ambient-volume" className="text-xs">{t("ambientVolumeLabel")}</Label>
                                 <Input
                                     id="ambient-volume"
                                     type="number"
@@ -435,15 +438,15 @@ function GeneralSection({
 
                             {/* Custom Audio File */}
                             <div className="space-y-2">
-                                <Label className="text-xs">Custom Audio File</Label>
+                                <Label className="text-xs">{t("customAudioFileLabel")}</Label>
                                 <p className="text-xs text-muted-foreground">
-                                    Upload your own audio file or use the default office ambience.
+                                    {t("customAudioFileDescription")}
                                 </p>
 
                                 {ambientNoiseConfig.storage_key ? (
                                     <div className="flex items-center gap-2 rounded-md border p-2 bg-muted/10">
                                         <code className="text-xs bg-muted px-1.5 py-0.5 rounded font-mono truncate flex-1">
-                                            {ambientNoiseConfig.original_filename || "Custom audio"}
+                                            {ambientNoiseConfig.original_filename || t("customAudioFallback")}
                                         </code>
                                         <Button
                                             type="button"
@@ -458,7 +461,7 @@ function GeneralSection({
                                                         ambientNoiseConfig.storage_backend,
                                                     );
                                                 } catch {
-                                                    setAudioUploadError("Failed to play audio");
+                                                    setAudioUploadError(t("ambientPlayError"));
                                                 }
                                             }}
                                         >
@@ -503,7 +506,7 @@ function GeneralSection({
                                             ) : (
                                                 <Upload className="w-4 h-4 mr-2" />
                                             )}
-                                            {isUploadingAudio ? "Uploading..." : "Upload audio file (max 10MB)"}
+                                            {isUploadingAudio ? t("uploadingEllipsis") : t("uploadAudioButton")}
                                         </Button>
                                     </div>
                                 )}
@@ -514,7 +517,7 @@ function GeneralSection({
 
                                 {!ambientNoiseConfig.storage_key && (
                                     <p className="text-xs text-muted-foreground italic">
-                                        Using default office ambience
+                                        {t("usingDefaultOfficeAmbience")}
                                     </p>
                                 )}
                             </div>
@@ -527,35 +530,35 @@ function GeneralSection({
                 {/* Turn Detection */}
                 <div className="space-y-4">
                     <div>
-                        <h3 className="text-sm font-medium">Turn Detection</h3>
+                        <h3 className="text-sm font-medium">{t("turnDetectionTitle")}</h3>
                         <p className="text-xs text-muted-foreground mt-0.5">
-                            Configure how the agent detects when the user has finished speaking.
+                            {t("turnDetectionDescription")}
                         </p>
                     </div>
                     <div className="space-y-2">
-                        <Label htmlFor="turn_stop_strategy" className="text-xs">Detection Strategy</Label>
+                        <Label htmlFor="turn_stop_strategy" className="text-xs">{t("detectionStrategyLabel")}</Label>
                         <Select
                             value={turnStopStrategy}
                             onValueChange={(value: TurnStopStrategy) => setTurnStopStrategy(value)}
                         >
                             <SelectTrigger id="turn_stop_strategy">
-                                <SelectValue placeholder="Select strategy" />
+                                <SelectValue placeholder={t("selectStrategyPlaceholder")} />
                             </SelectTrigger>
                             <SelectContent>
-                                <SelectItem value="transcription">Transcription-based</SelectItem>
-                                <SelectItem value="turn_analyzer">Smart Turn Analyzer</SelectItem>
+                                <SelectItem value="transcription">{t("strategyTranscription")}</SelectItem>
+                                <SelectItem value="turn_analyzer">{t("strategySmartTurnAnalyzer")}</SelectItem>
                             </SelectContent>
                         </Select>
                         <p className="text-xs text-muted-foreground">
                             {turnStopStrategy === "transcription"
-                                ? "Best for short responses (1-2 word statements). Ends turn when transcription indicates completion."
-                                : "Best for longer responses with natural pauses. Uses ML model to detect end of turn."}
+                                ? t("strategyTranscriptionHelp")
+                                : t("strategySmartTurnAnalyzerHelp")}
                         </p>
                     </div>
                     {turnStopStrategy === "turn_analyzer" && (
                         <div className="space-y-2">
                             <Label htmlFor="smart_turn_stop_secs" className="text-xs">
-                                Incomplete Turn Timeout (seconds)
+                                {t("incompleteTurnTimeoutLabel")}
                             </Label>
                             <Input
                                 id="smart_turn_stop_secs"
@@ -570,7 +573,7 @@ function GeneralSection({
                                 }}
                             />
                             <p className="text-xs text-muted-foreground">
-                                Max silence duration before ending an incomplete turn. Default: 2 seconds
+                                {t("incompleteTurnTimeoutHelp")}
                             </p>
                         </div>
                     )}
@@ -581,14 +584,14 @@ function GeneralSection({
                 {/* Context Compaction */}
                 <div className="space-y-4">
                     <div>
-                        <h3 className="text-sm font-medium">Context Compaction</h3>
+                        <h3 className="text-sm font-medium">{t("contextCompactionTitle")}</h3>
                         <p className="text-xs text-muted-foreground mt-0.5">
-                            Automatically summarize conversation context when transitioning between nodes. Not applicable in Realtime mode — the speech-to-speech service manages its own conversation state and this setting is ignored.
+                            {t("contextCompactionDescription")}
                         </p>
                     </div>
                     <div className="flex items-center justify-between">
                         <Label htmlFor="context-compaction-enabled" className="text-sm">
-                            Enable Context Compaction
+                            {t("contextCompactionEnableLabel")}
                         </Label>
                         <Switch
                             id="context-compaction-enabled"
@@ -603,14 +606,14 @@ function GeneralSection({
                 {/* Call Management */}
                 <div className="space-y-4">
                     <div>
-                        <h3 className="text-sm font-medium">Call Management</h3>
+                        <h3 className="text-sm font-medium">{t("callManagementTitle")}</h3>
                         <p className="text-xs text-muted-foreground mt-0.5">
-                            Configure call duration limits and idle timeout settings.
+                            {t("callManagementDescription")}
                         </p>
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
-                            <Label htmlFor="max_call_duration" className="text-xs">Max Call Duration (seconds)</Label>
+                            <Label htmlFor="max_call_duration" className="text-xs">{t("maxCallDurationLabel")}</Label>
                             <Input
                                 id="max_call_duration"
                                 type="number"
@@ -621,11 +624,11 @@ function GeneralSection({
                                     if (!isNaN(value) && value > 0) setMaxCallDuration(value);
                                 }}
                             />
-                            <p className="text-xs text-muted-foreground">Default: 600 (10 minutes)</p>
+                            <p className="text-xs text-muted-foreground">{t("maxCallDurationHelp")}</p>
                         </div>
                         <div className="space-y-2">
                             <Label htmlFor="max_user_idle_timeout" className="text-xs">
-                                Max User Idle Timeout (seconds)
+                                {t("maxUserIdleTimeoutLabel")}
                             </Label>
                             <Input
                                 id="max_user_idle_timeout"
@@ -637,15 +640,15 @@ function GeneralSection({
                                     if (!isNaN(value) && value > 0) setMaxUserIdleTimeout(value);
                                 }}
                             />
-                            <p className="text-xs text-muted-foreground">Default: 10 seconds</p>
+                            <p className="text-xs text-muted-foreground">{t("maxUserIdleTimeoutHelp")}</p>
                         </div>
                     </div>
                 </div>
             </CardContent>
             <CardFooter className="justify-end gap-3 border-t pt-6">
-                {isDirty && <span className="text-xs text-muted-foreground">Unsaved changes</span>}
+                {isDirty && <span className="text-xs text-muted-foreground">{t("unsavedChanges")}</span>}
                 <Button onClick={handleSave} disabled={isSaving || !isDirty}>
-                    {isSaving ? "Saving..." : "Save General Settings"}
+                    {isSaving ? t("savingEllipsis") : t("saveGeneralSettings")}
                 </Button>
             </CardFooter>
         </Card>
@@ -663,6 +666,7 @@ function TemplateVariablesSection({
     templateContextVariables: Record<string, string>;
     onSave: (variables: Record<string, string>) => Promise<void>;
 }) {
+    const t = useTranslations("pages.workflow.workflowId.settings");
     const [contextVars, setContextVars] = useState<Record<string, string>>(templateContextVariables);
     const [newKey, setNewKey] = useState("");
     const [newValue, setNewValue] = useState("");
@@ -711,18 +715,18 @@ function TemplateVariablesSection({
             <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-base">
                     <Variable className="h-4 w-4" />
-                    Template Variables
+                    {t("templateVariablesTitle")}
                 </CardTitle>
                 <CardDescription>
-                    Variables available in workflow prompts via {`{{variable_name}}`} syntax for testing the workflow.{" "}
-                    <a href={SETTINGS_DOCUMENTATION_URLS.templateVariables} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-0.5 underline">Learn more <ExternalLink className="h-3 w-3" /></a>
+                    {t("templateVariablesDescription", { syntax: "{{variable_name}}" })}{" "}
+                    <a href={SETTINGS_DOCUMENTATION_URLS.templateVariables} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-0.5 underline">{t("learnMore")} <ExternalLink className="h-3 w-3" /></a>
                 </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
                 {/* Existing Variables */}
                 {Object.entries(contextVars).length > 0 && (
                     <div className="space-y-2">
-                        <Label className="text-sm font-medium">Current Variables</Label>
+                        <Label className="text-sm font-medium">{t("currentVariablesLabel")}</Label>
                         {Object.entries(contextVars).map(([key, value]) => (
                             <div key={key} className="flex items-center gap-2 rounded-md border p-2">
                                 <div className="flex-1 min-w-0">
@@ -739,36 +743,36 @@ function TemplateVariablesSection({
 
                 {/* Add New Variable */}
                 <div className="space-y-3">
-                    <Label className="text-sm font-medium">Add New Variable</Label>
+                    <Label className="text-sm font-medium">{t("addNewVariableLabel")}</Label>
                     <div className="flex gap-2">
                         <div className="flex-1 space-y-1">
-                            <Label htmlFor="var-key" className="text-xs">Key</Label>
+                            <Label htmlFor="var-key" className="text-xs">{t("variableKeyLabel")}</Label>
                             <Input
                                 id="var-key"
-                                placeholder="Enter variable key"
+                                placeholder={t("variableKeyPlaceholder")}
                                 value={newKey}
                                 onChange={(e) => setNewKey(e.target.value)}
                             />
                         </div>
                         <div className="flex-1 space-y-1">
-                            <Label htmlFor="var-value" className="text-xs">Value</Label>
+                            <Label htmlFor="var-value" className="text-xs">{t("variableValueLabel")}</Label>
                             <Input
                                 id="var-value"
-                                placeholder="Enter variable value"
+                                placeholder={t("variableValuePlaceholder")}
                                 value={newValue}
                                 onChange={(e) => setNewValue(e.target.value)}
                             />
                         </div>
                     </div>
                     <Button size="sm" onClick={handleAdd} disabled={!newKey || !newValue}>
-                        Add Variable
+                        {t("addVariableButton")}
                     </Button>
                 </div>
             </CardContent>
             <CardFooter className="justify-end gap-3 border-t pt-6">
-                {isDirty && <span className="text-xs text-muted-foreground">Unsaved changes</span>}
+                {isDirty && <span className="text-xs text-muted-foreground">{t("unsavedChanges")}</span>}
                 <Button onClick={handleSave} disabled={isSaving || !isDirty}>
-                    {isSaving ? "Saving..." : "Save Variables"}
+                    {isSaving ? t("savingEllipsis") : t("saveVariables")}
                 </Button>
             </CardFooter>
         </Card>
@@ -786,6 +790,7 @@ function DictionarySection({
     dictionary: string;
     onSave: (dictionary: string) => Promise<void>;
 }) {
+    const t = useTranslations("pages.workflow.workflowId.settings");
     const [dictionaryValue, setDictionaryValue] = useState(dictionary);
     const [isSaving, setIsSaving] = useState(false);
 
@@ -809,16 +814,15 @@ function DictionarySection({
             <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-base">
                     <BookA className="h-4 w-4" />
-                    Dictionary
+                    {t("dictionaryTitle")}
                 </CardTitle>
                 <CardDescription>
-                    Add words the agent should actively listen for &mdash; company jargon, names,
-                    industry terms. May incur extra cost depending on provider.
+                    {t("dictionaryDescription")}
                 </CardDescription>
             </CardHeader>
             <CardContent>
                 <Textarea
-                    placeholder="Enter words separated by comma (e.g. billing department, tretinoin)"
+                    placeholder={t("dictionaryPlaceholder")}
                     value={dictionaryValue}
                     onChange={(e) => setDictionaryValue(e.target.value)}
                     rows={4}
@@ -826,9 +830,9 @@ function DictionarySection({
                 />
             </CardContent>
             <CardFooter className="justify-end gap-3 border-t pt-6">
-                {isDirty && <span className="text-xs text-muted-foreground">Unsaved changes</span>}
+                {isDirty && <span className="text-xs text-muted-foreground">{t("unsavedChanges")}</span>}
                 <Button onClick={handleSave} disabled={isSaving || !isDirty}>
-                    {isSaving ? "Saving..." : "Save Dictionary"}
+                    {isSaving ? t("savingEllipsis") : t("saveDictionary")}
                 </Button>
             </CardFooter>
         </Card>
@@ -848,6 +852,7 @@ function VoicemailSection({
     workflowName: string;
     onSave: (configurations: WorkflowConfigurations, workflowName: string) => Promise<void>;
 }) {
+    const t = useTranslations("pages.workflow.workflowId.settings");
     const getConfig = (): VoicemailDetectionConfiguration => ({
         ...DEFAULT_VOICEMAIL_DETECTION_CONFIGURATION,
         ...workflowConfigurations.voicemail_detection,
@@ -909,16 +914,16 @@ function VoicemailSection({
             <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-base">
                     <PhoneOff className="h-4 w-4" />
-                    Voicemail Detection
+                    {t("voicemailTitle")}
                 </CardTitle>
                 <CardDescription>
-                    Automatically detect and end calls when a voicemail system is reached.
+                    {t("voicemailDescription")}
                 </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
                 <div className="flex items-center space-x-2 rounded-md border bg-muted/20 p-2">
                     <Switch id="voicemail-enabled" checked={enabled} onCheckedChange={setEnabled} />
-                    <Label htmlFor="voicemail-enabled">Enable Voicemail Detection</Label>
+                    <Label htmlFor="voicemail-enabled">{t("voicemailEnableLabel")}</Label>
                 </div>
 
                 {enabled && (
@@ -931,9 +936,9 @@ function VoicemailSection({
                                     checked={useWorkflowLlm}
                                     onCheckedChange={setUseWorkflowLlm}
                                 />
-                                <Label htmlFor="voicemail-use-workflow-llm">Use Workflow LLM</Label>
+                                <Label htmlFor="voicemail-use-workflow-llm">{t("useWorkflowLlmLabel")}</Label>
                                 <Label className="ml-2 text-xs text-muted-foreground">
-                                    Use the LLM configured in your account settings.
+                                    {t("useWorkflowLlmHelp")}
                                 </Label>
                             </div>
 
@@ -951,9 +956,9 @@ function VoicemailSection({
 
                         {/* System Prompt */}
                         <div className="space-y-2">
-                            <Label>System Prompt</Label>
+                            <Label>{t("systemPromptLabel")}</Label>
                             <p className="text-xs text-muted-foreground">
-                                The LLM must respond with either &quot;CONVERSATION&quot; or &quot;VOICEMAIL&quot;.
+                                {t("systemPromptHelp")}
                             </p>
                             <Textarea
                                 value={systemPrompt}
@@ -964,11 +969,11 @@ function VoicemailSection({
 
                         {/* Timing */}
                         <div className="space-y-2 rounded-md border bg-muted/10 p-3">
-                            <Label className="font-medium">Timing</Label>
+                            <Label className="font-medium">{t("timingLabel")}</Label>
                             <div className="space-y-2">
-                                <Label className="text-sm">Speech Cutoff (seconds)</Label>
+                                <Label className="text-sm">{t("speechCutoffLabel")}</Label>
                                 <p className="text-xs text-muted-foreground">
-                                    Trigger classification early if first turn speech exceeds this duration.
+                                    {t("speechCutoffHelp")}
                                 </p>
                                 <Input
                                     type="number"
@@ -984,9 +989,9 @@ function VoicemailSection({
                 )}
             </CardContent>
             <CardFooter className="justify-end gap-3 border-t pt-6">
-                {isDirty && <span className="text-xs text-muted-foreground">Unsaved changes</span>}
+                {isDirty && <span className="text-xs text-muted-foreground">{t("unsavedChanges")}</span>}
                 <Button onClick={handleSave} disabled={isSaving || !isDirty}>
-                    {isSaving ? "Saving..." : "Save Voicemail Settings"}
+                    {isSaving ? t("savingEllipsis") : t("saveVoicemailSettings")}
                 </Button>
             </CardFooter>
         </Card>
@@ -998,12 +1003,13 @@ function VoicemailSection({
 // ---------------------------------------------------------------------------
 
 function AgentUuidSection({ workflowUuid }: { workflowUuid: string }) {
+    const t = useTranslations("pages.workflow.workflowId.settings");
     const handleCopy = async () => {
         try {
             await navigator.clipboard.writeText(workflowUuid);
-            toast.success("Agent UUID copied");
+            toast.success(t("agentUuidCopied"));
         } catch {
-            toast.error("Failed to copy Agent UUID");
+            toast.error(t("agentUuidCopyError"));
         }
     };
 
@@ -1012,18 +1018,17 @@ function AgentUuidSection({ workflowUuid }: { workflowUuid: string }) {
             <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-base">
                     <Fingerprint className="h-4 w-4" />
-                    Agent UUID
+                    {t("agentUuidTitle")}
                 </CardTitle>
                 <CardDescription>
-                    Stable identifier for this agent. Used in agent-stream URLs and
-                    other integrations where a numeric workflow ID isn&apos;t portable.
+                    {t("agentUuidDescription")}
                 </CardDescription>
             </CardHeader>
             <CardContent>
                 <button
                     type="button"
                     onClick={handleCopy}
-                    title="Click to copy"
+                    title={t("clickToCopy")}
                     className="group flex w-full items-center gap-2 rounded-md border bg-muted/20 p-2 text-left font-mono text-xs transition-colors hover:bg-muted/40"
                 >
                     <code className="flex-1 truncate">{workflowUuid}</code>
@@ -1033,7 +1038,7 @@ function AgentUuidSection({ workflowUuid }: { workflowUuid: string }) {
             <CardFooter className="border-t pt-6">
                 <Button variant="outline" size="sm" onClick={handleCopy}>
                     <Clipboard className="h-3.5 w-3.5 mr-2" />
-                    Copy UUID
+                    {t("copyUuidButton")}
                 </Button>
             </CardFooter>
         </Card>
@@ -1051,6 +1056,7 @@ function AgentUuidSection({ workflowUuid }: { workflowUuid: string }) {
 // ---------------------------------------------------------------------------
 
 export default function WorkflowSettingsPage() {
+    const t = useTranslations("pages.workflow.workflowId.settings");
     const params = useParams();
     const { user, redirectToLogin, loading: authLoading } = useAuth();
     const [workflow, setWorkflow] = useState<WorkflowResponse | undefined>(undefined);
@@ -1072,21 +1078,21 @@ export default function WorkflowSettingsPage() {
                 });
                 setWorkflow(response.data);
             } catch (err) {
-                setError("Failed to fetch workflow");
+                setError(t("fetchWorkflowError"));
                 logger.error(`Error fetching workflow settings: ${err}`);
             } finally {
                 setLoading(false);
             }
         };
         if (user) fetchWorkflow();
-    }, [params.workflowId, user]);
+    }, [params.workflowId, user, t]);
 
     if (loading || authLoading) return <SpinLoader />;
 
     if (error || !workflow) {
         return (
             <div className="flex min-h-screen items-center justify-center">
-                <div className="text-lg text-destructive">{error || "Workflow not found"}</div>
+                <div className="text-lg text-destructive">{error || t("workflowNotFound")}</div>
             </div>
         );
     }
@@ -1122,6 +1128,7 @@ function WorkflowSettingsInner({
     workflow: WorkflowResponse;
     user: { id: string; email?: string };
 }) {
+    const t = useTranslations("pages.workflow.workflowId.settings");
     const router = useRouter();
     const { dirtySections, confirmNavigate } = useUnsavedChangesContext();
 
@@ -1199,7 +1206,7 @@ function WorkflowSettingsInner({
                     <ArrowLeft className="h-4 w-4" />
                 </Button>
                 <div>
-                    <p className="text-xs text-muted-foreground">Workflow Settings</p>
+                    <p className="text-xs text-muted-foreground">{t("workflowSettingsHeader")}</p>
                     <h1 className="text-sm font-semibold">{workflowName || workflow.name}</h1>
                 </div>
             </header>
@@ -1223,19 +1230,18 @@ function WorkflowSettingsInner({
                                 <CardHeader>
                                     <CardTitle className="flex items-center gap-2 text-base">
                                         <Brain className="h-4 w-4" />
-                                        Model Overrides
+                                        {t("modelOverridesTitle")}
                                     </CardTitle>
                                     <CardDescription>
-                                        Override global model settings for this workflow. Toggle individual services to
-                                        customize.{" "}
-                                        <a href={SETTINGS_DOCUMENTATION_URLS.modelOverrides} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-0.5 underline">Learn more <ExternalLink className="h-3 w-3" /></a>
+                                        {t("modelOverridesDescription")}{" "}
+                                        <a href={SETTINGS_DOCUMENTATION_URLS.modelOverrides} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-0.5 underline">{t("learnMore")} <ExternalLink className="h-3 w-3" /></a>
                                     </CardDescription>
                                 </CardHeader>
                                 <CardContent>
                                     <ServiceConfigurationForm
                                         mode="override"
                                         currentOverrides={workflowConfigurations.model_overrides}
-                                        submitLabel="Save Model Overrides"
+                                        submitLabel={t("saveModelOverrides")}
                                         onSave={async (config) => {
                                             await saveWorkflowConfigurations(
                                                 {
@@ -1271,18 +1277,19 @@ function WorkflowSettingsInner({
                                 <CardHeader>
                                     <CardTitle className="flex items-center gap-2 text-base">
                                         <Mic className="h-4 w-4" />
-                                        Recordings
+                                        {t("recordingsTitle")}
                                     </CardTitle>
                                     <CardDescription>
-                                        Recordings are now managed at the organization level and shared across all agents.
-                                        Use <code className="rounded bg-muted px-1 text-xs">@</code> in prompt fields to insert them.{" "}
-                                        <a href={SETTINGS_DOCUMENTATION_URLS.recordings} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-0.5 underline">Learn more <ExternalLink className="h-3 w-3" /></a>
+                                        {t.rich("recordingsDescription", {
+                                            code: (chunks) => <code className="rounded bg-muted px-1 text-xs">{chunks}</code>,
+                                        })}{" "}
+                                        <a href={SETTINGS_DOCUMENTATION_URLS.recordings} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-0.5 underline">{t("learnMore")} <ExternalLink className="h-3 w-3" /></a>
                                     </CardDescription>
                                 </CardHeader>
                                 <CardFooter className="border-t pt-6">
                                     <Button variant="outline" asChild>
                                         <Link href="/recordings">
-                                            Go to Recordings
+                                            {t("goToRecordings")}
                                             <ExternalLink className="ml-2 h-4 w-4" />
                                         </Link>
                                     </Button>
@@ -1294,16 +1301,16 @@ function WorkflowSettingsInner({
                                 <CardHeader>
                                     <CardTitle className="flex items-center gap-2 text-base">
                                         <Rocket className="h-4 w-4" />
-                                        Add to Website
+                                        {t("deploymentTitle")}
                                     </CardTitle>
                                     <CardDescription>
-                                        Configure a widget to add this voice agent to your website.{" "}
-                                        <a href={SETTINGS_DOCUMENTATION_URLS.deployment} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-0.5 underline">Learn more <ExternalLink className="h-3 w-3" /></a>
+                                        {t("deploymentDescription")}{" "}
+                                        <a href={SETTINGS_DOCUMENTATION_URLS.deployment} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-0.5 underline">{t("learnMore")} <ExternalLink className="h-3 w-3" /></a>
                                     </CardDescription>
                                 </CardHeader>
                                 <CardFooter className="border-t pt-6">
                                     <Button variant="outline" onClick={() => setIsEmbedDialogOpen(true)}>
-                                        Configure Widget
+                                        {t("configureWidget")}
                                     </Button>
                                 </CardFooter>
                             </Card>
@@ -1323,7 +1330,7 @@ function WorkflowSettingsInner({
                 <nav className="hidden w-44 shrink-0 lg:block">
                     <div className="sticky top-20 space-y-1">
                         <p className="mb-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">
-                            On this page
+                            {t("onThisPage")}
                         </p>
                         {NAV_ITEMS.map((item) => (
                             <a
@@ -1335,7 +1342,7 @@ function WorkflowSettingsInner({
                                         : "text-muted-foreground"
                                 }`}
                             >
-                                {item.label}
+                                {t(item.labelKey)}
                                 {dirtySections.has(item.id) && (
                                     <span className="h-1.5 w-1.5 rounded-full bg-orange-500" />
                                 )}

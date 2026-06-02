@@ -1,3 +1,4 @@
+import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -28,6 +29,7 @@ export const ConfigurationsDialog = ({
     workflowName,
     onSave
 }: ConfigurationsDialogProps) => {
+    const t = useTranslations("components.configurationsDialog");
     const [name, setName] = useState<string>(workflowName);
     const [ambientNoiseConfig, setAmbientNoiseConfig] = useState<AmbientNoiseConfiguration>(
         workflowConfigurations?.ambient_noise_configuration || DEFAULT_AMBIENT_NOISE_CONFIG
@@ -85,28 +87,28 @@ export const ConfigurationsDialog = ({
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="max-w-lg">
                 <DialogHeader>
-                    <DialogTitle>Configurations</DialogTitle>
+                    <DialogTitle>{t("title")}</DialogTitle>
                 </DialogHeader>
 
                 <div className="space-y-6">
                     {/* Workflow Name Section */}
                     <div className="space-y-4">
                         <div>
-                            <h3 className="text-sm font-semibold mb-1">Agent Name</h3>
+                            <h3 className="text-sm font-semibold mb-1">{t("agentNameTitle")}</h3>
                             <p className="text-xs text-muted-foreground">
-                                The name of your agent
+                                {t("agentNameDescription")}
                             </p>
                         </div>
                         <div className="space-y-2">
                             <Label htmlFor="workflow_name" className="text-xs">
-                                Name
+                                {t("nameLabel")}
                             </Label>
                             <Input
                                 id="workflow_name"
                                 type="text"
                                 value={name}
                                 onChange={(e) => setName(e.target.value)}
-                                placeholder="Enter Agent name"
+                                placeholder={t("agentNamePlaceholder")}
                             />
                         </div>
                     </div>
@@ -114,16 +116,16 @@ export const ConfigurationsDialog = ({
                     {/* Ambient Noise Section */}
                     <div className="space-y-4">
                         <div>
-                            <h3 className="text-sm font-semibold mb-1">Ambient Noise</h3>
+                            <h3 className="text-sm font-semibold mb-1">{t("ambientNoiseTitle")}</h3>
                             <p className="text-xs text-muted-foreground">
-                                Add background office ambient noise to make the conversation sound more natural.
+                                {t("ambientNoiseDescription")}
                             </p>
                         </div>
 
                         <div className="space-y-4">
                             <div className="flex items-center justify-between">
                                 <Label htmlFor="ambient-noise-enabled" className="text-sm">
-                                    Use Ambient Noise
+                                    {t("useAmbientNoise")}
                                 </Label>
                                 <Switch
                                     id="ambient-noise-enabled"
@@ -137,7 +139,7 @@ export const ConfigurationsDialog = ({
                             {ambientNoiseConfig.enabled && (
                                 <div className="space-y-2">
                                     <Label htmlFor="ambient-volume" className="text-xs">
-                                        Volume
+                                        {t("volumeLabel")}
                                     </Label>
                                     <Input
                                         id="ambient-volume"
@@ -161,43 +163,43 @@ export const ConfigurationsDialog = ({
                     {/* Turn Detection Section */}
                     <div className="space-y-4">
                         <div>
-                            <h3 className="text-sm font-semibold mb-1">Turn Detection</h3>
+                            <h3 className="text-sm font-semibold mb-1">{t("turnDetectionTitle")}</h3>
                             <p className="text-xs text-muted-foreground">
-                                Configure how the agent detects when the user has finished speaking.
+                                {t("turnDetectionDescription")}
                             </p>
                         </div>
 
                         <div className="space-y-2">
                             <Label htmlFor="turn_stop_strategy" className="text-xs">
-                                Detection Strategy
+                                {t("detectionStrategyLabel")}
                             </Label>
                             <Select
                                 value={turnStopStrategy}
                                 onValueChange={(value: TurnStopStrategy) => setTurnStopStrategy(value)}
                             >
                                 <SelectTrigger id="turn_stop_strategy">
-                                    <SelectValue placeholder="Select strategy" />
+                                    <SelectValue placeholder={t("selectStrategyPlaceholder")} />
                                 </SelectTrigger>
                                 <SelectContent>
                                     <SelectItem value="transcription">
-                                        Transcription-based
+                                        {t("strategyTranscription")}
                                     </SelectItem>
                                     <SelectItem value="turn_analyzer">
-                                        Smart Turn Analyzer
+                                        {t("strategySmartTurnAnalyzer")}
                                     </SelectItem>
                                 </SelectContent>
                             </Select>
                             <p className="text-xs text-muted-foreground">
                                 {turnStopStrategy === 'transcription'
-                                    ? "Best for short responses (1-2 word statements). Ends turn when transcription indicates completion."
-                                    : "Best for longer responses with natural pauses. Uses ML model to detect end of turn."}
+                                    ? t("strategyTranscriptionHelp")
+                                    : t("strategySmartTurnAnalyzerHelp")}
                             </p>
                         </div>
 
                         {turnStopStrategy === 'turn_analyzer' && (
                             <div className="space-y-2">
                                 <Label htmlFor="smart_turn_stop_secs" className="text-xs">
-                                    Incomplete Turn Timeout (seconds)
+                                    {t("incompleteTurnTimeoutLabel")}
                                 </Label>
                                 <Input
                                     id="smart_turn_stop_secs"
@@ -214,7 +216,7 @@ export const ConfigurationsDialog = ({
                                     }}
                                 />
                                 <p className="text-xs text-muted-foreground">
-                                    Max silence duration before ending an incomplete turn. Default: 2 seconds
+                                    {t("incompleteTurnTimeoutHelp")}
                                 </p>
                             </div>
                         )}
@@ -223,15 +225,15 @@ export const ConfigurationsDialog = ({
                     {/* Context Management Section */}
                     <div className="space-y-4">
                         <div>
-                            <h3 className="text-sm font-semibold mb-1">Context Compaction</h3>
+                            <h3 className="text-sm font-semibold mb-1">{t("contextCompactionTitle")}</h3>
                             <p className="text-xs text-muted-foreground">
-                                Automatically summarize conversation context when transitioning between nodes. Removes stale tool calls and keeps the context clean for the new node.
+                                {t("contextCompactionDescription")}
                             </p>
                         </div>
 
                         <div className="flex items-center justify-between">
                             <Label htmlFor="context-compaction-enabled" className="text-sm">
-                                Enable Context Compaction
+                                {t("enableContextCompaction")}
                             </Label>
                             <Switch
                                 id="context-compaction-enabled"
@@ -244,16 +246,16 @@ export const ConfigurationsDialog = ({
                     {/* Call Management Section */}
                     <div className="space-y-4">
                         <div>
-                            <h3 className="text-sm font-semibold mb-1">Call Management</h3>
+                            <h3 className="text-sm font-semibold mb-1">{t("callManagementTitle")}</h3>
                             <p className="text-xs text-muted-foreground">
-                                Configure call duration limits and idle timeout settings.
+                                {t("callManagementDescription")}
                             </p>
                         </div>
 
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-2">
                                 <Label htmlFor="max_call_duration" className="text-xs">
-                                    Max Call Duration (seconds)
+                                    {t("maxCallDurationLabel")}
                                 </Label>
                                 <Input
                                     id="max_call_duration"
@@ -268,12 +270,12 @@ export const ConfigurationsDialog = ({
                                         }
                                     }}
                                 />
-                                <p className="text-xs text-muted-foreground">Default: 600 (10 minutes)</p>
+                                <p className="text-xs text-muted-foreground">{t("maxCallDurationHelp")}</p>
                             </div>
 
                             <div className="space-y-2">
                                 <Label htmlFor="max_user_idle_timeout" className="text-xs">
-                                    Max User Idle Timeout (seconds)
+                                    {t("maxUserIdleTimeoutLabel")}
                                 </Label>
                                 <Input
                                     id="max_user_idle_timeout"
@@ -288,7 +290,7 @@ export const ConfigurationsDialog = ({
                                         }
                                     }}
                                 />
-                                <p className="text-xs text-muted-foreground">Default: 10 seconds</p>
+                                <p className="text-xs text-muted-foreground">{t("maxUserIdleTimeoutHelp")}</p>
                             </div>
                         </div>
                     </div>
@@ -296,10 +298,10 @@ export const ConfigurationsDialog = ({
 
                 <DialogFooter>
                     <Button variant="outline" onClick={() => onOpenChange(false)}>
-                        Cancel
+                        {t("cancel")}
                     </Button>
                     <Button onClick={handleSave} disabled={isSaving}>
-                        {isSaving ? "Saving..." : "Save"}
+                        {isSaving ? t("saving") : t("save")}
                     </Button>
                 </DialogFooter>
             </DialogContent>

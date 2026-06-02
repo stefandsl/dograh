@@ -1,17 +1,19 @@
 "use client";
 
 import { ArrowRight, List, Loader2 } from 'lucide-react';
-import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Link } from "@/i18n/navigation";
 import { useAuth } from '@/lib/auth';
 import { impersonateAsSuperadmin } from "@/lib/utils";
 
 export default function SuperadminPage() {
+    const t = useTranslations("pages.superadmin");
     const [userId, setUserId] = useState("");
     const [error, setError] = useState("");
     const [isLoading, setIsLoading] = useState(false);
@@ -24,7 +26,7 @@ export default function SuperadminPage() {
 
         try {
             if (!user) {
-                setError("User not authenticated. Please log in and try again.");
+                setError(t("notAuthenticatedError"));
                 setIsLoading(false);
                 return;
             }
@@ -40,7 +42,7 @@ export default function SuperadminPage() {
                 openInNewTab: true,
             });
         } catch (err) {
-            setError("Failed to impersonate user. Please try again.");
+            setError(t("impersonateError"));
             console.error("Impersonation error:", err);
         } finally {
             setIsLoading(false);
@@ -51,28 +53,28 @@ export default function SuperadminPage() {
         <>
             <main className="container mx-auto p-6 space-y-6 max-w-4xl">
                 <div className="text-center">
-                    <h1 className="text-3xl font-bold mb-2">Superadmin Dashboard</h1>
-                    <p className="text-sm text-muted-foreground">Manage users and view system-wide data</p>
+                    <h1 className="text-3xl font-bold mb-2">{t("title")}</h1>
+                    <p className="text-sm text-muted-foreground">{t("subtitle")}</p>
                 </div>
 
                 <div className="grid gap-6 md:grid-cols-2">
                         {/* User Impersonation Card */}
                         <Card>
                             <CardHeader>
-                                <CardTitle>User Impersonation</CardTitle>
+                                <CardTitle>{t("impersonationTitle")}</CardTitle>
                                 <CardDescription>
-                                    Impersonate a user account for debugging or support purposes
+                                    {t("impersonationDescription")}
                                 </CardDescription>
                             </CardHeader>
                             <CardContent>
                                 <form onSubmit={handleImpersonate} className="space-y-4">
                                     <div className="space-y-2">
-                                        <Label htmlFor="userId">Provider User ID</Label>
+                                        <Label htmlFor="userId">{t("providerUserIdLabel")}</Label>
                                         <Input
                                             id="userId"
                                             value={userId}
                                             onChange={(e) => setUserId(e.target.value)}
-                                            placeholder="Enter provider user ID"
+                                            placeholder={t("providerUserIdPlaceholder")}
                                             required
                                         />
                                     </div>
@@ -91,10 +93,10 @@ export default function SuperadminPage() {
                                         {isLoading ? (
                                             <>
                                                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                                Processing...
+                                                {t("processing")}
                                             </>
                                         ) : (
-                                            'Impersonate User'
+                                            t("impersonateButton")
                                         )}
                                     </Button>
                                 </form>
@@ -104,21 +106,20 @@ export default function SuperadminPage() {
                         {/* Workflow Runs Card */}
                         <Card>
                             <CardHeader>
-                                <CardTitle>Workflow Runs</CardTitle>
+                                <CardTitle>{t("workflowRunsTitle")}</CardTitle>
                                 <CardDescription>
-                                    View and manage all workflow runs across organizations
+                                    {t("workflowRunsDescription")}
                                 </CardDescription>
                             </CardHeader>
                             <CardContent>
                                 <div className="space-y-4">
                                     <p className="text-sm text-muted-foreground">
-                                        Access detailed information about all workflow runs, including status,
-                                        recordings, transcripts, and usage data.
+                                        {t("workflowRunsDetail")}
                                     </p>
                                     <Link href="/superadmin/runs">
                                         <Button className="w-full">
                                             <List className="mr-2 h-4 w-4" />
-                                            View All Runs
+                                            {t("viewAllRuns")}
                                             <ArrowRight className="ml-2 h-4 w-4" />
                                         </Button>
                                     </Link>
