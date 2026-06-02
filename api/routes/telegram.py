@@ -412,18 +412,32 @@ _TELEGRAM_CALL_HTML = """<!doctype html>
 
       setStatus("Fetching network config…");
       let iceServers = [{{ urls: "stun:stun.l.google.com:19302" }}];
+      let haveTurn = false;
       try {{
         const r = await fetch(TURN_URL);
         if (r.ok) {{
           const data = await r.json();
           if (Array.isArray(data.ice_servers) && data.ice_servers.length) {{
             iceServers = data.ice_servers;
+            haveTurn = data.ice_servers.some(function (s) {{
+              var u = s.urls || s.url || "";
+              if (Array.isArray(u)) u = u.join(",");
+              return String(u).indexOf("turn:") !== -1;
+            }});
           }}
         }}
       }} catch (e) {{ /* fall back to STUN */ }}
 
       setStatus("Connecting…");
-      pc = new RTCPeerConnection({{ iceServers }});
+      // The agent server runs inside Docker behind NAT and is only reachable
+      // via a TURN relay; mobile clients are frequently on CGNAT too, where
+      // host/srflx candidates can't pair. When we have TURN credentials, force
+      // relay-only so BOTH ends connect through coturn (relay<->relay) — the
+      // only path that reliably traverses CGNAT. Fall back to "all" if the TURN
+      // fetch failed (no creds), so we don't strand a connectable client.
+      const pcConfig = {{ iceServers }};
+      if (haveTurn) pcConfig.iceTransportPolicy = "relay";
+      pc = new RTCPeerConnection(pcConfig);
       micStream.getAudioTracks().forEach(t => pc.addTrack(t, micStream));
 
       // Pipecat's SmallWebRTC transport uses a data channel for the control
