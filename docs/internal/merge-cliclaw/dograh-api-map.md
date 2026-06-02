@@ -1,4 +1,4 @@
-# Dograh API endpoint map (for Telegram bot integration)
+# Bellerophone API endpoint map (for Telegram bot integration)
 
 All endpoints mount under `/api/v1`. Auth is via either:
 - **`X-API-Key: <key>`** — preferred for service-to-service (the bot)

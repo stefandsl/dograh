@@ -37,7 +37,7 @@ Two decisions in one:
 
 ## Why not the raw Microsoft Graph calling API
 
-Dograh's pipeline needs raw bidirectional PCM over a WebSocket into pipecat.
+Bellerophone's pipeline needs raw bidirectional PCM over a WebSocket into pipecat.
 Microsoft Graph's calling API offers two media modes, **neither of which
 delivers that to a Python backend**:
 
@@ -81,7 +81,7 @@ for optional click-to-call signaling.
 ### Option ③ — Pure Graph + a .NET media-bot sidecar
 
 A small .NET service using the Graph Communications Media SDK bridges raw Teams
-media ↔ Dograh over WebSocket/AudioSocket.
+media ↔ Bellerophone over WebSocket/AudioSocket.
 
 - **Pros:** "real" Graph calling, full Teams feature set.
 - **Cons:** an entire second runtime/language to build, deploy, and maintain;

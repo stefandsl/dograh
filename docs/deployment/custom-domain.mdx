@@ -1,13 +1,13 @@
 ---
 title: "Custom Domain"
-description: "Deploy Dograh AI with custom domain names and SSL certificates"
+description: "Deploy Bellerophone AI with custom domain names and SSL certificates"
 ---
 
-Deploy Dograh AI with your own custom domain name for a professional production setup. By now, you should be able to create and test a voice agent by following the previous guide to setup the platform on a remote server using [Docker](docker#option-2%3A-remote-server-deployment)
+Deploy Bellerophone AI with your own custom domain name for a professional production setup. By now, you should be able to create and test a voice agent by following the previous guide to setup the platform on a remote server using [Docker](docker#option-2%3A-remote-server-deployment)
 
 ## What is Custom Domain Deployment?
 
-Custom domain deployment allows you to run Dograh AI with a personalized domain name (like `voice.yourcompany.com`) instead of using IP addresses. This setup includes:
+Custom domain deployment allows you to run Bellerophone AI with a personalized domain name (like `voice.yourcompany.com`) instead of using IP addresses. This setup includes:
 
 - **Custom Domain**: Access your application via a memorable domain name
 - **Automatic SSL**: Proper SSL certificates from Let's Encrypt or similar providers
@@ -20,7 +20,7 @@ Before starting, ensure you have:
 
 - A domain name you own (e.g., `yourcompany.com`)
 - Access to your domain's DNS settings (usually through your domain registrar)
-- Dograh AI already running on your server via the [remote deployment](docker#option-2%3A-remote-server-deployment) guide
+- Bellerophone AI already running on your server via the [remote deployment](docker#option-2%3A-remote-server-deployment) guide
 - Your server's public IP address
 
 ## Step 1: Configure DNS Records
@@ -78,7 +78,7 @@ It will automatically:
 - Update the canonical public host/base URL settings in `.env`
 - Validate the runtime config that `dograh-init` will render from `.env`
 - Configure automatic certificate renewal
-- Restart Dograh services through the validated startup wrapper
+- Restart Bellerophone services through the validated startup wrapper
 
 Once complete, your application will be available at `https://voice.yourcompany.com`.
 
@@ -109,9 +109,9 @@ sudo apt install certbot -y
 sudo yum install certbot -y
 ```
 
-### Stop Dograh Services
+### Stop Bellerophone Services
 
-Before generating certificates, stop the running Dograh services to free up port 80:
+Before generating certificates, stop the running Bellerophone services to free up port 80:
 
 ```bash
 cd dograh
@@ -137,7 +137,7 @@ Certbot will:
 You'll be prompted to enter an email address for renewal notifications and agree to the terms of service.
 </Note>
 
-### Copy Certificates to Dograh Directory
+### Copy Certificates to Bellerophone Directory
 
 Copy the generated certificates to the dograh certs directory:
 
@@ -161,9 +161,9 @@ PUBLIC_HOST=voice.yourcompany.com
 PUBLIC_BASE_URL=https://voice.yourcompany.com
 ```
 
-### Start Dograh Services
+### Start Bellerophone Services
 
-Start Dograh through the validated startup wrapper so `dograh-init` regenerates nginx and coturn runtime config before Docker starts:
+Start Bellerophone through the validated startup wrapper so `dograh-init` regenerates nginx and coturn runtime config before Docker starts:
 
 ```bash
 cd dograh

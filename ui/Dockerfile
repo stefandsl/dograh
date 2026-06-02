@@ -34,6 +34,8 @@ COPY ui/sentry.server.config.ts ./
 COPY ui/postcss.config.mjs ./
 COPY ui/public ./public
 COPY ui/src ./src
+# next-intl message catalogs (src/i18n/request.ts imports ../../messages/*.json)
+COPY ui/messages ./messages
 
 # Set build-time environment variables (needed for Next.js build)
 ENV NEXT_PUBLIC_NODE_ENV="oss"

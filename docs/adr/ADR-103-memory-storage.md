@@ -5,7 +5,7 @@
 **Context:** Phase 0. CliClaw's bot keeps a per-chat "memory vault" of
 facts the user has asked it to remember, plus a session history.
 Original stack: SQLite WAL with an FTS5 virtual table for full-text
-search over both. Dograh runs Postgres (pgvector enabled). Standing up
+search over both. Bellerophone runs Postgres (pgvector enabled). Standing up
 SQLite alongside Postgres for one tiny feature is amateurish.
 
 ## Decision
@@ -73,7 +73,7 @@ trivial to add then.
 - Alembic migration `api/alembic/versions/<id>_telegram_memory_tables.py`
   created in Phase 2.
 - `telegram-bot/bot/memory.py` (KEEP-ADAPT) rewrites the SQLite query
-  layer to SQLAlchemy + asyncpg using the Dograh `db_client` pattern.
+  layer to SQLAlchemy + asyncpg using the Bellerophone `db_client` pattern.
 - The CliClaw `workspace/*.db` SQLite file is **not migrated** — this is
   a fresh start. If you have important facts from CliClaw, manually
   export and re-add.

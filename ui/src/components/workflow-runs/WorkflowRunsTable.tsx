@@ -1,6 +1,7 @@
 "use client";
 
 import { ArrowDown, ArrowUp, ArrowUpDown, ChevronLeft, ChevronRight, ExternalLink, RefreshCw } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useState } from "react";
 
 import { WorkflowRunResponseSchema } from "@/client/types.gen";
@@ -79,12 +80,16 @@ export function WorkflowRunsTable({
     onSort,
     workflowId,
     onReload,
-    title = "Workflow Run History",
+    title,
     subtitle,
     showFilters = true,
-    emptyMessage = "No workflow runs found",
+    emptyMessage,
 }: WorkflowRunsTableProps) {
+    const t = useTranslations("components.workflowRuns.workflowRunsTable");
     const [selectedRowId, setSelectedRowId] = useState<number | null>(null);
+
+    const resolvedTitle = title ?? t("title");
+    const resolvedEmptyMessage = emptyMessage ?? t("emptyMessage");
 
     // Media preview dialog
     const mediaPreview = MediaPreviewDialog();
@@ -100,7 +105,7 @@ export function WorkflowRunsTable({
             {/* Title and Filters */}
             {showFilters && (
                 <div className="mb-6">
-                    <h1 className="text-2xl font-bold mb-4">{title}</h1>
+                    <h1 className="text-2xl font-bold mb-4">{resolvedTitle}</h1>
                     <FilterBuilder
                         availableAttributes={availableAttributes}
                         activeFilters={activeFilters}
@@ -116,7 +121,7 @@ export function WorkflowRunsTable({
             {/* Loading State */}
             {loading ? (
                 <div className="flex justify-center">
-                    <div className="animate-pulse">Loading workflow runs...</div>
+                    <div className="animate-pulse">{t("loading")}</div>
                 </div>
             ) : error ? (
                 <div className="bg-destructive/10 border border-destructive/30 text-destructive px-4 py-3 rounded">
@@ -124,16 +129,16 @@ export function WorkflowRunsTable({
                 </div>
             ) : runs.length === 0 ? (
                 <div className="text-center py-8">
-                    <p className="text-muted-foreground">{emptyMessage}</p>
+                    <p className="text-muted-foreground">{resolvedEmptyMessage}</p>
                 </div>
             ) : (
                 <Card>
                     <CardHeader>
                         <div className="flex items-center justify-between">
                             <div>
-                                <CardTitle>Workflow Runs</CardTitle>
+                                <CardTitle>{t("cardTitle")}</CardTitle>
                                 <CardDescription>
-                                    {subtitle || `Showing ${runs.length} of ${totalCount} total runs`}
+                                    {subtitle || t("showingRuns", { shown: runs.length, total: totalCount })}
                                 </CardDescription>
                             </div>
                             {onReload && (
@@ -142,7 +147,7 @@ export function WorkflowRunsTable({
                                     size="icon"
                                     onClick={onReload}
                                     disabled={loading}
-                                    title="Reload"
+                                    title={t("reload")}
                                 >
                                     <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
                                 </Button>
@@ -154,16 +159,16 @@ export function WorkflowRunsTable({
                             <Table>
                                 <TableHeader>
                                     <TableRow className="bg-muted/50">
-                                        <TableHead className="font-semibold">ID</TableHead>
-                                        <TableHead className="font-semibold">Status</TableHead>
-                                        <TableHead className="font-semibold">Created At</TableHead>
-                                        <TableHead className="font-semibold">Call Type</TableHead>
+                                        <TableHead className="font-semibold">{t("columnId")}</TableHead>
+                                        <TableHead className="font-semibold">{t("columnStatus")}</TableHead>
+                                        <TableHead className="font-semibold">{t("columnCreatedAt")}</TableHead>
+                                        <TableHead className="font-semibold">{t("columnCallType")}</TableHead>
                                         <TableHead
                                             className="font-semibold cursor-pointer hover:bg-muted/50 select-none"
                                             onClick={() => onSort?.('duration')}
                                         >
                                             <div className="flex items-center gap-1">
-                                                Duration
+                                                {t("columnDuration")}
                                                 {sortBy === 'duration' ? (
                                                     sortOrder === 'asc' ? <ArrowUp className="h-4 w-4" /> : <ArrowDown className="h-4 w-4" />
                                                 ) : (
@@ -171,8 +176,8 @@ export function WorkflowRunsTable({
                                                 )}
                                             </div>
                                         </TableHead>
-                                        <TableHead className="font-semibold">Disposition</TableHead>
-                                        <TableHead className="font-semibold">Actions</TableHead>
+                                        <TableHead className="font-semibold">{t("columnDisposition")}</TableHead>
+                                        <TableHead className="font-semibold">{t("columnActions")}</TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
@@ -185,7 +190,7 @@ export function WorkflowRunsTable({
                                             <TableCell className="font-mono text-sm">#{run.id}</TableCell>
                                             <TableCell>
                                                 <Badge variant={run.is_completed ? "default" : "secondary"}>
-                                                    {run.is_completed ? "Completed" : "In Progress"}
+                                                    {run.is_completed ? t("statusCompleted") : t("statusInProgress")}
                                                 </Badge>
                                             </TableCell>
                                             <TableCell className="text-sm">{formatDate(run.created_at)}</TableCell>
@@ -234,7 +239,7 @@ export function WorkflowRunsTable({
                         {totalPages > 1 && (
                             <div className="flex items-center justify-between mt-6">
                                 <p className="text-sm text-muted-foreground">
-                                    Page {currentPage} of {totalPages}
+                                    {t("pageOf", { current: currentPage, total: totalPages })}
                                 </p>
                                 <div className="flex gap-2">
                                     <Button
@@ -244,7 +249,7 @@ export function WorkflowRunsTable({
                                         disabled={currentPage === 1}
                                     >
                                         <ChevronLeft className="h-4 w-4" />
-                                        Previous
+                                        {t("previous")}
                                     </Button>
                                     <Button
                                         variant="outline"
@@ -252,7 +257,7 @@ export function WorkflowRunsTable({
                                         onClick={() => onPageChange(currentPage + 1)}
                                         disabled={currentPage === totalPages}
                                     >
-                                        Next
+                                        {t("next")}
                                         <ChevronRight className="h-4 w-4" />
                                     </Button>
                                 </div>

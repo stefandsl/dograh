@@ -10,11 +10,11 @@ flowchart LR
     User[Telegram user]
     BotAPI[Telegram Bot API]
     Container[telegram-bot container<br/>aiogram dispatcher×N]
-    API[Dograh api<br/>FastAPI]
+    API[Bellerophone api<br/>FastAPI]
     Pg[(Postgres)]
     Redis[(Redis)]
     Browser[User's browser<br/>WebApp]
-    Embed[Dograh WebRTC<br/>embed page]
+    Embed[Bellerophone WebRTC<br/>embed page]
     Coturn[coturn TURN]
     Pipeline[Workflow pipeline<br/>pipecat STT/LLM/TTS]
 
@@ -46,7 +46,7 @@ sequenceDiagram
     actor U as Telegram user
     participant TG as Telegram Bot API
     participant B as telegram-bot
-    participant A as Dograh api
+    participant A as Bellerophone api
 
     U->>TG: /menu
     TG->>B: update
@@ -75,7 +75,7 @@ sequenceDiagram
     actor U as Telegram user
     participant TG as Telegram Bot API
     participant B as telegram-bot
-    participant A as Dograh api
+    participant A as Bellerophone api
     participant Br as Browser (WebApp)
     participant Co as coturn / WebRTC
 
@@ -98,8 +98,8 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     actor Admin
-    participant UI as Dograh UI
-    participant A as Dograh api
+    participant UI as Bellerophone UI
+    participant A as Bellerophone api
     participant R as Redis
     participant B as telegram-bot
 

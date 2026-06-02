@@ -1,6 +1,6 @@
 import { useCallback, useState } from "react";
 
-import { useWorkflowStore } from "@/app/workflow/[workflowId]/stores/workflowStore";
+import { useWorkflowStore } from "@/app/[locale]/workflow/[workflowId]/stores/workflowStore";
 import { FlowNodeData } from "@/components/flow/types";
 
 interface UseNodeHandlersProps {

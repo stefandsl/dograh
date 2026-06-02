@@ -1,6 +1,7 @@
 "use client";
 
 import { AlertCircle, Loader2 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useState } from "react";
 
 import { createCredentialApiV1CredentialsPost } from "@/client";
@@ -33,7 +34,7 @@ interface CreateCredentialDialogProps {
 
 interface CredentialField {
     key: string;
-    label: string;
+    labelKey: string;
     placeholder: string;
     isSecret?: boolean;
 }
@@ -42,22 +43,22 @@ const getCredentialDataFields = (type: WebhookCredentialType): CredentialField[]
     switch (type) {
         case "api_key":
             return [
-                { key: "header_name", label: "Header Name", placeholder: "X-API-Key" },
-                { key: "api_key", label: "API Key", placeholder: "your-api-key", isSecret: true },
+                { key: "header_name", labelKey: "fieldHeaderName", placeholder: "X-API-Key" },
+                { key: "api_key", labelKey: "fieldApiKey", placeholder: "your-api-key", isSecret: true },
             ];
         case "bearer_token":
             return [
-                { key: "token", label: "Token", placeholder: "your-bearer-token", isSecret: true },
+                { key: "token", labelKey: "fieldToken", placeholder: "your-bearer-token", isSecret: true },
             ];
         case "basic_auth":
             return [
-                { key: "username", label: "Username", placeholder: "username" },
-                { key: "password", label: "Password", placeholder: "password", isSecret: true },
+                { key: "username", labelKey: "fieldUsername", placeholder: "username" },
+                { key: "password", labelKey: "fieldPassword", placeholder: "password", isSecret: true },
             ];
         case "custom_header":
             return [
-                { key: "header_name", label: "Header Name", placeholder: "X-Custom-Header" },
-                { key: "header_value", label: "Header Value", placeholder: "header-value", isSecret: true },
+                { key: "header_name", labelKey: "fieldHeaderName", placeholder: "X-Custom-Header" },
+                { key: "header_value", labelKey: "fieldHeaderValue", placeholder: "header-value", isSecret: true },
             ];
         default:
             return [];
@@ -69,6 +70,7 @@ export function CreateCredentialDialog({
     onOpenChange,
     onCreated,
 }: CreateCredentialDialogProps) {
+    const t = useTranslations("components.http.createCredentialDialog");
     const { getAccessToken } = useAuth();
 
     const [name, setName] = useState("");
@@ -98,7 +100,7 @@ export function CreateCredentialDialog({
 
             if (response.error) {
                 const errorDetail = (response.error as { detail?: string })?.detail
-                    || "Failed to create credential";
+                    || t("errorCreateFailed");
                 setError(errorDetail);
                 return;
             }
@@ -110,7 +112,7 @@ export function CreateCredentialDialog({
         } catch (err) {
             console.error("Failed to create credential:", err);
             setError(
-                err instanceof Error ? err.message : "An unexpected error occurred"
+                err instanceof Error ? err.message : t("errorUnexpected")
             );
         } finally {
             setIsCreating(false);
@@ -140,9 +142,9 @@ export function CreateCredentialDialog({
         <Dialog open={open} onOpenChange={handleOpenChange}>
             <DialogContent className="sm:max-w-md">
                 <DialogHeader>
-                    <DialogTitle>Add Credential</DialogTitle>
+                    <DialogTitle>{t("title")}</DialogTitle>
                     <DialogDescription>
-                        Create a new credential for authentication.
+                        {t("description")}
                     </DialogDescription>
                 </DialogHeader>
 
@@ -155,27 +157,27 @@ export function CreateCredentialDialog({
 
                 <div className="space-y-4 py-4">
                     <div className="grid gap-2">
-                        <Label htmlFor="cred-name">Name *</Label>
+                        <Label htmlFor="cred-name">{t("nameLabel")}</Label>
                         <Input
                             id="cred-name"
                             value={name}
                             onChange={(e) => setName(e.target.value)}
-                            placeholder="My API Key"
+                            placeholder={t("namePlaceholder")}
                         />
                     </div>
 
                     <div className="grid gap-2">
-                        <Label htmlFor="cred-description">Description</Label>
+                        <Label htmlFor="cred-description">{t("descriptionLabel")}</Label>
                         <Input
                             id="cred-description"
                             value={description}
                             onChange={(e) => setDescription(e.target.value)}
-                            placeholder="Optional description"
+                            placeholder={t("descriptionPlaceholder")}
                         />
                     </div>
 
                     <div className="grid gap-2">
-                        <Label>Credential Type</Label>
+                        <Label>{t("credentialTypeLabel")}</Label>
                         <Select
                             value={credentialType}
                             onValueChange={(v) => {
@@ -187,17 +189,17 @@ export function CreateCredentialDialog({
                                 <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
-                                <SelectItem value="bearer_token">Bearer Token</SelectItem>
-                                <SelectItem value="api_key">API Key</SelectItem>
-                                <SelectItem value="basic_auth">Basic Auth</SelectItem>
-                                <SelectItem value="custom_header">Custom Header</SelectItem>
+                                <SelectItem value="bearer_token">{t("typeBearerToken")}</SelectItem>
+                                <SelectItem value="api_key">{t("typeApiKey")}</SelectItem>
+                                <SelectItem value="basic_auth">{t("typeBasicAuth")}</SelectItem>
+                                <SelectItem value="custom_header">{t("typeCustomHeader")}</SelectItem>
                             </SelectContent>
                         </Select>
                     </div>
 
                     {fields.map((field) => (
                         <div key={field.key} className="grid gap-2">
-                            <Label htmlFor={`cred-${field.key}`}>{field.label}</Label>
+                            <Label htmlFor={`cred-${field.key}`}>{t(field.labelKey)}</Label>
                             <Input
                                 id={`cred-${field.key}`}
                                 type={field.isSecret ? "password" : "text"}
@@ -220,7 +222,7 @@ export function CreateCredentialDialog({
                         onClick={handleClose}
                         disabled={isCreating}
                     >
-                        Cancel
+                        {t("cancel")}
                     </Button>
                     <Button
                         onClick={handleCreate}
@@ -229,10 +231,10 @@ export function CreateCredentialDialog({
                         {isCreating ? (
                             <>
                                 <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                                Creating...
+                                {t("creating")}
                             </>
                         ) : (
-                            "Create"
+                            t("create")
                         )}
                     </Button>
                 </DialogFooter>

@@ -1,6 +1,7 @@
 "use client";
 
 import { usePathname } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { useEffect } from "react";
 
 declare global {
@@ -24,6 +25,7 @@ const CHATWOOT_WEBSITE_TOKEN = process.env.NEXT_PUBLIC_CHATWOOT_TOKEN;
 
 export default function ChatwootWidget() {
   const pathname = usePathname();
+  const t = useTranslations("components.chatwootWidget");
 
   useEffect(() => {
     const isWorkflowPage = /^\/workflow\/[^/]+(?:\/.*)?$/.test(pathname);
@@ -54,7 +56,7 @@ export default function ChatwootWidget() {
     window.chatwootSettings = {
       position: "right",
       type: "standard",
-      launcherTitle: "Chat with us",
+      launcherTitle: t("launcherTitle"),
     };
 
     // Check if script is already loaded
@@ -88,7 +90,7 @@ export default function ChatwootWidget() {
     };
 
     document.body.appendChild(script);
-  }, [pathname]);
+  }, [pathname, t]);
 
   return null;
 }

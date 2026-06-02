@@ -1,11 +1,11 @@
 ---
 title: WhatsApp Cloud API channel
-description: Connect a WhatsApp Business number to a Dograh workflow via Meta's Cloud API.
+description: Connect a WhatsApp Business number to a Bellerophone workflow via Meta's Cloud API.
 ---
 
 # WhatsApp Cloud API channel
 
-Connect a WhatsApp Business number to a Dograh workflow using Meta's
+Connect a WhatsApp Business number to a Bellerophone workflow using Meta's
 [WhatsApp Business Cloud API](https://developers.facebook.com/docs/whatsapp/cloud-api).
 Once configured, inbound WhatsApp messages are normalised, routed to the
 same text-chat runtime the Telegram channel and in-UI tester use, and the
@@ -66,15 +66,15 @@ From those you'll need to know:
 | `phone_number_id` | *WhatsApp → API Setup → Phone number ID*. Numeric string, not the human-readable phone number. |
 | `access_token` | *WhatsApp → API Setup → Temporary access token* (testing) or *Business Settings → System users → Generate token* (production). |
 | `app_secret` | *App Settings → Basic → App Secret* (click "Show"). Used to verify webhook signatures. |
-| `verify_token` | A string you pick. Dograh's UI has a **Generate** button that produces a 32-hex string. |
+| `verify_token` | A string you pick. Bellerophone's UI has a **Generate** button that produces a 32-hex string. |
 | `business_account_id` *(optional)* | *WhatsApp → API Setup → WhatsApp Business Account ID*. Currently informational. |
 | `graph_version` | The Graph API version you want to pin (default `v20.0`). |
 
 ## Step-by-step
 
-### 1. Configure the channel in Dograh
+### 1. Configure the channel in Bellerophone
 
-1. Open the Dograh UI → **Settings → IM Channels** (`/channels/im`).
+1. Open the Bellerophone UI → **Settings → IM Channels** (`/channels/im`).
 2. Click the **WhatsApp** tab → **+ Add WhatsApp number**.
 3. Fill in the fields. Use **Generate** for the verify token unless you
    already have one you want to use. The dialog also asks for an
@@ -86,21 +86,21 @@ From those you'll need to know:
 ### 2. Subscribe Meta to that webhook URL
 
 1. Back in Meta Developer Console: *WhatsApp → Configuration*.
-2. **Callback URL**: paste the URL from the Dograh card.
-3. **Verify token**: paste the same verify token you set in Dograh.
+2. **Callback URL**: paste the URL from the Bellerophone card.
+3. **Verify token**: paste the same verify token you set in Bellerophone.
 4. Click **Verify and save**. Meta will issue a `GET` to your URL with
-   `hub.mode=subscribe&hub.verify_token=…&hub.challenge=…`; Dograh's
+   `hub.mode=subscribe&hub.verify_token=…&hub.challenge=…`; Bellerophone's
    handler looks up the channel by id, compares the verify token, and
    echoes back the challenge as plain text. On success the button turns
    green.
 5. Under **Webhook fields**, subscribe to the **`messages`** field at
    minimum. (Subscribing to `message_template_status_update` is
-   harmless — Dograh currently logs and ignores it.)
+   harmless — Bellerophone currently logs and ignores it.)
 
 ### 3. Test the connection
 
-1. In the Dograh UI, on the WhatsApp channel card, click **Test
-   connection**. Dograh hits the Graph API with the stored access token
+1. In the Bellerophone UI, on the WhatsApp channel card, click **Test
+   connection**. Bellerophone hits the Graph API with the stored access token
    and reports the verified business name + phone number.
 2. From your own WhatsApp client, send "hello" to the business number.
    You should see the agent reply within a few seconds. Check the api
@@ -110,7 +110,7 @@ From those you'll need to know:
 ## How active workflow is picked
 
 If the WhatsApp session has no `workflow_id` yet (first message ever
-from that contact), Dograh picks the org's *first active workflow* by
+from that contact), Bellerophone picks the org's *first active workflow* by
 alphabetical name. A per-conversation `/workflows` style switcher is a
 planned follow-up; for now, set the order of workflows in the UI to
 control the default.
@@ -182,8 +182,8 @@ plumbing will have been exercised end-to-end).
 
 | Symptom | Likely cause |
 |---|---|
-| Meta's "Verify and save" fails with **HTTP 403** | The verify token in Dograh and in Meta don't match, or the channel is disabled. |
-| Meta delivers messages but Dograh logs `bad signature` | The app secret in Dograh and in Meta don't match. Re-copy from *App Settings → Basic → App Secret*. |
+| Meta's "Verify and save" fails with **HTTP 403** | The verify token in Bellerophone and in Meta don't match, or the channel is disabled. |
+| Meta delivers messages but Bellerophone logs `bad signature` | The app secret in Bellerophone and in Meta don't match. Re-copy from *App Settings → Basic → App Secret*. |
 | `no enabled channel for phone_number_id=…` log line | The `phone_number_id` Meta sent doesn't match any enabled channel row. Check the value in the UI vs Meta's API Setup screen. |
 | Meta replies with code **131047** "outside 24h window" | The user hasn't messaged you in 24h. Send a pre-approved template via `send_template` instead of free-form text. |
 | Replies arrive duplicated | The dispatcher dedupes by Meta `message_id`. If you see duplicates, look at the message ids in the logs — they should differ; if they don't, Meta is sending true retries and the deduper is dropping them silently. |

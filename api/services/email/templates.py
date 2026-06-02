@@ -4,7 +4,7 @@
 def build_password_reset_email(reset_url: str, expiry_minutes: int) -> tuple[str, str]:
     """Return ``(text_body, html_body)`` for the password-reset email."""
     text_body = (
-        "We received a request to reset your Dograh password.\n\n"
+        "We received a request to reset your Bellerophone password.\n\n"
         f"Reset your password using the link below (valid for {expiry_minutes} "
         "minutes):\n\n"
         f"{reset_url}\n\n"
@@ -16,7 +16,7 @@ def build_password_reset_email(reset_url: str, expiry_minutes: int) -> tuple[str
 <!doctype html>
 <html>
   <body style="font-family: -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; color: #111;">
-    <h2>Reset your Dograh password</h2>
+    <h2>Reset your Bellerophone password</h2>
     <p>We received a request to reset your password.</p>
     <p>
       <a href="{reset_url}"

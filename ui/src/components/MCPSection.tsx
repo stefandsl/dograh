@@ -2,12 +2,15 @@
 
 import { Check, Copy } from "lucide-react";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 
 export function MCPSection() {
+  const t = useTranslations("components.mcpSection");
+
   const backendUrl =
     process.env.NEXT_PUBLIC_BACKEND_URL ||
     (typeof window !== "undefined" ? window.location.origin : "");
@@ -27,16 +30,15 @@ export function MCPSection() {
   return (
     <div className="grid gap-6">
       <div className="grid gap-2">
-        <Label>MCP Endpoint</Label>
+        <Label>{t("endpointLabel")}</Label>
         <p className="text-xs text-muted-foreground">
-          Connect an MCP-compatible AI assistant to this URL over Streamable
-          HTTP. Requires an API key in the X-API-Key header.{" "}
+          {t("endpointDescription")}{" "}
           <Link
             href="/api-keys"
             target="_blank"
             className="text-primary underline hover:no-underline"
           >
-            Get your API key
+            {t("getApiKeyLink")}
           </Link>
         </p>
         <div className="flex items-center gap-2">
@@ -59,17 +61,18 @@ export function MCPSection() {
       </div>
 
       <p className="text-xs text-muted-foreground">
-        For step-by-step setup with Claude Code, Claude Desktop, Cursor, and
-        other clients, see the{" "}
-        <Link
-          href="https://docs.dograh.com/integrations/mcp"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-primary underline hover:no-underline"
-        >
-          MCP integration guide
-        </Link>
-        .
+        {t.rich("setupGuide", {
+          guideLink: (chunks) => (
+            <Link
+              href="https://docs.dograh.com/integrations/mcp"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-primary underline hover:no-underline"
+            >
+              {chunks}
+            </Link>
+          ),
+        })}
       </p>
     </div>
   );

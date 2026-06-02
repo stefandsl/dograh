@@ -18,7 +18,7 @@ during Phase 0 research, read-only).
 | File | Adaptation |
 |---|---|
 | `bot/main.py` | Replace `runner` calls with `dograh_client` calls; aiogram 3 handler layer is solid |
-| `bot/voice.py` | Keep Groq Whisper STT; drop ElevenLabs/Groq TTS — TTS comes from Dograh workflow run instead (ADR-101) |
+| `bot/voice.py` | Keep Groq Whisper STT; drop ElevenLabs/Groq TTS — TTS comes from Bellerophone workflow run instead (ADR-101) |
 | `bot/memory/search.py` | Rewrite SQLite FTS5 query to Postgres `to_tsvector + GIN` (ADR-103) |
 | `bot/memory/hooks.py` | Keep injection/extraction logic; update imports to new memory layer |
 | `bot/scheduler.py` | Keep cron-matching logic; replace `workspace/schedules.json` with Postgres `telegram_scheduled_tasks` (Phase 2 schema) |
@@ -37,7 +37,7 @@ during Phase 0 research, read-only).
 | `bot/backends/openrouter.py` | OpenRouter HTTP wrapper |
 | `bot/db.py` | SQLite WAL + FTS5; sessions move to Postgres per ADR-103 |
 | `cliclaw.service` | systemd unit; we ship as a docker compose service instead |
-| `install.sh` (CliClaw root) | systemd-based installer; Dograh's `install.sh` (Phase 6) prompts for Telegram opt-in instead |
+| `install.sh` (CliClaw root) | systemd-based installer; Bellerophone's `install.sh` (Phase 6) prompts for Telegram opt-in instead |
 
 ## Framework + storage notes from CliClaw
 

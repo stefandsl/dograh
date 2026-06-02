@@ -1,8 +1,9 @@
 import * as LucideIcons from 'lucide-react';
 import { Circle, ExternalLink, type LucideIcon, X } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { useEffect, useMemo } from 'react';
 
-import { useWorkflowNodes } from '@/app/workflow/[workflowId]/stores/workflowStore';
+import { useWorkflowNodes } from '@/app/[locale]/workflow/[workflowId]/stores/workflowStore';
 import type { NodeSpec } from '@/client/types.gen';
 import { useNodeSpecs } from '@/components/flow/renderer';
 import { Button } from '@/components/ui/button';
@@ -22,12 +23,13 @@ type AddNodePanelProps = {
 };
 
 // Section ordering and labels. Drives both the category → section title
-// mapping and the rendering order.
-const SECTION_ORDER: Array<{ category: NodeSpec['category']; title: string }> = [
-    { category: 'trigger', title: 'Triggers' },
-    { category: 'call_node', title: 'Agent Nodes' },
-    { category: 'global_node', title: 'Global Nodes' },
-    { category: 'integration', title: 'Integrations' },
+// mapping and the rendering order. `titleKey` resolves against the
+// `components.flow.addNodePanel` namespace at render time.
+const SECTION_ORDER: Array<{ category: NodeSpec['category']; titleKey: string }> = [
+    { category: 'trigger', titleKey: 'sectionTriggers' },
+    { category: 'call_node', titleKey: 'sectionAgentNodes' },
+    { category: 'global_node', titleKey: 'sectionGlobalNodes' },
+    { category: 'integration', titleKey: 'sectionIntegrations' },
 ];
 
 function resolveIcon(name: string): LucideIcon {
@@ -104,17 +106,18 @@ function NodeSection({
 }
 
 export default function AddNodePanel({ isOpen, onNodeSelect, onClose }: AddNodePanelProps) {
+    const t = useTranslations('components.flow.addNodePanel');
     const { specs } = useNodeSpecs();
     const nodes = useWorkflowNodes();
 
     // Group registered specs by category, preserving the SECTION_ORDER.
     // Adding a new node type with a new spec.category just shows up here.
     const sections = useMemo(() => {
-        return SECTION_ORDER.map(({ category, title }) => ({
-            title,
+        return SECTION_ORDER.map(({ category, titleKey }) => ({
+            title: t(titleKey),
             specs: specs.filter((s) => s.category === category),
         }));
-    }, [specs]);
+    }, [specs, t]);
 
     // A workflow must have exactly one trigger (enforced by the backend
     // validator: "Workflow has N start nodes — exactly one is required").
@@ -157,7 +160,7 @@ export default function AddNodePanel({ isOpen, onNodeSelect, onClose }: AddNodeP
             <div className="p-4 h-full overflow-y-auto">
                 <div className="flex justify-between items-center mb-6">
                     <div className="flex flex-col gap-1">
-                        <h2 className="text-lg font-semibold">Add New Node</h2>
+                        <h2 className="text-lg font-semibold">{t('title')}</h2>
                         <a
                             href="https://docs.dograh.com/voice-agent/introduction"
                             target="_blank"
@@ -165,7 +168,7 @@ export default function AddNodePanel({ isOpen, onNodeSelect, onClose }: AddNodeP
                             className="text-xs text-muted-foreground hover:text-primary flex items-center gap-1 transition-colors"
                         >
                             <ExternalLink className="w-3 h-3" />
-                            View Nodes Documentation
+                            {t('viewDocumentation')}
                         </a>
                     </div>
                     <Button variant="ghost" size="icon" onClick={onClose}>
@@ -181,7 +184,7 @@ export default function AddNodePanel({ isOpen, onNodeSelect, onClose }: AddNodeP
                                 title={title}
                                 specs={specs}
                                 disabledTypes={disabledTypes}
-                                disabledReason="Workflow already has a start node. Remove it before adding a different trigger."
+                                disabledReason={t('disabledTriggerReason')}
                                 onNodeSelect={onNodeSelect}
                             />
                         ))}

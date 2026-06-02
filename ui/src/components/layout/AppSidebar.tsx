@@ -23,8 +23,8 @@ import {
   Workflow,
   Wrench,
 } from "lucide-react";
-import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import React, { useRef } from "react";
 
 import ThemeToggle from "@/components/ThemeSwitcher";
@@ -55,95 +55,94 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { useAppConfig } from "@/context/AppConfigContext";
 import { useTelephonyConfigWarnings } from "@/context/TelephonyConfigWarningsContext";
 import { useLatestReleaseVersion } from "@/hooks/useLatestReleaseVersion";
+import { Link } from "@/i18n/navigation";
 import type { LocalUser } from "@/lib/auth";
 import { useAuth } from "@/lib/auth";
 import { cn } from "@/lib/utils";
 
 type SidebarNavItem = {
-  title: string;
+  titleKey: string;
   url: string;
   icon: LucideIcon;
   showsTelephonyWarning?: boolean;
 };
 
 type SidebarNavSection = {
-  label?: string;
+  labelKey?: string;
   items: SidebarNavItem[];
 };
-
-const TELEPHONY_WARNING_COPY = "Action required";
 
 const NAV_SECTIONS: SidebarNavSection[] = [
   {
     items: [
       {
-        title: "Overview",
+        titleKey: "overview",
         url: "/overview",
         icon: Home,
       },
     ],
   },
   {
-    label: "BUILD",
+    labelKey: "sectionBuild",
     items: [
       {
-        title: "Voice Agents",
+        titleKey: "voiceAgents",
         url: "/workflow",
         icon: Workflow,
       },
       {
-        title: "Campaigns",
+        titleKey: "campaigns",
         url: "/campaigns",
         icon: Megaphone,
       },
       {
-        title: "Models",
+        titleKey: "models",
         url: "/model-configurations",
         icon: Brain,
       },
       {
-        title: "Telephony",
+        titleKey: "telephony",
         url: "/telephony-configurations",
         icon: Phone,
         showsTelephonyWarning: true,
       },
       {
-        title: "IM Channels",
+        titleKey: "imChannels",
         url: "/channels/im",
         icon: MessageCircle,
       },
       {
-        title: "Tools",
+        titleKey: "tools",
         url: "/tools",
         icon: Wrench,
       },
       {
-        title: "Files",
+        titleKey: "files",
         url: "/files",
         icon: Database,
       },
       {
-        title: "Recordings",
+        titleKey: "recordings",
         url: "/recordings",
         icon: AudioLines,
       },
       {
-        title: "Developers",
+        titleKey: "developers",
         url: "/api-keys",
         icon: Key,
       },
     ],
   },
   {
-    label: "OBSERVE",
+    labelKey: "sectionObserve",
     items: [
       {
-        title: "Agent Runs",
+        titleKey: "agentRuns",
         url: "/usage",
         icon: TrendingUp,
       },
       {
-        title: "Reports",
+        titleKey: "reports",
         url: "/reports",
         icon: FileText,
       },
@@ -159,6 +158,8 @@ const StackTeamSwitcher = React.lazy(() =>
 );
 
 export function AppSidebar() {
+  const t = useTranslations("nav");
+  const tb = useTranslations("brand");
   const pathname = usePathname();
   const router = useRouter();
   const { state, isMobile, setOpenMobile } = useSidebar();
@@ -202,16 +203,16 @@ export function AppSidebar() {
     const tooltip = {
       children: (
         <div className="notranslate" translate="no">
-          <p>{item.title}</p>
+          <p>{t(item.titleKey)}</p>
           {showWarningDot && (
-            <p className="text-amber-600 dark:text-amber-400">{TELEPHONY_WARNING_COPY}</p>
+            <p className="text-amber-600 dark:text-amber-400">{t("actionRequired")}</p>
           )}
         </div>
       ),
     };
     const warningIndicator = (
       <AlertTriangle
-        aria-label="Action required on a telephony configuration"
+        aria-label={t("telephonyWarningAria")}
         className={cn(
           "text-amber-500",
           isCollapsed ? "absolute -right-0.5 -top-0.5 h-3 w-3" : "ml-auto h-3.5 w-3.5"
@@ -239,7 +240,7 @@ export function AppSidebar() {
             className={cn("notranslate min-w-0 flex-1 truncate", isCollapsed && "sr-only")}
             translate="no"
           >
-            {item.title}
+            {t(item.titleKey)}
           </span>
           {showWarningDot && (
             isCollapsed ? (
@@ -250,7 +251,7 @@ export function AppSidebar() {
                   {warningIndicator}
                 </TooltipTrigger>
                 <TooltipContent side="right">
-                  <p>{TELEPHONY_WARNING_COPY}</p>
+                  <p>{t("actionRequired")}</p>
                 </TooltipContent>
               </Tooltip>
             )
@@ -270,7 +271,7 @@ export function AppSidebar() {
               className="notranslate flex items-center gap-2 px-2 text-xl font-bold"
               translate="no"
             >
-              Dograh
+              {tb("name")}
               {versionInfo && (
                 <span
                   className="notranslate text-xs font-normal text-muted-foreground"
@@ -290,11 +291,11 @@ export function AppSidebar() {
                     className="inline-flex items-center gap-1 rounded-md border bg-amber-50 px-1.5 py-0.5 text-[10px] font-medium leading-none text-amber-900 transition-opacity hover:opacity-80 dark:bg-amber-950 dark:text-amber-200"
                   >
                     <ArrowUpCircle className="h-3 w-3" />
-                    Update
+                    {t("update")}
                   </a>
                 </TooltipTrigger>
                 <TooltipContent side="bottom">
-                  <p>Latest: {latestRelease} — click to see the update guide</p>
+                  <p>{t("latestVersionAvailable", { version: latestRelease })}</p>
                 </TooltipContent>
               </Tooltip>
             )}
@@ -302,11 +303,11 @@ export function AppSidebar() {
               <Tooltip>
                 <TooltipTrigger asChild>
                   <span className="inline-flex items-center rounded-md border bg-emerald-50 px-1.5 py-0.5 text-[10px] font-medium leading-none text-emerald-900 dark:bg-emerald-950 dark:text-emerald-200">
-                    Latest
+                    {t("latest")}
                   </span>
                 </TooltipTrigger>
                 <TooltipContent side="bottom">
-                  <p>You&apos;re running the latest release</p>
+                  <p>{t("runningLatest")}</p>
                 </TooltipContent>
               </Tooltip>
             )}
@@ -342,10 +343,10 @@ export function AppSidebar() {
       <SidebarContent className={cn("notranslate", isCollapsed && "px-0")} translate="no">
         {NAV_SECTIONS.map((section, index) => (
           <SidebarGroup
-            key={section.label ?? "overview"}
+            key={section.labelKey ?? "overview"}
             className={index === 0 ? "mt-2" : "mt-6"}
           >
-            {section.label && (
+            {section.labelKey && (
               <SidebarGroupLabel
                 className={cn(
                   "notranslate text-xs font-semibold uppercase tracking-wider text-muted-foreground",
@@ -353,12 +354,12 @@ export function AppSidebar() {
                 )}
                 translate="no"
               >
-                {section.label}
+                {t(section.labelKey)}
               </SidebarGroupLabel>
             )}
             <SidebarMenu>
               {section.items.map((item) => (
-                <SidebarMenuItem key={item.title}>
+                <SidebarMenuItem key={item.titleKey}>
                   <SidebarLink item={item} />
                 </SidebarMenuItem>
               ))}
@@ -399,11 +400,11 @@ export function AppSidebar() {
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={() => router.push("/settings")} className="cursor-pointer">
                     <Settings className="mr-2 h-4 w-4" />
-                    Platform Settings
+                    {t("platformSettings")}
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => logout()} className="cursor-pointer">
                     <LogOut className="mr-2 h-4 w-4" />
-                    Sign out
+                    {t("signOut")}
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -440,19 +441,19 @@ export function AppSidebar() {
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={() => router.push("/handler/account-settings")} className="cursor-pointer">
                     <Settings className="mr-2 h-4 w-4" />
-                    Account settings
+                    {t("accountSettings")}
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => router.push("/settings")} className="cursor-pointer">
                     <Settings className="mr-2 h-4 w-4" />
-                    Platform Settings
+                    {t("platformSettings")}
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => router.push("/usage")} className="cursor-pointer">
                     <CircleDollarSign className="mr-2 h-4 w-4" />
-                    Usage
+                    {t("usage")}
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => logout()} className="cursor-pointer">
                     <LogOut className="mr-2 h-4 w-4" />
-                    Sign out
+                    {t("signOut")}
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -471,7 +472,7 @@ export function AppSidebar() {
                   </div>
                 </TooltipTrigger>
                 <TooltipContent side="right">
-                  <p>Toggle theme</p>
+                  <p>{t("toggleTheme")}</p>
                 </TooltipContent>
               </Tooltip>
             ) : (

@@ -1,16 +1,16 @@
-# ADR-101 — Audio bridge between Telegram and Dograh
+# ADR-101 — Audio bridge between Telegram and Bellerophone
 
 **Status:** Accepted
 **Date:** 2026-05-27
-**Context:** Phase 0 of the CliClaw → Dograh merge. The MERGE-MASTER plan
+**Context:** Phase 0 of the CliClaw → Bellerophone merge. The MERGE-MASTER plan
 asks for a "Voice Call" button that bridges a Telegram conversation to
-a Dograh Web Call (WebRTC). The plan offered Path A (aiortc in the bot)
+a Bellerophone Web Call (WebRTC). The plan offered Path A (aiortc in the bot)
 and Path B (signed WebApp link) as alternatives.
 
 ## Decision
 
 **Use both, but neither is "Path A as described in the master plan".**
-The master's Path A — "bot uses aiortc to bridge Telegram voice ↔ Dograh
+The master's Path A — "bot uses aiortc to bridge Telegram voice ↔ Bellerophone
 WebRTC in real time" — is not physically possible. Telegram Bot API 10.0
 (2026-05-08) exposes **no real-time voice channel for bots**: a bot can
 only receive/send discrete `voice` messages (Opus-in-OGG files) and
@@ -23,14 +23,14 @@ What we ship instead:
 
 1. **Async "voice chat" via voice-note round-trip** (always available).
    User sends a voice note → bot downloads via `getFile` → Groq Whisper
-   STT → posts as a text message into the active Dograh workflow run →
-   pipeline produces a text reply → bot synthesises via the Dograh
+   STT → posts as a text message into the active Bellerophone workflow run →
+   pipeline produces a text reply → bot synthesises via the Bellerophone
    pipeline's TTS leg and sends `sendVoice`. Turn-based, ~1-3 s
    round-trip, what every shipping AI voice bot on Telegram does today.
 2. **True real-time voice via signed WebApp link** (when the user wants
    full-duplex). The bot generates a Fernet-signed, short-TTL
    (`OSS_JWT_SECRET` as master key, 5-min TTL) URL pointing at a new
-   `/api/v1/telegram/web-call-link` endpoint on the Dograh API. The
+   `/api/v1/telegram/web-call-link` endpoint on the Bellerophone API. The
    endpoint resolves the token to `{workflow_id, user_id,
    workflow_run_id}` and 302-redirects into the public embed signaling
    page (`/embed/<session_token>`). User taps the menu button, browser
@@ -51,7 +51,7 @@ What we ship instead:
 The WebApp link is *correct* for true real time but it's friction —
 you've broken out of Telegram. The voice-note path is the conversational
 default that matches user expectations, and it works with one tap.
-Doing both costs almost nothing because they share the same Dograh
+Doing both costs almost nothing because they share the same Bellerophone
 workflow run.
 
 ## Implications
@@ -63,4 +63,4 @@ workflow run.
 - New API endpoint: `POST /api/v1/telegram/web-call-link` (Phase 4 work,
   ADR-102 covers its auth).
 - Voice-note round-trip is gated by a per-org TTS budget check —
-  re-using Dograh's existing quota service.
+  re-using Bellerophone's existing quota service.

@@ -1,5 +1,7 @@
 "use client";
 
+import { useTranslations } from "next-intl";
+
 import {
     conversationItemsFromLiveFeedback,
     conversationItemsFromRealtimeFeedbackEvents,
@@ -28,6 +30,8 @@ interface HistoricalModeProps {
 type RealtimeFeedbackProps = LiveModeProps | HistoricalModeProps;
 
 export function RealtimeFeedback(props: RealtimeFeedbackProps) {
+    const t = useTranslations("components.workflow.conversation.realtimeFeedback");
+
     let items;
     let status: ConversationStatus;
     let title: string;
@@ -39,20 +43,20 @@ export function RealtimeFeedback(props: RealtimeFeedbackProps) {
             ? conversationItemsFromRealtimeFeedbackEvents(props.logs.realtime_feedback_events)
             : [];
         status = "ended";
-        title = "Call Transcript";
+        title = t("callTranscript");
         emptyState = {
-            title: "No conversation recorded",
-            subtitle: "Real-time feedback events were not captured for this call",
+            title: t("noConversationRecorded"),
+            subtitle: t("noConversationRecordedSubtitle"),
         };
     } else {
         items = conversationItemsFromLiveFeedback(props.messages);
         status = props.isCallActive ? "live" : props.isCallCompleted ? "ended" : "ready";
-        title = "Live Transcript";
+        title = t("liveTranscript");
         emptyState = {
-            title: "No messages yet",
+            title: t("noMessagesYet"),
             subtitle: props.isCallActive
-                ? "Start speaking to see the transcript"
-                : "Start the call to begin the conversation",
+                ? t("startSpeakingSubtitle")
+                : t("startCallSubtitle"),
         };
         autoScroll = true;
     }

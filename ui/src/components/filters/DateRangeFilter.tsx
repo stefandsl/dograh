@@ -1,4 +1,5 @@
 import { CalendarIcon } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -22,6 +23,7 @@ export const DateRangeFilter: React.FC<DateRangeFilterProps> = ({
   error,
   presets = [],
 }) => {
+  const t = useTranslations("components.filters.dateRangeFilter");
   const [isFromOpen, setIsFromOpen] = useState(false);
   const [isToOpen, setIsToOpen] = useState(false);
 
@@ -39,7 +41,7 @@ export const DateRangeFilter: React.FC<DateRangeFilterProps> = ({
   }, [value.to]);
 
   const formatDate = (date: Date | null) => {
-    if (!date) return "Select date";
+    if (!date) return t("selectDate");
     return date.toLocaleDateString() + " " + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   };
 
@@ -98,7 +100,7 @@ export const DateRangeFilter: React.FC<DateRangeFilterProps> = ({
 
       <div className="grid grid-cols-2 gap-3">
         <div className="space-y-2">
-          <Label>From</Label>
+          <Label>{t("from")}</Label>
           <Popover open={isFromOpen} onOpenChange={setIsFromOpen}>
             <PopoverTrigger asChild>
               <Button
@@ -121,7 +123,7 @@ export const DateRangeFilter: React.FC<DateRangeFilterProps> = ({
               />
               {value.from && (
                 <div className="p-3 border-t">
-                  <Label htmlFor="from-time">Time</Label>
+                  <Label htmlFor="from-time">{t("time")}</Label>
                   <input
                     id="from-time"
                     type="time"
@@ -137,7 +139,7 @@ export const DateRangeFilter: React.FC<DateRangeFilterProps> = ({
         </div>
 
         <div className="space-y-2">
-          <Label>To</Label>
+          <Label>{t("to")}</Label>
           <Popover open={isToOpen} onOpenChange={setIsToOpen}>
             <PopoverTrigger asChild>
               <Button
@@ -161,7 +163,7 @@ export const DateRangeFilter: React.FC<DateRangeFilterProps> = ({
               />
               {value.to && (
                 <div className="p-3 border-t">
-                  <Label htmlFor="to-time">Time</Label>
+                  <Label htmlFor="to-time">{t("time")}</Label>
                   <input
                     id="to-time"
                     type="time"

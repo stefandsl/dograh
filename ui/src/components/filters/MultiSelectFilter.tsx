@@ -1,4 +1,5 @@
 import { ChevronDown, Search } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -26,6 +27,7 @@ export const MultiSelectFilter: React.FC<MultiSelectFilterProps> = ({
   showSelectAll = true,
   searchable = true,
 }) => {
+  const t = useTranslations("components.filters.multiSelectFilter");
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
 
@@ -51,14 +53,17 @@ export const MultiSelectFilter: React.FC<MultiSelectFilterProps> = ({
   };
 
   const getDisplayText = () => {
-    if (value.codes.length === 0) return "Select options";
+    if (value.codes.length === 0) return t("placeholder");
     if (value.codes.length <= 3) return value.codes.join(", ");
-    return `${value.codes.slice(0, 3).join(", ")} +${value.codes.length - 3} more`;
+    return t("moreSummary", {
+      list: value.codes.slice(0, 3).join(", "),
+      count: value.codes.length - 3,
+    });
   };
 
   return (
     <div className="space-y-2">
-      <Label>Select Options</Label>
+      <Label>{t("label")}</Label>
       <Popover open={isOpen} onOpenChange={setIsOpen}>
         <PopoverTrigger asChild>
           <Button
@@ -80,7 +85,7 @@ export const MultiSelectFilter: React.FC<MultiSelectFilterProps> = ({
               <div className="relative">
                 <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
                 <Input
-                  placeholder="Search options..."
+                  placeholder={t("searchPlaceholder")}
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-8"
@@ -96,7 +101,7 @@ export const MultiSelectFilter: React.FC<MultiSelectFilterProps> = ({
                   onClick={handleSelectAll}
                   className="flex-1"
                 >
-                  Select All
+                  {t("selectAll")}
                 </Button>
                 <Button
                   variant="outline"
@@ -104,7 +109,7 @@ export const MultiSelectFilter: React.FC<MultiSelectFilterProps> = ({
                   onClick={handleSelectNone}
                   className="flex-1"
                 >
-                  Select None
+                  {t("selectNone")}
                 </Button>
               </div>
             )}
@@ -112,7 +117,7 @@ export const MultiSelectFilter: React.FC<MultiSelectFilterProps> = ({
             <div className="max-h-[200px] overflow-auto space-y-1">
               {filteredOptions.length === 0 ? (
                 <p className="text-sm text-muted-foreground text-center py-2">
-                  No options found
+                  {t("noOptions")}
                 </p>
               ) : (
                 filteredOptions.map((option) => (
@@ -139,7 +144,7 @@ export const MultiSelectFilter: React.FC<MultiSelectFilterProps> = ({
 
             <div className="pt-2 border-t">
               <p className="text-xs text-muted-foreground">
-                {value.codes.length} selected
+                {t("selectedCount", { count: value.codes.length })}
               </p>
             </div>
           </div>

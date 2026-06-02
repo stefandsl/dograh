@@ -1,30 +1,30 @@
 ---
 title: "Telegram IM Channel"
-description: "Run a Telegram bot frontend on your Dograh deployment."
+description: "Run a Telegram bot frontend on your Bellerophone deployment."
 ---
 
 ## Overview
 
-The Telegram channel turns Dograh into a Telegram bot. Once enabled,
+The Telegram channel turns Bellerophone into a Telegram bot. Once enabled,
 users can:
 
 - 🎙️ Open a real-time voice call to one of your workflows (via a
   signed WebApp button → in-browser WebRTC client)
-- 💬 Chat with an agent in plain text (turn-based, backed by Dograh's
+- 💬 Chat with an agent in plain text (turn-based, backed by Bellerophone's
   text-chat session API)
 - 🧠 Save and search facts ("memory vault")
 - 🤖 Pick which workflow handles their chat
 - Send voice notes that get transcribed (Groq Whisper) and routed into
   the workflow
 
-Everything is managed from the Dograh UI at `/channels/im`. The bot
+Everything is managed from the Bellerophone UI at `/channels/im`. The bot
 itself is an opt-in container (`docker compose --profile telegram up`).
 
 ## Architecture
 
 ```
 ┌────────────┐         ┌──────────────┐         ┌──────────────┐
-│  Telegram  │ ◄────► │ telegram-bot │ ◄────► │  Dograh api  │
+│  Telegram  │ ◄────► │ telegram-bot │ ◄────► │  Bellerophone api  │
 │   Bot API  │   long │  container   │   HTTP  │  (FastAPI)   │
 └────────────┘  poll  │  (aiogram)   │         └──────┬───────┘
                       └──────┬───────┘                │
@@ -51,14 +51,14 @@ itself is an opt-in container (`docker compose --profile telegram up`).
   dispatchers without a process restart.
 - Auth. Each IM channel owns a service-account API key in the same
   org (auto-minted at creation); the bot uses that key as `X-API-Key`
-  on every Dograh API call.
+  on every Bellerophone API call.
 
 See `docs/channels/architecture.md` for the mermaid version and
 `docs/adr/ADR-100..103` for the decisions that shaped this layout.
 
 ## Prerequisites
 
-- A Dograh instance running (`docker compose up -d`).
+- A Bellerophone instance running (`docker compose up -d`).
 - A Telegram bot token from [@BotFather](https://t.me/BotFather) — `/newbot`,
   follow the prompts, copy the token.
 - *(Optional)* A Groq API key for voice-note STT. Without it, the bot
@@ -91,9 +91,9 @@ You should see in `docker logs dograh-telegram-bot`:
 
 `0 bots` is expected — you haven't registered any tokens yet.
 
-## Step 2 — Register the bot in the Dograh UI
+## Step 2 — Register the bot in the Bellerophone UI
 
-Open the Dograh UI → sidebar → **IM Channels**. Click **+ Add Telegram bot**.
+Open the Bellerophone UI → sidebar → **IM Channels**. Click **+ Add Telegram bot**.
 
 Fill in:
 
@@ -106,7 +106,7 @@ Fill in:
 
 Click **Save**. The toast surfaces a one-time API key — you don't need
 to copy it (the bot reads it via the secret-bundle endpoint), but you
-can if you want to make Dograh API calls as that service account.
+can if you want to make Bellerophone API calls as that service account.
 
 Within ~1 second of clicking Save:
 

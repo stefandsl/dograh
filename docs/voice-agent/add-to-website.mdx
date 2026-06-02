@@ -1,6 +1,6 @@
 ---
 title: Add to Website
-description: Add your Dograh voice agent to any website so visitors can talk to it.
+description: Add your Bellerophone voice agent to any website so visitors can talk to it.
 tag: "NEW"
 ---
 
@@ -156,7 +156,7 @@ All `on*` setters are single-listener — calling the same one again replaces th
   });
 
   window.DograhWidget.onError((err) => {
-    console.error('Dograh error:', err.message);
+    console.error('Bellerophone error:', err.message);
   });
 
   btn.addEventListener('click', () => {
@@ -192,7 +192,7 @@ export function TalkButton() {
 
   useEffect(() => {
     window.DograhWidget.onStatusChange((s) => setStatus(s));
-    window.DograhWidget.onError((err) => console.error('Dograh error:', err.message));
+    window.DograhWidget.onError((err) => console.error('Bellerophone error:', err.message));
   }, []);
 
   const isLive = status === 'connected' || status === 'connecting';
