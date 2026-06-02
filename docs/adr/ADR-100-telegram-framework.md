@@ -2,7 +2,7 @@
 
 **Status:** Accepted
 **Date:** 2026-05-27
-**Context:** Phase 0 of the CliClaw → Dograh merge.
+**Context:** Phase 0 of the CliClaw → Bellerophone merge.
 
 ## Decision
 

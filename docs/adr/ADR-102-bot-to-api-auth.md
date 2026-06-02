@@ -1,21 +1,21 @@
-# ADR-102 — Bot ↔ Dograh API authentication
+# ADR-102 — Bot ↔ Bellerophone API authentication
 
 **Status:** Accepted
 **Date:** 2026-05-27
 **Context:** Phase 0. The Telegram bot container needs to call the
-Dograh FastAPI service as a service-to-service client. It also has to
-act on behalf of a specific Dograh user (the one who owns the workflow
+Bellerophone FastAPI service as a service-to-service client. It also has to
+act on behalf of a specific Bellerophone user (the one who owns the workflow
 the Telegram message targets).
 
 ## Decision
 
-**Use Dograh's existing `X-API-Key` mechanism with per-org service-account
+**Use Bellerophone's existing `X-API-Key` mechanism with per-org service-account
 keys, scoped via the IM channel row.**
 
 Concretely:
 
 1. The IM channel record stored in the `im_channels` table (Phase 4)
-   contains the Telegram bot token AND a reference to a Dograh API key
+   contains the Telegram bot token AND a reference to a Bellerophone API key
    row. When an admin enables a Telegram channel in the UI, the backend
    either:
    - Reuses an existing API key the admin selects, or
@@ -25,7 +25,7 @@ Concretely:
 2. The bot container loads `(bot_token, api_key)` pairs from
    `GET /api/v1/im/channels?type=telegram&enabled=true` at boot and on
    Redis pub/sub (`im:channels:reload`) — see Phase 4. The api_key is
-   used as `X-API-Key: <key>` on every subsequent Dograh API call by
+   used as `X-API-Key: <key>` on every subsequent Bellerophone API call by
    that bot.
 3. The bot never authenticates as the end-user (the Telegram chat
    participant). It maps `(telegram_chat_id, bot_id)` → an org via the
@@ -36,14 +36,14 @@ Concretely:
 
 JWT is fine for first-party browser flows but creates a refresh problem
 for a long-lived bot container. Pre-issued, revocable API keys are
-operationally simpler and Dograh already supports them
+operationally simpler and Bellerophone already supports them
 (`api/routes/user_api_keys.py` + `X-API-Key` middleware in
 `api/services/auth/depends.py:19-129`).
 
 ## Why not "anonymous internal" via a shared secret
 
 A shared secret would skip org scoping and require us to invent a
-parallel auth surface. Reusing the API-key path means every Dograh
+parallel auth surface. Reusing the API-key path means every Bellerophone
 endpoint already enforces org isolation correctly without further
 work — important for multi-tenant.
 
@@ -64,6 +64,6 @@ work — important for multi-tenant.
 ## Future
 
 If we ever wire a *user-side* OAuth flow ("link my Telegram to my
-Dograh account"), we'll layer it on top of this: the IM channel still
+Bellerophone account"), we'll layer it on top of this: the IM channel still
 holds the service key for the org, plus a `linked_users` table maps
 `telegram_user_id` → `dograh_user_id`. Out of scope for the merge.

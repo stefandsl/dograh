@@ -1,4 +1,4 @@
-# Phase 0 — Research summary (CliClaw → Dograh merge)
+# Phase 0 — Research summary (CliClaw → Bellerophone merge)
 
 This is the synthesis of the Phase 0 read-only research. Two map docs
 and four ADRs cover the substance; this file is the human-readable
@@ -7,13 +7,13 @@ index.
 ## Outputs
 
 - **API map** → [`dograh-api-map.md`](./dograh-api-map.md) — every
-  Dograh endpoint the bot can call, with the auth model the bot uses.
+  Bellerophone endpoint the bot can call, with the auth model the bot uses.
 - **Import map** → [`cliclaw-import-map.md`](./cliclaw-import-map.md) —
   which CliClaw files survive (KEEP-AS-IS / KEEP-ADAPT / DROP).
 - **ADR-100** — Telegram framework (`aiogram 3.28+`)
 - **ADR-101** — Audio bridge (voice-note round-trip + WebApp link;
   Path A as written in the master plan is not physically possible)
-- **ADR-102** — Bot ↔ Dograh API auth (`X-API-Key` per IM channel row)
+- **ADR-102** — Bot ↔ Bellerophone API auth (`X-API-Key` per IM channel row)
 - **ADR-103** — Memory storage (Postgres FTS, drop SQLite/FTS5)
 
 ## Key surprises vs the master plan
@@ -25,7 +25,7 @@ index.
    Path A ("aiortc in the bot") was unimplementable as written.
    ADR-101 documents the actual options.
 
-2. **There's no IM channel abstraction in Dograh yet.** Phase 4 is
+2. **There's no IM channel abstraction in Bellerophone yet.** Phase 4 is
    greenfield, not "extend existing pattern". The telephony providers
    directory (`api/services/telephony/providers/`) is the template
    we'll mirror.
@@ -50,7 +50,7 @@ index.
 
 ## Out of scope flagged for later
 
-- Per-end-user OAuth ("link my Telegram to my Dograh account") — ADR-102
+- Per-end-user OAuth ("link my Telegram to my Bellerophone account") — ADR-102
   mentions a future shape.
 - Userbot/MTProto path for true real-time voice chat participation —
   ADR-101 flags it.

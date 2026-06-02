@@ -1,4 +1,4 @@
-# Dograh AI
+# Bellerophone AI
 
 **The open-source, self-hostable alternative to Vapi & Retell** — build production voice agents with a drag-and-drop workflow builder. From zero to a working bot in under 2 minutes.
 
@@ -23,7 +23,7 @@
 </p>
 
 <p align="center">
-  <img src="docs/images/hero.gif" alt="Dograh in action — build a workflow, launch a voice agent, talk to it" width="80%">
+  <img src="docs/images/hero.gif" alt="Bellerophone in action — build a workflow, launch a voice agent, talk to it" width="80%">
 </p>
 
 - **100% open source**, self-hostable — no vendor lock-in, unlike Vapi or Retell
@@ -38,10 +38,10 @@
 
 <div align="center">
   <a href="https://www.youtube.com/watch?v=xD9JEvfCH9k">
-    <img src="https://img.youtube.com/vi/xD9JEvfCH9k/maxresdefault.jpg" alt="Dograh featured by Better Stack" width="80%" style="border-radius: 8px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+    <img src="https://img.youtube.com/vi/xD9JEvfCH9k/maxresdefault.jpg" alt="Bellerophone featured by Better Stack" width="80%" style="border-radius: 8px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
   </a>
   <br>
-  <em>Featured by <strong>Better Stack</strong> — a hands-on look at Dograh</em>
+  <em>Featured by <strong>Better Stack</strong> — a hands-on look at Bellerophone</em>
 </div>
 
 <details>
@@ -49,22 +49,22 @@
 
 <div align="center">
   <a href="https://youtu.be/9gPneyf9M9w">
-    <img src="docs/images/video_thumbnail_1.png" alt="Watch Dograh AI Demo Video" width="70%" style="border-radius: 8px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+    <img src="docs/images/video_thumbnail_1.png" alt="Watch Bellerophone AI Demo Video" width="70%" style="border-radius: 8px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
   </a>
 </div>
 
 </details>
 
-## ⚖️ Dograh vs Vapi vs Retell
+## ⚖️ Bellerophone vs Vapi vs Retell
 
 An honest comparison on the axes that matter most to teams evaluating voice AI platforms.
 
-|  | **Dograh** | **Vapi** | **Retell** |
+|  | **Bellerophone** | **Vapi** | **Retell** |
 |---|---|---|---|
 | **License** | BSD 2-Clause (open source) | Proprietary | Proprietary |
 | **Self-hostable** | ✅ Yes — one Docker command | ❌ SaaS only | ❌ SaaS only |
 | **Pricing** | Free (self-host) · usage-based (cloud) | Per-minute SaaS | Per-minute SaaS |
-| **Bring your own LLM / STT / TTS** | ✅ Any provider, or use Dograh's stack | Configurable within their integrations | Configurable within their integrations |
+| **Bring your own LLM / STT / TTS** | ✅ Any provider, or use Bellerophone's stack | Configurable within their integrations | Configurable within their integrations |
 | **Source-level customization** | ✅ Every line is yours to modify | ❌ Closed source | ❌ Closed source |
 | **Data residency** | Your infra, your rules | Their cloud | Their cloud |
 | **Vendor lock-in** | None | Full | Full |
@@ -72,7 +72,7 @@ An honest comparison on the axes that matter most to teams evaluating voice AI p
 
 ## 🚀 Get Started
 
-##### Download and setup Dograh on your Local Machine
+##### Download and setup Bellerophone on your Local Machine
 
 > **Note**
 > We collect anonymous usage data to improve the product. You can opt out by setting the `ENABLE_TELEMETRY` to `false` in the below command.
@@ -105,7 +105,7 @@ The installer is idempotent (re-running keeps your `.env` values) and supports `
 2. Pick **Inbound** or **Outbound**, name your bot (e.g. _Lead Qualification_), and describe the use case in 5–10 words (e.g. _Screen insurance form submissions for purchase intent_).
 3. Click **Web Call** — you're talking to your bot.
 
-> 🔑 **No API keys needed.** Dograh ships with auto-generated keys and its own LLM / TTS / STT stack. Connect your own keys for LLM, TTS, STT, or Telephony (e.g. Twilio, Vonage, Telnyx) anytime.
+> 🔑 **No API keys needed.** Bellerophone ships with auto-generated keys and its own LLM / TTS / STT stack. Connect your own keys for LLM, TTS, STT, or Telephony (e.g. Twilio, Vonage, Telnyx) anytime.
 
 ## Features
 
@@ -161,15 +161,15 @@ You can go to [https://docs.dograh.com](https://docs.dograh.com/) for our docume
 
 > 👋 **Coming from the Better Stack video?** Drop your use case in our [pinned GitHub Discussion](https://github.com/orgs/dograh-hq/discussions/291) — we read every reply and the founders personally onboard early adopters.
 
-- **Slack** — the cornerstone of Dograh AI contributions. Connect with maintainers, discuss features before coding, get help with setup, and stay current on contribution sprints.
+- **Slack** — the cornerstone of Bellerophone AI contributions. Connect with maintainers, discuss features before coding, get help with setup, and stay current on contribution sprints.
 - **GitHub Discussions** — share use cases, ask questions, swap workflow recipes.
 - **GitHub Issues** — report bugs or request features.
 
-👉 Join us → [Dograh Community Slack](https://join.slack.com/t/dograh-community/shared_invite/zt-3zjb5vwvl-j7hRz3_F1SOn5cH~jm5f5g)
+👉 Join us → [Bellerophone Community Slack](https://join.slack.com/t/dograh-community/shared_invite/zt-3zjb5vwvl-j7hRz3_F1SOn5cH~jm5f5g)
 
 ## 🙌 Contributing
 
-We love contributions! Dograh AI is 100% open source and we intend to keep it that way.
+We love contributions! Bellerophone AI is 100% open source and we intend to keep it that way.
 
 ### Getting Started
 
@@ -182,16 +182,16 @@ We love contributions! Dograh AI is 100% open source and we intend to keep it th
 ## ⭐ Star History
 
 <a href="https://star-history.com/#dograh-hq/dograh&Date">
-  <img src="https://api.star-history.com/svg?repos=dograh-hq/dograh&type=Date" alt="Dograh star history" width="80%">
+  <img src="https://api.star-history.com/svg?repos=dograh-hq/dograh&type=Date" alt="Bellerophone star history" width="80%">
 </a>
 
 ## 📄 License
 
-Dograh AI is licensed under the [BSD 2-Clause License](LICENSE)- the same license as projects that were used in building Dograh AI, ensuring compatibility and freedom to use, modify, and distribute.
+Bellerophone AI is licensed under the [BSD 2-Clause License](LICENSE)- the same license as projects that were used in building Bellerophone AI, ensuring compatibility and freedom to use, modify, and distribute.
 
 ## 🏢 About
 
-Built with ❤️ by **Dograh** (Zansat Technologies Private Limited)
+Built with ❤️ by **Bellerophone** (Zansat Technologies Private Limited)
 Founded by YC alumni and exit founders committed to keeping voice AI open and accessible to everyone.
 
 <br><br><br>
