@@ -196,6 +196,22 @@ def get_ice_servers(user_id: Optional[str] = None) -> List[RTCIceServer]:
     """
     servers: List[RTCIceServer] = [RTCIceServer(urls="stun:stun.l.google.com:19302")]
 
+    # Managed/cloud TURN (set via MANAGED_TURN_URLS) is reachable over the public
+    # internet on 443 from both this server (outbound from Docker) and remote
+    # clients (incl. LTE/CGNAT), so prefer it over self-hosted coturn — it does
+    # not depend on home-router port forwarding or hairpin NAT.
+    managed_urls = os.getenv("MANAGED_TURN_URLS", "").strip()
+    if managed_urls:
+        servers.append(
+            RTCIceServer(
+                urls=[u.strip() for u in managed_urls.split(",") if u.strip()],
+                username=os.getenv("MANAGED_TURN_USERNAME", ""),
+                credential=os.getenv("MANAGED_TURN_CREDENTIAL", ""),
+            )
+        )
+        logger.info("Managed TURN configured for server-side ICE")
+        return servers
+
     # Check if TURN is configured
     if not TURN_HOST:
         return servers
@@ -204,15 +220,31 @@ def get_ice_servers(user_id: Optional[str] = None) -> List[RTCIceServer]:
     if TURN_SECRET and user_id:
         try:
             credentials = generate_turn_credentials(user_id)
+            uris = credentials["uris"]
+            # The browser reaches coturn at the public TURN_HOST, but this
+            # server (running inside Docker, behind the same NAT) often cannot:
+            # hairpin NAT back to the host's own public IP frequently fails, so
+            # the server can't allocate its own relay candidate and ICE never
+            # completes (symptom: "Failed to write audio frame", no audio).
+            # When TURN_INTERNAL_HOST is set (e.g. the coturn compose service
+            # name), rewrite only the SERVER-side TURN URIs to reach coturn
+            # directly over the internal network. coturn still advertises
+            # relayed candidates on its external IP, so the browser side and the
+            # HMAC credential are unaffected.
+            internal_host = os.getenv("TURN_INTERNAL_HOST")
+            if internal_host and TURN_HOST:
+                uris = [u.replace(TURN_HOST, internal_host) for u in uris]
             servers.append(
                 RTCIceServer(
-                    urls=credentials["uris"],
+                    urls=uris,
                     username=credentials["username"],
                     credential=credentials["password"],
                 )
             )
             logger.info(
-                f"TURN server configured with time-limited credentials, TTL: {credentials['ttl']}s"
+                "TURN server configured with time-limited credentials, "
+                f"TTL: {credentials['ttl']}s"
+                + (f" (server-side host {internal_host})" if internal_host else "")
             )
             return servers
         except Exception as e:

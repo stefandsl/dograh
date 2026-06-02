@@ -16,6 +16,7 @@ References:
 import base64
 import hashlib
 import hmac
+import os
 import time
 from typing import List, Optional
 
@@ -67,6 +68,20 @@ def generate_turn_credentials(user_id: str, ttl: int = TURN_CREDENTIAL_TTL) -> d
     Raises:
         ValueError: If TURN_SECRET is not configured
     """
+    # Managed/cloud TURN (e.g. metered.ca, Cloudflare, Twilio) takes priority.
+    # These providers are reachable over the public internet on 443 from both
+    # the server (outbound from Docker) and mobile clients (incl. LTE/CGNAT),
+    # so they sidestep the self-hosted coturn's dependency on home-router port
+    # forwarding/hairpin. Static long-lived credentials are supplied via env.
+    managed_urls = os.getenv("MANAGED_TURN_URLS", "").strip()
+    if managed_urls:
+        return {
+            "username": os.getenv("MANAGED_TURN_USERNAME", ""),
+            "password": os.getenv("MANAGED_TURN_CREDENTIAL", ""),
+            "ttl": ttl,
+            "uris": [u.strip() for u in managed_urls.split(",") if u.strip()],
+        }
+
     if not TURN_SECRET:
         raise ValueError("TURN_SECRET is not configured")
 
