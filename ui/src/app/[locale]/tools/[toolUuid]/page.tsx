@@ -46,10 +46,8 @@ import { useAuth } from "@/lib/auth";
 
 import {
     createMcpDefinition,
-    DEFAULT_END_CALL_REASON_DESCRIPTION,
     type EndCallMessageType,
     getCategoryConfig,
-    getToolTypeLabel,
     MCP_URL_PATTERN,
     renderToolIcon,
     type ToolCategory,
@@ -70,6 +68,13 @@ function normalizeParameterType(value: string | null | undefined): ParameterType
 
 export default function ToolDetailPage() {
     const t = useTranslations("pages.tools.toolUuid");
+    const tTools = useTranslations("tools");
+
+    const KNOWN_TYPE_LABELS = ["end_call", "transfer_call", "http_api", "calculator", "native", "integration", "mcp"];
+    const getTypeLabel = (category: string) =>
+        KNOWN_TYPE_LABELS.includes(category)
+            ? tTools(`typeLabels.${category}`)
+            : tTools("typeLabels.default");
     const { toolUuid } = useParams<{ toolUuid: string }>();
     const { user, getAccessToken, redirectToLogin, loading } = useAuth();
     const router = useRouter();
@@ -106,7 +111,7 @@ export default function ToolDetailPage() {
     const handleEndCallReasonChange = (enabled: boolean) => {
         setEndCallReason(enabled);
         if (enabled && !endCallReasonDescription) {
-            setEndCallReasonDescription(DEFAULT_END_CALL_REASON_DESCRIPTION);
+            setEndCallReasonDescription(tTools("endCallReasonDescription"));
         }
     };
 
@@ -591,7 +596,7 @@ const data = await response.json();`;
                                 <div>
                                     <h1 className="text-xl font-bold">{name}</h1>
                                     <p className="text-sm text-muted-foreground">
-                                        {getToolTypeLabel(tool.category)}
+                                        {getTypeLabel(tool.category)}
                                     </p>
                                 </div>
                             </div>

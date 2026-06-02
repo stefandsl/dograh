@@ -878,6 +878,55 @@
       "checkBack": "Check back soon for updates!"
     }
   },
+  "tools": {
+    "categories": {
+      "http_api": {
+        "label": "External HTTP API",
+        "description": "Make HTTP requests to external APIs"
+      },
+      "end_call": {
+        "label": "End Call",
+        "description": "End the call when conditions are met",
+        "autoFillName": "End Call",
+        "autoFillDescription": "End the call when either user asks to disconnect the call, or when you believe its time to end the conversation"
+      },
+      "transfer_call": {
+        "label": "Transfer Call",
+        "description": "Transfer the call to another phone number (Twilio only)",
+        "autoFillName": "Transfer Call",
+        "autoFillDescription": "Transfer the caller to another phone number when requested"
+      },
+      "calculator": {
+        "label": "Calculator",
+        "description": "Built-in calculator for arithmetic operations",
+        "autoFillName": "Calculator",
+        "autoFillDescription": "Perform arithmetic calculations (supports +, -, *, /, **, %, and parentheses)"
+      },
+      "mcp": {
+        "label": "MCP Server",
+        "description": "Connect a customer MCP server; its tools become available to the agent"
+      },
+      "native": {
+        "label": "Native (Coming Soon)",
+        "description": "Built-in tools like call transfer, DTMF input"
+      },
+      "integration": {
+        "label": "Integration (Coming Soon)",
+        "description": "Third-party integrations like Google Calendar"
+      }
+    },
+    "typeLabels": {
+      "end_call": "End Call Tool",
+      "transfer_call": "Transfer Call Tool",
+      "http_api": "HTTP API Tool",
+      "calculator": "Calculator Tool",
+      "native": "Native Tool",
+      "integration": "Integration Tool",
+      "mcp": "MCP Server Tool",
+      "default": "Tool"
+    },
+    "endCallReasonDescription": "The reason for ending the call (e.g., 'voicemail_detected', 'issue_resolved', 'customer_requested')"
+  },
   "nav": {
     "openMenu": "Open menu",
     "joinSlack": "Join Slack",
@@ -1063,37 +1112,6 @@
       "totalCallsProcessedToday": "Total calls processed today",
       "transferDispositions": "Transfer Dispositions",
       "callsTransferredXfer": "Calls transferred (XFER)"
-    },
-    "toolsConfig": {
-      "httpApiLabel": "External HTTP API",
-      "httpApiDescription": "Make HTTP requests to external APIs",
-      "endCallLabel": "End Call",
-      "endCallDescription": "End the call when conditions are met",
-      "endCallAutoFillName": "End Call",
-      "endCallAutoFillDescription": "End the call when either user asks to disconnect the call, or when you believe its time to end the conversation",
-      "transferCallLabel": "Transfer Call",
-      "transferCallDescription": "Transfer the call to another phone number (Twilio only)",
-      "transferCallAutoFillName": "Transfer Call",
-      "transferCallAutoFillDescription": "Transfer the caller to another phone number when requested",
-      "calculatorLabel": "Calculator",
-      "calculatorDescription": "Built-in calculator for arithmetic operations",
-      "calculatorAutoFillName": "Calculator",
-      "calculatorAutoFillDescription": "Perform arithmetic calculations (supports +, -, *, /, **, %, and parentheses)",
-      "mcpLabel": "MCP Server",
-      "mcpDescription": "Connect a customer MCP server; its tools become available to the agent",
-      "nativeLabel": "Native (Coming Soon)",
-      "nativeDescription": "Built-in tools like call transfer, DTMF input",
-      "integrationLabel": "Integration (Coming Soon)",
-      "integrationDescription": "Third-party integrations like Google Calendar",
-      "typeLabelEndCall": "End Call Tool",
-      "typeLabelTransferCall": "Transfer Call Tool",
-      "typeLabelHttpApi": "HTTP API Tool",
-      "typeLabelCalculator": "Calculator Tool",
-      "typeLabelNative": "Native Tool",
-      "typeLabelIntegration": "Integration Tool",
-      "typeLabelMcp": "MCP Server Tool",
-      "typeLabelDefault": "Tool",
-      "defaultEndCallReasonDescription": "The reason for ending the call (e.g., 'voicemail_detected', 'issue_resolved', 'customer_requested')"
     },
     "builtinToolConfig": {
       "toolName": "Tool Name",

@@ -878,6 +878,55 @@
       "checkBack": "Torna presto per gli aggiornamenti!"
     }
   },
+  "tools": {
+    "categories": {
+      "http_api": {
+        "label": "API HTTP esterna",
+        "description": "Effettua richieste HTTP verso API esterne"
+      },
+      "end_call": {
+        "label": "Termina chiamata",
+        "description": "Termina la chiamata quando le condizioni sono soddisfatte",
+        "autoFillName": "Termina chiamata",
+        "autoFillDescription": "Termina la chiamata quando l'utente chiede di disconnettersi oppure quando ritieni sia il momento di concludere la conversazione"
+      },
+      "transfer_call": {
+        "label": "Trasferisci chiamata",
+        "description": "Trasferisci la chiamata a un altro numero di telefono (solo Twilio)",
+        "autoFillName": "Trasferisci chiamata",
+        "autoFillDescription": "Trasferisci il chiamante a un altro numero di telefono quando richiesto"
+      },
+      "calculator": {
+        "label": "Calcolatrice",
+        "description": "Calcolatrice integrata per operazioni aritmetiche",
+        "autoFillName": "Calcolatrice",
+        "autoFillDescription": "Esegui calcoli aritmetici (supporta +, -, *, /, **, %, e le parentesi)"
+      },
+      "mcp": {
+        "label": "Server MCP",
+        "description": "Collega un server MCP del cliente; i suoi strumenti diventano disponibili per l'agente"
+      },
+      "native": {
+        "label": "Nativo (prossimamente)",
+        "description": "Strumenti integrati come il trasferimento di chiamata e l'input DTMF"
+      },
+      "integration": {
+        "label": "Integrazione (prossimamente)",
+        "description": "Integrazioni di terze parti come Google Calendar"
+      }
+    },
+    "typeLabels": {
+      "end_call": "Strumento Termina chiamata",
+      "transfer_call": "Strumento Trasferisci chiamata",
+      "http_api": "Strumento API HTTP",
+      "calculator": "Strumento Calcolatrice",
+      "native": "Strumento nativo",
+      "integration": "Strumento di integrazione",
+      "mcp": "Strumento Server MCP",
+      "default": "Strumento"
+    },
+    "endCallReasonDescription": "Il motivo per cui terminare la chiamata (ad es. 'voicemail_detected', 'issue_resolved', 'customer_requested')"
+  },
   "nav": {
     "openMenu": "Apri menu",
     "joinSlack": "Unisciti a Slack",
@@ -1063,37 +1112,6 @@
       "totalCallsProcessedToday": "Totale chiamate elaborate oggi",
       "transferDispositions": "Esiti di trasferimento",
       "callsTransferredXfer": "Chiamate trasferite (XFER)"
-    },
-    "toolsConfig": {
-      "httpApiLabel": "API HTTP esterna",
-      "httpApiDescription": "Effettua richieste HTTP verso API esterne",
-      "endCallLabel": "Termina chiamata",
-      "endCallDescription": "Termina la chiamata quando le condizioni sono soddisfatte",
-      "endCallAutoFillName": "Termina chiamata",
-      "endCallAutoFillDescription": "Termina la chiamata quando l'utente chiede di disconnettersi oppure quando ritieni sia il momento di concludere la conversazione",
-      "transferCallLabel": "Trasferisci chiamata",
-      "transferCallDescription": "Trasferisci la chiamata a un altro numero di telefono (solo Twilio)",
-      "transferCallAutoFillName": "Trasferisci chiamata",
-      "transferCallAutoFillDescription": "Trasferisci il chiamante a un altro numero di telefono quando richiesto",
-      "calculatorLabel": "Calcolatrice",
-      "calculatorDescription": "Calcolatrice integrata per operazioni aritmetiche",
-      "calculatorAutoFillName": "Calcolatrice",
-      "calculatorAutoFillDescription": "Esegui calcoli aritmetici (supporta +, -, *, /, **, %, e le parentesi)",
-      "mcpLabel": "Server MCP",
-      "mcpDescription": "Collega un server MCP del cliente; i suoi strumenti diventano disponibili per l'agente",
-      "nativeLabel": "Nativo (prossimamente)",
-      "nativeDescription": "Strumenti integrati come il trasferimento di chiamata e l'input DTMF",
-      "integrationLabel": "Integrazione (prossimamente)",
-      "integrationDescription": "Integrazioni di terze parti come Google Calendar",
-      "typeLabelEndCall": "Strumento Termina chiamata",
-      "typeLabelTransferCall": "Strumento Trasferisci chiamata",
-      "typeLabelHttpApi": "Strumento API HTTP",
-      "typeLabelCalculator": "Strumento Calcolatrice",
-      "typeLabelNative": "Strumento nativo",
-      "typeLabelIntegration": "Strumento di integrazione",
-      "typeLabelMcp": "Strumento Server MCP",
-      "typeLabelDefault": "Strumento",
-      "defaultEndCallReasonDescription": "Il motivo per cui terminare la chiamata (ad es. 'voicemail_detected', 'issue_resolved', 'customer_requested')"
     },
     "builtinToolConfig": {
       "toolName": "Nome strumento",

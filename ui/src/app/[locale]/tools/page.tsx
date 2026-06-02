@@ -54,6 +54,7 @@ import {
 
 export default function ToolsPage() {
     const t = useTranslations("pages.tools");
+    const tTools = useTranslations("tools");
     const { user, getAccessToken, redirectToLogin, loading } = useAuth();
     const router = useRouter();
 
@@ -524,8 +525,8 @@ export default function ToolsPage() {
                                     setCreateError(null);
                                     const categoryConfig = getCategoryConfig(category);
                                     if (categoryConfig?.autoFill) {
-                                        setNewToolName(categoryConfig.autoFill.name);
-                                        setNewToolDescription(categoryConfig.autoFill.description);
+                                        setNewToolName(tTools(`categories.${category}.autoFillName`));
+                                        setNewToolDescription(tTools(`categories.${category}.autoFillDescription`));
                                     }
                                 }}
                             >
@@ -539,13 +540,13 @@ export default function ToolsPage() {
                                             value={category.value}
                                             disabled={category.disabled}
                                         >
-                                            {category.label}
+                                            {tTools(`categories.${category.value}.label`)}
                                         </SelectItem>
                                     ))}
                                 </SelectContent>
                             </Select>
                             <p className="text-xs text-muted-foreground">
-                                {getCategoryConfig(newToolCategory)?.description}
+                                {tTools(`categories.${newToolCategory}.description`)}
                             </p>
                         </div>
                         <div className="grid gap-2">
