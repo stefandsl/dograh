@@ -6,7 +6,11 @@ from pydantic import ValidationError
 from sqlalchemy.future import select
 
 from api.db.base_client import BaseDBClient
-from api.db.models import UserConfigurationModel, UserModel
+from api.db.models import (
+    PasswordResetTokenModel,
+    UserConfigurationModel,
+    UserModel,
+)
 from api.schemas.user_configuration import UserConfiguration
 
 
@@ -187,3 +191,80 @@ class UserClient(BaseDBClient):
             await session.commit()
             await session.refresh(user)
             return user
+
+    async def update_user_password(self, user_id: int, password_hash: str) -> None:
+        """Set the user's password hash."""
+        async with self.async_session() as session:
+            from sqlalchemy import update
+
+            stmt = (
+                update(UserModel)
+                .where(UserModel.id == user_id)
+                .values(password_hash=password_hash)
+            )
+            await session.execute(stmt)
+            await session.commit()
+
+    async def create_password_reset_token(
+        self, user_id: int, token_hash: str, expires_at: datetime
+    ) -> PasswordResetTokenModel:
+        """Issue a new password reset token, invalidating any outstanding ones.
+
+        Existing unused tokens for the user are marked used so that only the
+        most recently requested link is ever valid.
+        """
+        async with self.async_session() as session:
+            from sqlalchemy import update
+
+            now = datetime.now(timezone.utc)
+            await session.execute(
+                update(PasswordResetTokenModel)
+                .where(
+                    PasswordResetTokenModel.user_id == user_id,
+                    PasswordResetTokenModel.used_at.is_(None),
+                )
+                .values(used_at=now)
+            )
+
+            token = PasswordResetTokenModel(
+                user_id=user_id,
+                token_hash=token_hash,
+                expires_at=expires_at,
+            )
+            session.add(token)
+            await session.commit()
+            await session.refresh(token)
+            return token
+
+    async def get_valid_password_reset_token(
+        self, token_hash: str
+    ) -> PasswordResetTokenModel | None:
+        """Return the token row iff it exists, is unused, and is not expired."""
+        async with self.async_session() as session:
+            result = await session.execute(
+                select(PasswordResetTokenModel).where(
+                    PasswordResetTokenModel.token_hash == token_hash
+                )
+            )
+            token = result.scalars().first()
+            if token is None or token.used_at is not None:
+                return None
+            expires_at = token.expires_at
+            if expires_at.tzinfo is None:
+                expires_at = expires_at.replace(tzinfo=timezone.utc)
+            if expires_at < datetime.now(timezone.utc):
+                return None
+            return token
+
+    async def mark_password_reset_token_used(self, token_id: int) -> None:
+        """Mark a reset token as spent so it can't be reused."""
+        async with self.async_session() as session:
+            from sqlalchemy import update
+
+            stmt = (
+                update(PasswordResetTokenModel)
+                .where(PasswordResetTokenModel.id == token_id)
+                .values(used_at=datetime.now(timezone.utc))
+            )
+            await session.execute(stmt)
+            await session.commit()
