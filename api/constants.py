@@ -146,4 +146,20 @@ FORCE_TURN_RELAY = os.getenv("FORCE_TURN_RELAY", "false").lower() == "true"
 OSS_JWT_SECRET = os.getenv("OSS_JWT_SECRET", "change-me-in-production")
 OSS_JWT_EXPIRY_HOURS = int(os.getenv("OSS_JWT_EXPIRY_HOURS", "720"))  # 30 days
 
+# Local (OSS) password-reset flow
+PASSWORD_RESET_TOKEN_EXPIRY_MINUTES = int(
+    os.getenv("PASSWORD_RESET_TOKEN_EXPIRY_MINUTES", "60")
+)
+
+# SMTP configuration for outbound transactional email (e.g. password reset).
+# When SMTP_HOST is unset, the backend falls back to logging the reset link
+# instead of sending mail — see api/services/email/.
+SMTP_HOST = os.getenv("SMTP_HOST")
+SMTP_PORT = int(os.getenv("SMTP_PORT", "587"))
+SMTP_USERNAME = os.getenv("SMTP_USERNAME")
+SMTP_PASSWORD = os.getenv("SMTP_PASSWORD")
+SMTP_USE_TLS = os.getenv("SMTP_USE_TLS", "true").lower() == "true"
+SMTP_FROM_EMAIL = os.getenv("SMTP_FROM_EMAIL", "no-reply@dograh.com")
+SMTP_FROM_NAME = os.getenv("SMTP_FROM_NAME", "Dograh")
+
 TUNER_BASE_URL = os.getenv("TUNER_BASE_URL", "https://api.usetuner.ai")

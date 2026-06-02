@@ -71,6 +71,32 @@ class UserModel(Base):
     password_hash = Column(String, nullable=True)
 
 
+class PasswordResetTokenModel(Base):
+    """Single-use, time-limited tokens for the local (OSS) password-reset flow.
+
+    Only the SHA-256 hash of the token is stored — the raw token lives solely
+    in the reset link emailed to the user, so a database leak cannot be used to
+    reset passwords. A token is spent the moment it is used (``used_at``) and is
+    rejected once ``expires_at`` has passed.
+    """
+
+    __tablename__ = "password_reset_tokens"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(
+        Integer,
+        ForeignKey("users.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    token_hash = Column(String, unique=True, index=True, nullable=False)
+    expires_at = Column(DateTime(timezone=True), nullable=False)
+    used_at = Column(DateTime(timezone=True), nullable=True)
+    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(UTC))
+
+    user = relationship("UserModel")
+
+
 class UserConfigurationModel(Base):
     __tablename__ = "user_configurations"
     id = Column(Integer, primary_key=True, index=True)

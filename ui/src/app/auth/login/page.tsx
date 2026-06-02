@@ -80,7 +80,15 @@ export default function LoginPage() {
               {loading ? "Signing in..." : "Sign in"}
             </Button>
           </form>
-          <p className="mt-4 text-center text-sm text-muted-foreground">
+          <p className="mt-4 text-center text-sm">
+            <Link
+              href="/auth/forgot-password"
+              className="text-primary underline-offset-4 hover:underline"
+            >
+              Forgot your password?
+            </Link>
+          </p>
+          <p className="mt-2 text-center text-sm text-muted-foreground">
             Don&apos;t have an account?{" "}
             <Link href="/auth/signup" className="text-primary underline-offset-4 hover:underline">
               Sign up

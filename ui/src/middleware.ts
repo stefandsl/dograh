@@ -4,7 +4,12 @@ import { NextResponse } from 'next/server';
 const OSS_TOKEN_COOKIE = 'dograh_auth_token';
 
 // Paths that don't require authentication in OSS mode
-const PUBLIC_PATHS = ['/auth/login', '/auth/signup'];
+const PUBLIC_PATHS = [
+  '/auth/login',
+  '/auth/signup',
+  '/auth/forgot-password',
+  '/auth/reset-password',
+];
 
 let cachedAuthProvider: string | null = null;
 
