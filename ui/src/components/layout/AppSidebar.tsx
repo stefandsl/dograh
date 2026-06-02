@@ -23,8 +23,8 @@ import {
   Workflow,
   Wrench,
 } from "lucide-react";
-import { useTranslations } from "next-intl";
 import { usePathname, useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import React, { useRef } from "react";
 
 import ThemeToggle from "@/components/ThemeSwitcher";

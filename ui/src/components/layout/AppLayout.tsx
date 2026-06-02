@@ -1,8 +1,8 @@
 "use client";
 
 import { AlertTriangle, Menu, RefreshCw } from "lucide-react";
-import { useTranslations } from "next-intl";
 import { usePathname } from "next/navigation";
+import { useTranslations } from "next-intl";
 import posthog from "posthog-js";
 import React, { ReactNode } from "react";
 
