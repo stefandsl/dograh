@@ -1,3 +1,4 @@
+import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -26,6 +27,7 @@ export const NumberRangeFilter: React.FC<NumberRangeFilterProps> = ({
   step = 1,
   presets = [],
 }) => {
+  const t = useTranslations("components.filters.numberRangeFilter");
   // Local state for fast typing - only syncs to parent on blur
   const [localMin, setLocalMin] = useState<string>(value.min?.toString() ?? "");
   const [localMax, setLocalMax] = useState<string>(value.max?.toString() ?? "");
@@ -70,12 +72,12 @@ export const NumberRangeFilter: React.FC<NumberRangeFilterProps> = ({
       <div className="grid grid-cols-2 gap-3">
         <div className="space-y-2">
           <Label htmlFor="min-value">
-            Min {unit && `(${unit})`}
+            {unit ? t("minWithUnit", { unit }) : t("min")}
           </Label>
           <Input
             id="min-value"
             type="number"
-            placeholder={`Min ${unit || 'value'}`}
+            placeholder={t("minPlaceholder", { unit: unit || t("value") })}
             value={localMin}
             onChange={(e) => setLocalMin(e.target.value)}
             onBlur={handleMinBlur}
@@ -87,12 +89,12 @@ export const NumberRangeFilter: React.FC<NumberRangeFilterProps> = ({
 
         <div className="space-y-2">
           <Label htmlFor="max-value">
-            Max {unit && `(${unit})`}
+            {unit ? t("maxWithUnit", { unit }) : t("max")}
           </Label>
           <Input
             id="max-value"
             type="number"
-            placeholder={`Max ${unit || 'value'}`}
+            placeholder={t("maxPlaceholder", { unit: unit || t("value") })}
             value={localMax}
             onChange={(e) => setLocalMax(e.target.value)}
             onBlur={handleMaxBlur}

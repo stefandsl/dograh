@@ -1,6 +1,7 @@
 import { Slot } from "@radix-ui/react-slot";
 import { useNodeId, useReactFlow } from "@xyflow/react";
 import { EllipsisVertical, Trash } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { forwardRef, HTMLAttributes, ReactNode,useCallback } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -176,6 +177,7 @@ NodeHeaderMenuAction.displayName = "NodeHeaderMenuAction";
 /* NODE HEADER DELETE ACTION --------------------------------------- */
 
 export const NodeHeaderDeleteAction = () => {
+    const t = useTranslations("components.flow.nodes.nodeHeader");
     const id = useNodeId();
     const { setNodes } = useReactFlow();
 
@@ -184,7 +186,7 @@ export const NodeHeaderDeleteAction = () => {
     }, [id, setNodes]);
 
     return (
-        <NodeHeaderAction onClick={handleClick} label="Delete node">
+        <NodeHeaderAction onClick={handleClick} label={t("deleteNode")}>
             <Trash />
         </NodeHeaderAction>
     );

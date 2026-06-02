@@ -1,6 +1,7 @@
 'use client';
 
 import { Headphones, Loader2 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import posthog from 'posthog-js';
 import { useCallback, useState } from 'react';
 
@@ -17,6 +18,7 @@ import { PostHogEvent } from '@/constants/posthog-events';
 import { downloadFile, getSignedUrl } from '@/lib/files';
 
 export function MediaPreviewDialog() {
+    const t = useTranslations('components.mediaPreviewDialog');
     const [isOpen, setIsOpen] = useState(false);
     const [audioSignedUrl, setAudioSignedUrl] = useState<string | null>(null);
     const [transcriptContent, setTranscriptContent] = useState<string | null>(null);
@@ -72,15 +74,16 @@ export function MediaPreviewDialog() {
                 <DialogContent className="sm:max-w-2xl">
                     <DialogHeader>
                         <DialogTitle>
-                            Run Preview
-                            {selectedRunId && ` - Run #${selectedRunId}`}
+                            {selectedRunId
+                                ? t('titleWithRun', { runId: selectedRunId })
+                                : t('title')}
                         </DialogTitle>
                     </DialogHeader>
 
                     {mediaLoading && (
                         <div className="flex items-center justify-center py-8 space-x-2">
                             <Loader2 className="h-6 w-6 animate-spin" />
-                            <span>Loading...</span>
+                            <span>{t('loading')}</span>
                         </div>
                     )}
 
@@ -105,23 +108,23 @@ export function MediaPreviewDialog() {
 
                     {!mediaLoading && !audioSignedUrl && !transcriptContent && (
                         <div className="flex items-center justify-center py-8 text-muted-foreground">
-                            No recording or transcript available.
+                            {t('noMediaAvailable')}
                         </div>
                     )}
 
                     <DialogFooter className="pt-4">
                         <DialogClose asChild>
-                            <Button variant="secondary">Close</Button>
+                            <Button variant="secondary">{t('close')}</Button>
                         </DialogClose>
                         <div className="flex gap-2">
                             {recordingKey && (
                                 <Button variant="outline" onClick={() => downloadFile(recordingKey)}>
-                                    Download Recording
+                                    {t('downloadRecording')}
                                 </Button>
                             )}
                             {transcriptKey && (
                                 <Button variant="outline" onClick={() => downloadFile(transcriptKey)}>
-                                    Download Transcript
+                                    {t('downloadTranscript')}
                                 </Button>
                             )}
                         </div>

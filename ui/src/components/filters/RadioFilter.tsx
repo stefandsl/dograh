@@ -1,3 +1,7 @@
+"use client";
+
+import { useTranslations } from "next-intl";
+
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { RadioValue } from "@/types/filters";
@@ -15,13 +19,15 @@ export const RadioFilter: React.FC<RadioFilterProps> = ({
   error,
   options,
 }) => {
+  const t = useTranslations("components.filters.radioFilter");
+
   const handleChange = (newValue: string) => {
     onChange({ status: newValue });
   };
 
   return (
     <div className="space-y-3">
-      <Label>Select Status</Label>
+      <Label>{t("selectStatus")}</Label>
       <RadioGroup value={value.status} onValueChange={handleChange}>
         {options.map((option) => (
           <div key={option.value} className="flex items-center space-x-2">

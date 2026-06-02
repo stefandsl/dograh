@@ -11,6 +11,7 @@ import {
     Trash2,
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
@@ -73,6 +74,7 @@ export function FolderSection({
     allFolders = [],
     defaultOpen,
 }: FolderSectionProps) {
+    const t = useTranslations('components.workflow.folders.folderSection');
     const router = useRouter();
     const [open, setOpen] = useState(defaultOpen ?? kind === 'uncategorized');
     const [isRenaming, setIsRenaming] = useState(false);
@@ -82,7 +84,11 @@ export function FolderSection({
     const isFolder = kind === 'folder';
     const isArchived = kind === 'archived';
     const count = workflows.length;
-    const title = isFolder ? (folder?.name ?? '') : isArchived ? 'Archived' : 'Uncategorized';
+    const title = isFolder
+        ? (folder?.name ?? '')
+        : isArchived
+          ? t('archived')
+          : t('uncategorized');
 
     const handleRename = async (name: string) => {
         if (!folder) return;
@@ -93,11 +99,11 @@ export function FolderSection({
         if (response.error) {
             const detail =
                 (response.error as { detail?: string })?.detail ??
-                'Failed to rename folder';
+                t('renameError');
             toast.error(detail);
             throw new Error(detail);
         }
-        toast.success('Folder renamed');
+        toast.success(t('renameSuccess'));
         router.refresh();
     };
 
@@ -111,12 +117,12 @@ export function FolderSection({
             if (response.error) {
                 throw new Error('Failed to delete folder');
             }
-            toast.success(`Folder "${folder.name}" deleted`);
+            toast.success(t('deleteSuccess', { name: folder.name }));
             setConfirmDelete(false);
             router.refresh();
         } catch (err) {
             logger.error(`Error deleting folder: ${err}`);
-            toast.error('Failed to delete folder');
+            toast.error(t('deleteError'));
         } finally {
             setIsDeleting(false);
         }
@@ -129,7 +135,7 @@ export function FolderSection({
                     <CollapsibleTrigger asChild>
                         <button
                             className="group flex flex-1 items-center gap-2.5 rounded-md px-2 py-2 text-left transition-colors hover:bg-accent"
-                            aria-label={`Toggle ${title}`}
+                            aria-label={t('toggleAriaLabel', { title })}
                         >
                             <ChevronRight
                                 size={16}
@@ -167,7 +173,7 @@ export function FolderSection({
                                     variant="ghost"
                                     size="icon"
                                     className="h-8 w-8 text-muted-foreground"
-                                    aria-label="Folder actions"
+                                    aria-label={t('folderActions')}
                                 >
                                     <MoreVertical size={16} />
                                 </Button>
@@ -175,14 +181,14 @@ export function FolderSection({
                             <DropdownMenuContent align="end">
                                 <DropdownMenuItem onClick={() => setIsRenaming(true)}>
                                     <Pencil size={14} className="mr-2" />
-                                    Rename
+                                    {t('rename')}
                                 </DropdownMenuItem>
                                 <DropdownMenuItem
                                     onClick={() => setConfirmDelete(true)}
                                     className="text-destructive focus:text-destructive"
                                 >
                                     <Trash2 size={14} className="mr-2" />
-                                    Delete
+                                    {t('delete')}
                                 </DropdownMenuItem>
                             </DropdownMenuContent>
                         </DropdownMenu>
@@ -202,10 +208,10 @@ export function FolderSection({
                         ) : (
                             <div className="rounded-lg border border-dashed bg-muted/30 p-6 text-center text-sm text-muted-foreground">
                                 {isArchived
-                                    ? 'No archived agents.'
+                                    ? t('emptyArchived')
                                     : isFolder
-                                      ? 'This folder is empty. Use “Move to folder” on an agent to add it here.'
-                                      : 'No uncategorized agents.'}
+                                      ? t('emptyFolder')
+                                      : t('emptyUncategorized')}
                             </div>
                         )}
                     </div>
@@ -217,23 +223,24 @@ export function FolderSection({
                     <FolderFormDialog
                         open={isRenaming}
                         onOpenChange={setIsRenaming}
-                        title="Rename folder"
+                        title={t('renameFolderTitle')}
                         initialName={folder.name}
-                        submitLabel="Rename"
+                        submitLabel={t('rename')}
                         onSubmit={handleRename}
                     />
                     <AlertDialog open={confirmDelete} onOpenChange={setConfirmDelete}>
                         <AlertDialogContent>
                             <AlertDialogHeader>
-                                <AlertDialogTitle>Delete “{folder.name}”?</AlertDialogTitle>
+                                <AlertDialogTitle>
+                                    {t('deleteConfirmTitle', { name: folder.name })}
+                                </AlertDialogTitle>
                                 <AlertDialogDescription>
-                                    The {count} agent{count === 1 ? '' : 's'} in this folder
-                                    won’t be deleted — they’ll move to Uncategorized.
+                                    {t('deleteConfirmDescription', { count })}
                                 </AlertDialogDescription>
                             </AlertDialogHeader>
                             <AlertDialogFooter>
                                 <AlertDialogCancel disabled={isDeleting}>
-                                    Cancel
+                                    {t('cancel')}
                                 </AlertDialogCancel>
                                 <AlertDialogAction
                                     onClick={(e) => {
@@ -243,7 +250,7 @@ export function FolderSection({
                                     disabled={isDeleting}
                                     className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                                 >
-                                    {isDeleting ? 'Deleting...' : 'Delete folder'}
+                                    {isDeleting ? t('deleting') : t('deleteFolder')}
                                 </AlertDialogAction>
                             </AlertDialogFooter>
                         </AlertDialogContent>

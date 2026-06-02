@@ -1531,6 +1531,599 @@
     "workflowConfigErrorDialog": {
       "title": "Errore del flusso di lavoro",
       "goToWorkflow": "Vai al flusso di lavoro"
+    },
+    "callTypeCell": {
+      "textChat": "Chat testuale",
+      "webCall": "Chiamata web",
+      "phoneCall": "Chiamata telefonica",
+      "inbound": "In entrata",
+      "outbound": "In uscita"
+    },
+    "chatwootWidget": {
+      "launcherTitle": "Scrivici"
+    },
+    "dailyUsageTable": {
+      "title": "Riepilogo utilizzo giornaliero",
+      "description": "Ultimi 7 giorni di utilizzo",
+      "noData": "Nessun dato di utilizzo disponibile",
+      "columnDate": "Data",
+      "columnUsage": "Utilizzo (minuti)",
+      "columnCost": "Costo (USD)",
+      "columnCalls": "Chiamate",
+      "total": "Totale"
+    },
+    "llmConfigSelector": {
+      "provider": "Provider",
+      "selectProvider": "Seleziona provider",
+      "model": "Modello",
+      "selectModel": "Seleziona modello",
+      "enterModelName": "Inserisci il nome del modello",
+      "addModelManually": "Aggiungi modello manualmente",
+      "apiKey": "Chiave API",
+      "enterApiKey": "Inserisci la chiave API"
+    },
+    "mcpSection": {
+      "endpointLabel": "Endpoint MCP",
+      "endpointDescription": "Connetti un assistente AI compatibile con MCP a questo URL tramite Streamable HTTP. Richiede una chiave API nell'header X-API-Key.",
+      "getApiKeyLink": "Ottieni la tua chiave API",
+      "setupGuide": "Per la configurazione passo passo con Claude Code, Claude Desktop, Cursor e altri client, consulta la <guideLink>guida all'integrazione MCP</guideLink>."
+    },
+    "mediaPreviewDialog": {
+      "title": "Anteprima esecuzione",
+      "titleWithRun": "Anteprima esecuzione - Esecuzione #{runId}",
+      "loading": "Caricamento...",
+      "noMediaAvailable": "Nessuna registrazione o trascrizione disponibile.",
+      "close": "Chiudi",
+      "downloadRecording": "Scarica registrazione",
+      "downloadTranscript": "Scarica trascrizione"
+    },
+    "sentryErrorBoundary": {
+      "somethingWentWrong": "Si è verificato un errore",
+      "tryAgain": "Riprova"
+    },
+    "serviceConfigurationForm": {
+      "tabLlm": "LLM",
+      "tabVoice": "Voce",
+      "tabTranscriber": "Trascrittore",
+      "tabEmbedding": "Embedding",
+      "tabRealtimeModel": "Modello in tempo reale",
+      "provider": "Provider",
+      "selectProvider": "Seleziona provider",
+      "learnMore": "Scopri di più",
+      "supportedLanguages": "Lingue supportate",
+      "apiKeyOverrideLabel": "Chiave API (lascia vuoto per usare quella globale)",
+      "apiKeysLabel": "Chiavi API",
+      "enterApiKey": "Inserisci la chiave API",
+      "addApiKey": "Aggiungi chiave API",
+      "enterCustomValue": "Inserisci valore personalizzato",
+      "enterField": "Inserisci {field}",
+      "selectField": "Seleziona {field}",
+      "overrideLabel": "Sostituisci {label}",
+      "usingGlobal": "Uso impostazione globale: {summary}",
+      "notConfigured": "Non configurato",
+      "realtimeMode": "Modalità in tempo reale",
+      "realtimeModeDescription": "Utilizza un unico modello speech-to-speech (senza STT/TTS separati). È comunque necessario un LLM per l'estrazione delle variabili e il QA.",
+      "saving": "Salvataggio...",
+      "saveConfiguration": "Salva configurazione",
+      "unknownError": "Si è verificato un errore sconosciuto"
+    },
+    "serviceConfiguration": {
+      "title": "Configurazione dei modelli IA",
+      "description": "Configura il tuo modello IA, la voce e i servizi di trascrizione.",
+      "learnMore": "Scopri di più"
+    },
+    "telemetrySection": {
+      "loading": "Caricamento...",
+      "description": "Collega il tuo progetto Langfuse per ricevere i dati di tracciamento delle chiamate.",
+      "hostLabel": "Host",
+      "publicKeyLabel": "Chiave pubblica",
+      "secretKeyLabel": "Chiave segreta",
+      "save": "Salva",
+      "saving": "Salvataggio in corso...",
+      "remove": "Rimuovi",
+      "toastSaved": "Credenziali di telemetria salvate",
+      "toastSaveError": "Impossibile salvare le credenziali di telemetria",
+      "toastRemoved": "Credenziali di telemetria rimosse",
+      "toastRemoveError": "Impossibile rimuovere le credenziali di telemetria"
+    },
+    "themeSwitcher": {
+      "lightMode": "Modalità chiara",
+      "darkMode": "Modalità scura",
+      "toggleTheme": "Cambia tema"
+    },
+    "voiceSelector": {
+      "enterVoiceId": "Inserisci ID voce",
+      "addVoiceIdManually": "Aggiungi ID voce manualmente",
+      "selectAVoice": "Seleziona una voce",
+      "loadingVoices": "Caricamento voci...",
+      "searchVoices": "Cerca voci...",
+      "noVoicesFound": "Nessuna voce trovata",
+      "failedToLoadVoices": "Caricamento delle voci non riuscito",
+      "voicesAvailable": "{count} voci disponibili"
+    },
+    "filters": {
+      "dateRangeFilter": {
+        "selectDate": "Seleziona data",
+        "from": "Da",
+        "to": "A",
+        "time": "Ora"
+      },
+      "filterBuilder": {
+        "title": "Filtra esecuzioni del flusso di lavoro",
+        "description": "Crea filtri personalizzati per trovare esecuzioni specifiche del flusso di lavoro",
+        "templates": "Modelli",
+        "filterTemplates": "Modelli di filtro",
+        "selectAttributePlaceholder": "Seleziona l'attributo per cui filtrare",
+        "activeFilters": "Filtri attivi",
+        "clearAll": "Cancella tutto",
+        "autoRefreshEvery5s": "Aggiornamento automatico ogni 5s",
+        "applyFilters": "Applica filtri",
+        "applying": "Applicazione in corso...",
+        "applyWithShortcut": "Applica ({shortcut}+Invio)",
+        "noOptionsSelected": "Nessuna opzione selezionata",
+        "noValue": "Nessun valore",
+        "noTags": "Nessun tag",
+        "plusMore": "{items} +{count} altri"
+      },
+      "multiSelectFilter": {
+        "label": "Seleziona opzioni",
+        "placeholder": "Seleziona opzioni",
+        "moreSummary": "{list} +{count} altri",
+        "searchPlaceholder": "Cerca opzioni...",
+        "selectAll": "Seleziona tutto",
+        "selectNone": "Deseleziona tutto",
+        "noOptions": "Nessuna opzione trovata",
+        "selectedCount": "{count} selezionati"
+      },
+      "numberFilter": {
+        "valueLabel": "Valore",
+        "placeholder": "Inserisci un valore"
+      },
+      "numberRangeFilter": {
+        "min": "Min",
+        "max": "Max",
+        "minWithUnit": "Min ({unit})",
+        "maxWithUnit": "Max ({unit})",
+        "minPlaceholder": "Min {unit}",
+        "maxPlaceholder": "Max {unit}",
+        "value": "valore"
+      },
+      "radioFilter": {
+        "selectStatus": "Seleziona stato"
+      },
+      "tagInputFilter": {
+        "tagsLabel": "Tag",
+        "placeholder": "Inserisci i tag (separati da virgola)"
+      },
+      "textFilter": {
+        "placeholder": "Inserisci testo"
+      }
+    },
+    "flow": {
+      "addNodePanel": {
+        "title": "Aggiungi nuovo nodo",
+        "viewDocumentation": "Visualizza la documentazione dei nodi",
+        "sectionTriggers": "Trigger",
+        "sectionAgentNodes": "Nodi agente",
+        "sectionGlobalNodes": "Nodi globali",
+        "sectionIntegrations": "Integrazioni",
+        "disabledTriggerReason": "Il flusso di lavoro ha già un nodo iniziale. Rimuovilo prima di aggiungere un trigger diverso."
+      },
+      "documentBadges": {
+        "loading": "Caricamento..."
+      },
+      "documentSelector": {
+        "defaultLabel": "Documenti della knowledge base",
+        "defaultDescription": "Seleziona i documenti che l'agente puo consultare durante le conversazioni.",
+        "learnMore": "Scopri di piu",
+        "emptyState": "Nessun documento disponibile. Carica prima i documenti nella knowledge base.",
+        "uploadDocuments": "Carica documenti",
+        "manageDocuments": "Gestisci documenti",
+        "fullDocument": "Documento completo",
+        "chunks": "{count} frammenti",
+        "selectedCount": "{count, plural, one {# documento selezionato} other {# documenti selezionati}}",
+        "unitBytes": "Byte"
+      },
+      "textOrAudioInput": {
+        "staticTextWarning": "Questo testo viene pronunciato cosi com'e. Per i flussi di lavoro multilingue, scegli con cura la formulazione. I modelli realtime (da voce a voce) non possono riprodurre testo statico.",
+        "text": "Testo",
+        "audio": "Audio",
+        "selectAudioLabel": "Seleziona un file audio preregistrato da riprodurre.",
+        "selectRecording": "Seleziona una registrazione",
+        "noRecordingsAvailable": "Nessuna registrazione disponibile",
+        "searchPlaceholder": "Cerca per ID, trascrizione o nome file...",
+        "noRecordingsMatch": "Nessuna registrazione corrisponde a “{query}”"
+      },
+      "toolSelector": {
+        "label": "Strumenti",
+        "description": "Seleziona gli strumenti che l'agente può usare durante la conversazione.",
+        "learnMore": "Scopri di più",
+        "noToolsAvailable": "Nessuno strumento disponibile.",
+        "createATool": "Crea uno strumento",
+        "httpTab": "HTTP e strumenti ({count})",
+        "mcpTab": "MCP ({count})",
+        "noHttpTools": "Nessuno strumento HTTP/nativo.",
+        "noMcpTools": "Nessuno strumento MCP.",
+        "selectedOfTotal": "{selected}/{total} strumenti",
+        "refreshTools": "Aggiorna strumenti",
+        "noToolsDiscovered": "Nessuno strumento rilevato — Aggiorna.",
+        "unavailableName": "{name} (non disponibile)",
+        "manageTools": "Gestisci strumenti",
+        "selectedCount": "{count, plural, one {# strumento selezionato} other {# strumenti selezionati}}"
+      },
+      "edges": {
+        "customEdge": {
+          "editConditionTitle": "Modifica condizione",
+          "conditionLabelLabel": "Etichetta condizione",
+          "conditionLabelHelp": "Inserisci una breve etichetta che aiuti a identificare questo percorso nei log",
+          "charactersCount": "{count}/64 caratteri",
+          "conditionLabel": "Condizione",
+          "conditionHelp": "Descrivi una condizione che verrà valutata per determinare se questo percorso deve essere seguito",
+          "transitionSpeechLabel": "Discorso di transizione",
+          "transitionSpeechHelp": "Testo o audio facoltativo che l'assistente riprodurrà subito prima di passare al nodo. Non verrà incluso nel contesto della conversazione. Usalo come semplice riempitivo per ridurre la latenza.",
+          "transitionSpeechPlaceholder": "es. Ti trasferisco al nostro reparto fatturazione...",
+          "cancel": "Annulla",
+          "readOnly": "Sola lettura",
+          "save": "Salva",
+          "clickToSetCondition": "Clicca per impostare la condizione",
+          "noCondition": "Nessuna condizione"
+        }
+      },
+      "nodes": {
+        "genericNode": {
+          "badgeNode": "Nodo",
+          "badgeStartNode": "Nodo di inizio",
+          "badgeAgentNode": "Nodo agente",
+          "badgeEndNode": "Nodo di fine",
+          "badgeGlobalNode": "Nodo globale",
+          "badgeApiTrigger": "Trigger API",
+          "badgeWebhook": "Webhook",
+          "badgeQaAnalysis": "Analisi QA",
+          "apiEndpointLabel": "Endpoint API:",
+          "generating": "Generazione in corso...",
+          "notConfigured": "Non configurato",
+          "workflowLlm": "LLM del flusso di lavoro",
+          "noPromptConfigured": "Nessun prompt configurato",
+          "toolsLabel": "Strumenti:",
+          "documentsLabel": "Documenti:",
+          "enabled": "Abilitato",
+          "disabled": "Disabilitato",
+          "copied": "Copiato!",
+          "clickToCopy": "Fai clic per copiare",
+          "clickToCopyUrl": "Fai clic per copiare l'URL",
+          "clickToCopyCurl": "Fai clic per copiare il comando curl",
+          "exampleRequest": "Richiesta di esempio",
+          "webhookUrlsTitle": "URL webhook",
+          "webhookUrlsDescription": "La modalità di test esegue l'ultima bozza così da poter verificare le modifiche prima della pubblicazione. La produzione esegue l'agente pubblicato. Entrambe richiedono una chiave API nell'header X-API-Key. <link>Ottieni la tua chiave API</link>",
+          "testUrlTab": "URL di test",
+          "productionUrlTab": "URL di produzione",
+          "testUrlHelper": "Esegue l'ultima bozza, ripiegando sull'agente pubblicato quando non esiste alcuna bozza.",
+          "productionUrlHelper": "Esegue l'agente pubblicato.",
+          "contentLabelPrompt": "Prompt",
+          "contentLabelDetails": "Dettagli",
+          "editTitle": "Modifica {name}",
+          "editNode": "Modifica nodo",
+          "fallbackTitle": "Nodo",
+          "replaceTrigger": "Sostituisci trigger",
+          "replaceWith": "Sostituisci con…",
+          "reset": "ripristina",
+          "deleteDuplicateStartNode": "Elimina nodo di inizio duplicato"
+        },
+        "nodeHeader": {
+          "deleteNode": "Elimina nodo"
+        },
+        "common": {
+          "nodeContent": {
+            "defaultBadgeLabel": "Nodo",
+            "defaultContentLabel": "Prompt"
+          },
+          "nodeEditDialog": {
+            "docs": "Documentazione",
+            "description": "Configura le impostazioni per questo nodo nel tuo flusso di lavoro.",
+            "cancel": "Annulla",
+            "readOnly": "Sola lettura",
+            "save": "Salva",
+            "discardTitle": "Annullare le modifiche?",
+            "discardDescription": "Hai modifiche non salvate. Sei sicuro di volerle annullare?",
+            "keepEditing": "Continua a modificare",
+            "discard": "Annulla modifiche"
+          }
+        }
+      },
+      "renderer": {
+        "propertyInput": {
+          "unknownPropertyType": "Tipo di proprietà sconosciuto: {type}",
+          "removeRow": "Rimuovi riga {index}",
+          "add": "Aggiungi"
+        }
+      }
+    },
+    "http": {
+      "createCredentialDialog": {
+        "title": "Aggiungi credenziale",
+        "description": "Crea una nuova credenziale per l'autenticazione.",
+        "nameLabel": "Nome *",
+        "namePlaceholder": "La mia chiave API",
+        "descriptionLabel": "Descrizione",
+        "descriptionPlaceholder": "Descrizione facoltativa",
+        "credentialTypeLabel": "Tipo di credenziale",
+        "typeBearerToken": "Token Bearer",
+        "typeApiKey": "Chiave API",
+        "typeBasicAuth": "Autenticazione di base",
+        "typeCustomHeader": "Intestazione personalizzata",
+        "fieldHeaderName": "Nome intestazione",
+        "fieldApiKey": "Chiave API",
+        "fieldToken": "Token",
+        "fieldUsername": "Nome utente",
+        "fieldPassword": "Password",
+        "fieldHeaderValue": "Valore intestazione",
+        "cancel": "Annulla",
+        "create": "Crea",
+        "creating": "Creazione in corso...",
+        "errorCreateFailed": "Creazione della credenziale non riuscita",
+        "errorUnexpected": "Si è verificato un errore imprevisto"
+      },
+      "credentialSelector": {
+        "noAuthentication": "Nessuna autenticazione",
+        "label": "Credenziale",
+        "description": "Seleziona una credenziale per l'autenticazione oppure lascia vuoto per nessuna autenticazione.",
+        "loading": "Caricamento...",
+        "addNewCredential": "Aggiungi nuova credenziale",
+        "noCredentialsFound": "Nessuna credenziale trovata. Fai clic sul pulsante + per crearne una."
+      },
+      "keyValueEditor": {
+        "keyPlaceholder": "Chiave",
+        "valuePlaceholder": "Valore",
+        "addButton": "Aggiungi"
+      },
+      "parameterEditor": {
+        "emptyState": "Nessun parametro definito. Aggiungi un parametro per specificare quali dati richiede questo strumento.",
+        "parameterLabel": "Parametro {index}",
+        "nameLabel": "Nome",
+        "nameHint": "Nome del parametro, come \"order_id\" o \"customer_name\"",
+        "namePlaceholder": "es. customer_name",
+        "typeLabel": "Tipo",
+        "typeHint": "Tipo del parametro, come \"string\" o \"number\" o \"boolean\"",
+        "typePlaceholder": "Seleziona tipo",
+        "typeString": "Stringa",
+        "typeNumber": "Numero",
+        "typeBoolean": "Booleano",
+        "typeObject": "Oggetto",
+        "typeArray": "Array",
+        "descriptionLabel": "Descrizione",
+        "descriptionHint": "Descrizione del parametro, che ne facilita la comprensione da parte dell'LLM, come \"L'ID del cliente per recuperare i dettagli dell'ordine\"",
+        "descriptionPlaceholder": "Descrivi a cosa serve questo parametro...",
+        "required": "Obbligatorio",
+        "addParameter": "Aggiungi parametro",
+        "presetEmptyState": "Nessun parametro preimpostato definito. Aggiungine uno per inserire un valore fisso o il contesto del flusso di lavoro nella richiesta.",
+        "presetParameterLabel": "Parametro preimpostato {index}",
+        "presetNameHint": "Chiave inviata all'API, come \"phone_number\" o \"customer_id\"",
+        "presetNamePlaceholder": "es. phone_number",
+        "presetTypeHint": "Tipo JSON da inviare all'API",
+        "valueTemplateLabel": "Valore o modello",
+        "valueTemplateHint": "Usa un valore fisso o un modello come {example1} o {example2}",
+        "valueTemplatePlaceholder": "es. '{{'initial_context.phone_number'}}'",
+        "addPresetParameter": "Aggiungi parametro preimpostato"
+      }
+    },
+    "layout": {
+      "gitHubStarBadge": {
+        "star": "Star"
+      }
+    },
+    "onboarding": {
+      "onboardingTooltip": {
+        "defaultTitle": "Un'ultima cosa...",
+        "closeTooltipAria": "Chiudi suggerimento",
+        "close": "Chiudi",
+        "next": "Avanti"
+      }
+    },
+    "telephony": {
+      "configFormDialog": {
+        "nameRequired": "Il nome è obbligatorio",
+        "failedToSaveConfiguration": "Salvataggio della configurazione non riuscito",
+        "configurationUpdated": "Configurazione aggiornata",
+        "configurationCreated": "Configurazione creata",
+        "failedToSave": "Salvataggio non riuscito",
+        "editTitle": "Modifica configurazione di telefonia",
+        "addTitle": "Aggiungi configurazione di telefonia",
+        "editDescription": "Aggiorna le credenziali per questa configurazione. I numeri di telefono sono gestiti separatamente.",
+        "addDescription": "Connetti un account di un provider di telefonia. I numeri di telefono vengono aggiunti dopo la creazione della configurazione.",
+        "configurationId": "ID configurazione",
+        "configurationIdCopied": "ID configurazione copiato",
+        "failedToCopyId": "Copia dell'ID non riuscita",
+        "clickToCopy": "Fai clic per copiare",
+        "nameLabel": "Nome",
+        "namePlaceholder": "es. Twilio US prod",
+        "providerLabel": "Provider",
+        "selectProviderPlaceholder": "Seleziona un provider",
+        "providerLocked": "Il provider non può essere modificato dopo la creazione.",
+        "providerDocs": "Documentazione di {provider}",
+        "setDefaultOutbound": "Imposta come predefinito per le chiamate in uscita",
+        "setDefaultOutboundDescription": "Usato dalle chiamate di test e dalle campagne quando non è selezionata una configurazione specifica.",
+        "optional": "(facoltativo)",
+        "cancel": "Annulla",
+        "saving": "Salvataggio in corso...",
+        "saveChanges": "Salva modifiche",
+        "create": "Crea",
+        "fromNumbersManagedSeparately": "I numeri di telefono sono gestiti separatamente nella pagina di configurazione.",
+        "leaveMaskedPlaceholder": "Lascia mascherato per mantenere il valore esistente"
+      },
+      "phoneNumberDialog": {
+        "titleEdit": "Modifica numero di telefono",
+        "titleAdd": "Aggiungi numero di telefono",
+        "description": "Sono supportati numeri PSTN (E.164), URI SIP (sip:user@host) ed estensioni SIP.",
+        "addressLabel": "Indirizzo",
+        "addressPlaceholder": "+19781899185, sip:101@asterisk.local, oppure 101",
+        "addressRequired": "L'indirizzo è obbligatorio",
+        "addressPstnNeedsCountry": "Gli indirizzi PSTN senza un '+' iniziale richiedono un suggerimento Paese (ISO-2), oppure includi il prefisso internazionale nell'indirizzo (es. +14155551234).",
+        "addressImmutable": "L'indirizzo non può essere modificato. Elimina questo numero e creane uno nuovo per cambiarlo.",
+        "addressStoredAs": "Memorizzato come <code>{normalized}</code> ({type})",
+        "countryLabel": "Paese (ISO-2)",
+        "countryPlaceholder": "US",
+        "labelLabel": "Etichetta",
+        "labelPlaceholder": "es. ID chiamante Boston",
+        "inboundWorkflowLabel": "Flusso di lavoro in entrata",
+        "noneOption": "(nessuno)",
+        "inboundWorkflowHint": "Utilizzato quando è abilitato l'instradamento in entrata per numero. Attualmente, le chiamate in entrata vengono ancora instradate in base al workflow_id nell'URL del webhook.",
+        "activeLabel": "Attivo",
+        "defaultCallerIdLabel": "ID chiamante predefinito per questa configurazione",
+        "defaultCallerIdHint": "Utilizzato come numero mittente per le chiamate di prova quando impostato.",
+        "cancel": "Annulla",
+        "saving": "Salvataggio...",
+        "saveChanges": "Salva modifiche",
+        "add": "Aggiungi",
+        "saveError": "Impossibile salvare il numero di telefono",
+        "toastUpdated": "Numero di telefono aggiornato",
+        "toastAdded": "Numero di telefono aggiunto",
+        "toastSyncWarning": "Salvato, ma impossibile sincronizzare il webhook in entrata con il provider."
+      }
+    },
+    "workflow": {
+      "createWorkflowButton": {
+        "creating": "Creazione in corso...",
+        "createAgent": "Crea agente",
+        "useAgentBuilder": "Usa Agent Builder",
+        "useAgentBuilderDescription": "L'IA genera un flusso di lavoro dalla tua descrizione",
+        "blankCanvas": "Tela vuota",
+        "blankCanvasDescription": "Inizia da zero con un flusso di lavoro vuoto",
+        "createWorkflowError": "Creazione del flusso di lavoro non riuscita"
+      },
+      "templateCard": {
+        "creating": "Creazione in corso...",
+        "duplicateWorkflowTemplate": "Duplica modello di flusso di lavoro"
+      },
+      "uploadWorkflowButton": {
+        "uploadAgentDefinition": "Carica definizione agente",
+        "dropZoneInstruction": "Trascina qui il file JSON del flusso di lavoro, oppure fai clic per selezionarlo",
+        "selectFile": "Seleziona file",
+        "uploadFailed": "Caricamento del flusso di lavoro non riuscito. Verifica che il file sia valido.",
+        "invalidJsonFile": "Carica un file JSON valido"
+      },
+      "workflowTable": {
+        "columnId": "ID",
+        "columnAgentName": "Nome agente",
+        "columnCreatedAt": "Data di creazione",
+        "columnTotalRuns": "Esecuzioni totali",
+        "columnActions": "Azioni",
+        "edit": "Modifica",
+        "move": "Sposta",
+        "moveToFolder": "Sposta nella cartella",
+        "uncategorized": "Senza categoria",
+        "restoring": "Ripristino in corso...",
+        "archiving": "Archiviazione in corso...",
+        "restore": "Ripristina",
+        "archive": "Archivia",
+        "archiveSuccess": "Flusso di lavoro archiviato correttamente",
+        "restoreSuccess": "Flusso di lavoro ripristinato correttamente",
+        "archiveError": "Impossibile archiviare il flusso di lavoro",
+        "restoreError": "Impossibile ripristinare il flusso di lavoro",
+        "movedToUncategorized": "Spostato in Senza categoria",
+        "agentMoved": "Agente spostato",
+        "moveError": "Impossibile spostare l'agente"
+      },
+      "conversation": {
+        "conversationContainer": {
+          "statusReady": "Pronto",
+          "statusLive": "In diretta",
+          "statusEnded": "Terminata",
+          "messageCount": "{count} messaggi"
+        },
+        "realtimeFeedback": {
+          "callTranscript": "Trascrizione della chiamata",
+          "noConversationRecorded": "Nessuna conversazione registrata",
+          "noConversationRecordedSubtitle": "Gli eventi di feedback in tempo reale non sono stati acquisiti per questa chiamata",
+          "liveTranscript": "Trascrizione in tempo reale",
+          "noMessagesYet": "Ancora nessun messaggio",
+          "startSpeakingSubtitle": "Inizia a parlare per vedere la trascrizione",
+          "startCallSubtitle": "Avvia la chiamata per iniziare la conversazione"
+        },
+        "toolCallCard": {
+          "reasoningDelay": "Ritardo di ragionamento:",
+          "running": "In esecuzione",
+          "completed": "Completato",
+          "details": "Dettagli",
+          "arguments": "Argomenti",
+          "result": "Risultato"
+        }
+      },
+      "folders": {
+        "createFolderButton": {
+          "createError": "Creazione della cartella non riuscita",
+          "createSuccess": "Cartella \"{name}\" creata",
+          "newFolder": "Nuova cartella",
+          "dialogTitle": "Crea cartella",
+          "submitLabel": "Crea"
+        },
+        "folderFormDialog": {
+          "folderNameLabel": "Nome della cartella",
+          "folderNamePlaceholder": "es. Vendite, Supporto, Onboarding",
+          "cancel": "Annulla",
+          "saving": "Salvataggio..."
+        },
+        "folderSection": {
+          "archived": "Archiviati",
+          "uncategorized": "Senza categoria",
+          "renameError": "Impossibile rinominare la cartella",
+          "renameSuccess": "Cartella rinominata",
+          "deleteSuccess": "Cartella \"{name}\" eliminata",
+          "deleteError": "Impossibile eliminare la cartella",
+          "toggleAriaLabel": "Attiva/disattiva {title}",
+          "folderActions": "Azioni cartella",
+          "rename": "Rinomina",
+          "delete": "Elimina",
+          "emptyArchived": "Nessun agente archiviato.",
+          "emptyFolder": "Questa cartella è vuota. Usa “Sposta nella cartella” su un agente per aggiungerlo qui.",
+          "emptyUncategorized": "Nessun agente senza categoria.",
+          "renameFolderTitle": "Rinomina cartella",
+          "deleteConfirmTitle": "Eliminare “{name}”?",
+          "deleteConfirmDescription": "{count, plural, one {L'agente} other {Gli {count} agenti}} in questa cartella non {count, plural, one {verrà eliminato} other {verranno eliminati}} — {count, plural, one {verrà spostato} other {verranno spostati}} in Senza categoria.",
+          "cancel": "Annulla",
+          "deleting": "Eliminazione...",
+          "deleteFolder": "Elimina cartella"
+        }
+      }
+    },
+    "ui": {
+      "dialog": {
+        "close": "Chiudi"
+      },
+      "sheet": {
+        "close": "Chiudi"
+      },
+      "sidebar": {
+        "sidebarTitle": "Barra laterale",
+        "mobileSidebarDescription": "Mostra la barra laterale mobile.",
+        "toggleSidebar": "Attiva/disattiva la barra laterale"
+      }
+    },
+    "workflowRuns": {
+      "campaignRuns": {
+        "title": "Esecuzioni del flusso di lavoro della campagna",
+        "emptyMessage": "Nessuna esecuzione del flusso di lavoro trovata per questa campagna",
+        "loadError": "Caricamento delle esecuzioni della campagna non riuscito"
+      },
+      "workflowRunsTable": {
+        "title": "Cronologia esecuzioni del flusso di lavoro",
+        "emptyMessage": "Nessuna esecuzione del flusso di lavoro trovata",
+        "loading": "Caricamento delle esecuzioni del flusso di lavoro...",
+        "cardTitle": "Esecuzioni del flusso di lavoro",
+        "showingRuns": "Visualizzazione di {shown} su {total} esecuzioni totali",
+        "reload": "Ricarica",
+        "columnId": "ID",
+        "columnStatus": "Stato",
+        "columnCreatedAt": "Data di creazione",
+        "columnCallType": "Tipo di chiamata",
+        "columnDuration": "Durata",
+        "columnDisposition": "Esito",
+        "columnActions": "Azioni",
+        "statusCompleted": "Completata",
+        "statusInProgress": "In corso",
+        "pageOf": "Pagina {current} di {total}",
+        "previous": "Precedente",
+        "next": "Successiva"
+      }
     }
   }
 }

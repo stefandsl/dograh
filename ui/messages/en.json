@@ -1531,6 +1531,599 @@
     "workflowConfigErrorDialog": {
       "title": "Workflow Error",
       "goToWorkflow": "Go to Workflow"
+    },
+    "callTypeCell": {
+      "textChat": "Text chat",
+      "webCall": "Web call",
+      "phoneCall": "Phone call",
+      "inbound": "Inbound",
+      "outbound": "Outbound"
+    },
+    "chatwootWidget": {
+      "launcherTitle": "Chat with us"
+    },
+    "dailyUsageTable": {
+      "title": "Daily Usage Breakdown",
+      "description": "Last 7 days of usage",
+      "noData": "No usage data available",
+      "columnDate": "Date",
+      "columnUsage": "Usage (minutes)",
+      "columnCost": "Cost (USD)",
+      "columnCalls": "Calls",
+      "total": "Total"
+    },
+    "llmConfigSelector": {
+      "provider": "Provider",
+      "selectProvider": "Select provider",
+      "model": "Model",
+      "selectModel": "Select model",
+      "enterModelName": "Enter model name",
+      "addModelManually": "Add Model Manually",
+      "apiKey": "API Key",
+      "enterApiKey": "Enter API key"
+    },
+    "mcpSection": {
+      "endpointLabel": "MCP Endpoint",
+      "endpointDescription": "Connect an MCP-compatible AI assistant to this URL over Streamable HTTP. Requires an API key in the X-API-Key header.",
+      "getApiKeyLink": "Get your API key",
+      "setupGuide": "For step-by-step setup with Claude Code, Claude Desktop, Cursor, and other clients, see the <guideLink>MCP integration guide</guideLink>."
+    },
+    "mediaPreviewDialog": {
+      "title": "Run Preview",
+      "titleWithRun": "Run Preview - Run #{runId}",
+      "loading": "Loading...",
+      "noMediaAvailable": "No recording or transcript available.",
+      "close": "Close",
+      "downloadRecording": "Download Recording",
+      "downloadTranscript": "Download Transcript"
+    },
+    "sentryErrorBoundary": {
+      "somethingWentWrong": "Something went wrong",
+      "tryAgain": "Try again"
+    },
+    "serviceConfigurationForm": {
+      "tabLlm": "LLM",
+      "tabVoice": "Voice",
+      "tabTranscriber": "Transcriber",
+      "tabEmbedding": "Embedding",
+      "tabRealtimeModel": "Realtime Model",
+      "provider": "Provider",
+      "selectProvider": "Select provider",
+      "learnMore": "Learn more",
+      "supportedLanguages": "Supported languages",
+      "apiKeyOverrideLabel": "API Key (leave empty to use global)",
+      "apiKeysLabel": "API Key(s)",
+      "enterApiKey": "Enter API key",
+      "addApiKey": "Add API Key",
+      "enterCustomValue": "Enter Custom Value",
+      "enterField": "Enter {field}",
+      "selectField": "Select {field}",
+      "overrideLabel": "Override {label}",
+      "usingGlobal": "Using global: {summary}",
+      "notConfigured": "Not configured",
+      "realtimeMode": "Realtime Mode",
+      "realtimeModeDescription": "Uses a single speech-to-speech model (no separate STT/TTS). An LLM is still required for variable extraction and QA.",
+      "saving": "Saving...",
+      "saveConfiguration": "Save Configuration",
+      "unknownError": "An unknown error occurred"
+    },
+    "serviceConfiguration": {
+      "title": "AI Models Configuration",
+      "description": "Configure your AI model, voice, and transcription services.",
+      "learnMore": "Learn more"
+    },
+    "telemetrySection": {
+      "loading": "Loading...",
+      "description": "Connect your Langfuse project to receive call tracing data.",
+      "hostLabel": "Host",
+      "publicKeyLabel": "Public Key",
+      "secretKeyLabel": "Secret Key",
+      "save": "Save",
+      "saving": "Saving...",
+      "remove": "Remove",
+      "toastSaved": "Telemetry credentials saved",
+      "toastSaveError": "Failed to save telemetry credentials",
+      "toastRemoved": "Telemetry credentials removed",
+      "toastRemoveError": "Failed to remove telemetry credentials"
+    },
+    "themeSwitcher": {
+      "lightMode": "Light Mode",
+      "darkMode": "Dark Mode",
+      "toggleTheme": "Toggle theme"
+    },
+    "voiceSelector": {
+      "enterVoiceId": "Enter voice ID",
+      "addVoiceIdManually": "Add Voice ID Manually",
+      "selectAVoice": "Select a voice",
+      "loadingVoices": "Loading voices...",
+      "searchVoices": "Search voices...",
+      "noVoicesFound": "No voices found",
+      "failedToLoadVoices": "Failed to load voices",
+      "voicesAvailable": "{count} voices available"
+    },
+    "filters": {
+      "dateRangeFilter": {
+        "selectDate": "Select date",
+        "from": "From",
+        "to": "To",
+        "time": "Time"
+      },
+      "filterBuilder": {
+        "title": "Filter Workflow Runs",
+        "description": "Build custom filters to find specific workflow runs",
+        "templates": "Templates",
+        "filterTemplates": "Filter Templates",
+        "selectAttributePlaceholder": "Select attribute to filter by",
+        "activeFilters": "Active Filters",
+        "clearAll": "Clear All",
+        "autoRefreshEvery5s": "Auto-refresh every 5s",
+        "applyFilters": "Apply filters",
+        "applying": "Applying...",
+        "applyWithShortcut": "Apply ({shortcut}+Enter)",
+        "noOptionsSelected": "No options selected",
+        "noValue": "No value",
+        "noTags": "No tags",
+        "plusMore": "{items} +{count} more"
+      },
+      "multiSelectFilter": {
+        "label": "Select Options",
+        "placeholder": "Select options",
+        "moreSummary": "{list} +{count} more",
+        "searchPlaceholder": "Search options...",
+        "selectAll": "Select All",
+        "selectNone": "Select None",
+        "noOptions": "No options found",
+        "selectedCount": "{count} selected"
+      },
+      "numberFilter": {
+        "valueLabel": "Value",
+        "placeholder": "Enter value"
+      },
+      "numberRangeFilter": {
+        "min": "Min",
+        "max": "Max",
+        "minWithUnit": "Min ({unit})",
+        "maxWithUnit": "Max ({unit})",
+        "minPlaceholder": "Min {unit}",
+        "maxPlaceholder": "Max {unit}",
+        "value": "value"
+      },
+      "radioFilter": {
+        "selectStatus": "Select Status"
+      },
+      "tagInputFilter": {
+        "tagsLabel": "Tags",
+        "placeholder": "Enter tags (comma separated)"
+      },
+      "textFilter": {
+        "placeholder": "Enter text"
+      }
+    },
+    "flow": {
+      "addNodePanel": {
+        "title": "Add New Node",
+        "viewDocumentation": "View Nodes Documentation",
+        "sectionTriggers": "Triggers",
+        "sectionAgentNodes": "Agent Nodes",
+        "sectionGlobalNodes": "Global Nodes",
+        "sectionIntegrations": "Integrations",
+        "disabledTriggerReason": "Workflow already has a start node. Remove it before adding a different trigger."
+      },
+      "documentBadges": {
+        "loading": "Loading..."
+      },
+      "documentSelector": {
+        "defaultLabel": "Knowledge Base Documents",
+        "defaultDescription": "Select documents that the agent can reference during conversations.",
+        "learnMore": "Learn more",
+        "emptyState": "No documents available. Upload documents to the knowledge base first.",
+        "uploadDocuments": "Upload Documents",
+        "manageDocuments": "Manage Documents",
+        "fullDocument": "Full Document",
+        "chunks": "{count} chunks",
+        "selectedCount": "{count, plural, one {# document selected} other {# documents selected}}",
+        "unitBytes": "Bytes"
+      },
+      "textOrAudioInput": {
+        "staticTextWarning": "This text is spoken as-is. For multilingual workflows, choose your phrasing carefully. Realtime (speech-to-speech) models can't play static text.",
+        "text": "Text",
+        "audio": "Audio",
+        "selectAudioLabel": "Select a pre-recorded audio file to play.",
+        "selectRecording": "Select a recording",
+        "noRecordingsAvailable": "No recordings available",
+        "searchPlaceholder": "Search by ID, transcript, or filename...",
+        "noRecordingsMatch": "No recordings match “{query}”"
+      },
+      "toolSelector": {
+        "label": "Tools",
+        "description": "Select tools that the agent can use during the conversation.",
+        "learnMore": "Learn more",
+        "noToolsAvailable": "No tools available.",
+        "createATool": "Create a Tool",
+        "httpTab": "HTTP & Tools ({count})",
+        "mcpTab": "MCP ({count})",
+        "noHttpTools": "No HTTP/native tools.",
+        "noMcpTools": "No MCP tools.",
+        "selectedOfTotal": "{selected}/{total} tools",
+        "refreshTools": "Refresh tools",
+        "noToolsDiscovered": "No tools discovered — Refresh.",
+        "unavailableName": "{name} (unavailable)",
+        "manageTools": "Manage Tools",
+        "selectedCount": "{count, plural, one {# tool selected} other {# tools selected}}"
+      },
+      "edges": {
+        "customEdge": {
+          "editConditionTitle": "Edit Condition",
+          "conditionLabelLabel": "Condition Label",
+          "conditionLabelHelp": "Enter a short label which helps identify this pathway in logs",
+          "charactersCount": "{count}/64 characters",
+          "conditionLabel": "Condition",
+          "conditionHelp": "Describe a condition that will be evaluated to determine if this pathway should be taken",
+          "transitionSpeechLabel": "Transition Speech",
+          "transitionSpeechHelp": "Optional text or audio the assistant will play right before transitioning to the node. This will not be attached in Conversation Context. Use this as simple filler to reduce latency.",
+          "transitionSpeechPlaceholder": "e.g. Let me transfer you to our billing department...",
+          "cancel": "Cancel",
+          "readOnly": "Read Only",
+          "save": "Save",
+          "clickToSetCondition": "Click to set condition",
+          "noCondition": "No condition"
+        }
+      },
+      "nodes": {
+        "genericNode": {
+          "badgeNode": "Node",
+          "badgeStartNode": "Start Node",
+          "badgeAgentNode": "Agent Node",
+          "badgeEndNode": "End Node",
+          "badgeGlobalNode": "Global Node",
+          "badgeApiTrigger": "API Trigger",
+          "badgeWebhook": "Webhook",
+          "badgeQaAnalysis": "QA Analysis",
+          "apiEndpointLabel": "API Endpoint:",
+          "generating": "Generating...",
+          "notConfigured": "Not configured",
+          "workflowLlm": "Workflow LLM",
+          "noPromptConfigured": "No prompt configured",
+          "toolsLabel": "Tools:",
+          "documentsLabel": "Documents:",
+          "enabled": "Enabled",
+          "disabled": "Disabled",
+          "copied": "Copied!",
+          "clickToCopy": "Click to copy",
+          "clickToCopyUrl": "Click to copy URL",
+          "clickToCopyCurl": "Click to copy curl",
+          "exampleRequest": "Example Request",
+          "webhookUrlsTitle": "Webhook URLs",
+          "webhookUrlsDescription": "Test mode runs the latest draft so you can verify changes before publishing. Production runs the published agent. Both require an API key in the X-API-Key header. <link>Get your API key</link>",
+          "testUrlTab": "Test URL",
+          "productionUrlTab": "Production URL",
+          "testUrlHelper": "Runs the latest draft, falling back to the published agent when no draft exists.",
+          "productionUrlHelper": "Runs the published agent.",
+          "contentLabelPrompt": "Prompt",
+          "contentLabelDetails": "Details",
+          "editTitle": "Edit {name}",
+          "editNode": "Edit Node",
+          "fallbackTitle": "Node",
+          "replaceTrigger": "Replace trigger",
+          "replaceWith": "Replace with…",
+          "reset": "reset",
+          "deleteDuplicateStartNode": "Delete duplicate start node"
+        },
+        "nodeHeader": {
+          "deleteNode": "Delete node"
+        },
+        "common": {
+          "nodeContent": {
+            "defaultBadgeLabel": "Node",
+            "defaultContentLabel": "Prompt"
+          },
+          "nodeEditDialog": {
+            "docs": "Docs",
+            "description": "Configure the settings for this node in your workflow.",
+            "cancel": "Cancel",
+            "readOnly": "Read Only",
+            "save": "Save",
+            "discardTitle": "Discard changes?",
+            "discardDescription": "You have unsaved changes. Are you sure you want to discard them?",
+            "keepEditing": "Keep Editing",
+            "discard": "Discard"
+          }
+        }
+      },
+      "renderer": {
+        "propertyInput": {
+          "unknownPropertyType": "Unknown property type: {type}",
+          "removeRow": "Remove row {index}",
+          "add": "Add"
+        }
+      }
+    },
+    "http": {
+      "createCredentialDialog": {
+        "title": "Add Credential",
+        "description": "Create a new credential for authentication.",
+        "nameLabel": "Name *",
+        "namePlaceholder": "My API Key",
+        "descriptionLabel": "Description",
+        "descriptionPlaceholder": "Optional description",
+        "credentialTypeLabel": "Credential Type",
+        "typeBearerToken": "Bearer Token",
+        "typeApiKey": "API Key",
+        "typeBasicAuth": "Basic Auth",
+        "typeCustomHeader": "Custom Header",
+        "fieldHeaderName": "Header Name",
+        "fieldApiKey": "API Key",
+        "fieldToken": "Token",
+        "fieldUsername": "Username",
+        "fieldPassword": "Password",
+        "fieldHeaderValue": "Header Value",
+        "cancel": "Cancel",
+        "create": "Create",
+        "creating": "Creating...",
+        "errorCreateFailed": "Failed to create credential",
+        "errorUnexpected": "An unexpected error occurred"
+      },
+      "credentialSelector": {
+        "noAuthentication": "No authentication",
+        "label": "Credential",
+        "description": "Select a credential for authentication, or leave empty for no auth.",
+        "loading": "Loading...",
+        "addNewCredential": "Add new credential",
+        "noCredentialsFound": "No credentials found. Click the + button to create one."
+      },
+      "keyValueEditor": {
+        "keyPlaceholder": "Key",
+        "valuePlaceholder": "Value",
+        "addButton": "Add"
+      },
+      "parameterEditor": {
+        "emptyState": "No parameters defined. Add a parameter to specify what data this tool needs.",
+        "parameterLabel": "Parameter {index}",
+        "nameLabel": "Name",
+        "nameHint": "Name of the parameter, like \"order_id\" or \"customer_name\"",
+        "namePlaceholder": "e.g., customer_name",
+        "typeLabel": "Type",
+        "typeHint": "Type of the parameter, like \"string\" or \"number\" or \"boolean\"",
+        "typePlaceholder": "Select type",
+        "typeString": "String",
+        "typeNumber": "Number",
+        "typeBoolean": "Boolean",
+        "typeObject": "Object",
+        "typeArray": "Array",
+        "descriptionLabel": "Description",
+        "descriptionHint": "Description of the parameter, which makes it easy for LLM to understand, like \"The ID of the Customer to fetch Order Details\"",
+        "descriptionPlaceholder": "Describe what this parameter is for...",
+        "required": "Required",
+        "addParameter": "Add Parameter",
+        "presetEmptyState": "No preset parameters defined. Add one to inject a fixed value or workflow context into the request.",
+        "presetParameterLabel": "Preset Parameter {index}",
+        "presetNameHint": "Key sent to the API, like \"phone_number\" or \"customer_id\"",
+        "presetNamePlaceholder": "e.g., phone_number",
+        "presetTypeHint": "JSON type to send to the API",
+        "valueTemplateLabel": "Value or Template",
+        "valueTemplateHint": "Use a fixed value or a template like {example1} or {example2}",
+        "valueTemplatePlaceholder": "e.g., '{{'initial_context.phone_number'}}'",
+        "addPresetParameter": "Add Preset Parameter"
+      }
+    },
+    "layout": {
+      "gitHubStarBadge": {
+        "star": "Star"
+      }
+    },
+    "onboarding": {
+      "onboardingTooltip": {
+        "defaultTitle": "One more thing...",
+        "closeTooltipAria": "Close tooltip",
+        "close": "Close",
+        "next": "Next"
+      }
+    },
+    "telephony": {
+      "configFormDialog": {
+        "nameRequired": "Name is required",
+        "failedToSaveConfiguration": "Failed to save configuration",
+        "configurationUpdated": "Configuration updated",
+        "configurationCreated": "Configuration created",
+        "failedToSave": "Failed to save",
+        "editTitle": "Edit telephony configuration",
+        "addTitle": "Add telephony configuration",
+        "editDescription": "Update credentials for this configuration. Phone numbers are managed separately.",
+        "addDescription": "Connect a telephony provider account. Phone numbers are added after the configuration is created.",
+        "configurationId": "Configuration ID",
+        "configurationIdCopied": "Configuration ID copied",
+        "failedToCopyId": "Failed to copy ID",
+        "clickToCopy": "Click to copy",
+        "nameLabel": "Name",
+        "namePlaceholder": "e.g. Twilio US prod",
+        "providerLabel": "Provider",
+        "selectProviderPlaceholder": "Select a provider",
+        "providerLocked": "Provider cannot be changed after creation.",
+        "providerDocs": "{provider} docs",
+        "setDefaultOutbound": "Set as default for outbound calls",
+        "setDefaultOutboundDescription": "Used by test calls and campaigns when no specific config is selected.",
+        "optional": "(optional)",
+        "cancel": "Cancel",
+        "saving": "Saving...",
+        "saveChanges": "Save changes",
+        "create": "Create",
+        "fromNumbersManagedSeparately": "Phone numbers are managed separately on the configuration page.",
+        "leaveMaskedPlaceholder": "Leave masked to keep existing"
+      },
+      "phoneNumberDialog": {
+        "titleEdit": "Edit phone number",
+        "titleAdd": "Add phone number",
+        "description": "PSTN numbers (E.164), SIP URIs (sip:user@host), and SIP extensions are all supported.",
+        "addressLabel": "Address",
+        "addressPlaceholder": "+19781899185, sip:101@asterisk.local, or 101",
+        "addressRequired": "Address is required",
+        "addressPstnNeedsCountry": "PSTN addresses without a leading '+' need a Country (ISO-2) hint, or include the country code in the address (e.g. +14155551234).",
+        "addressImmutable": "Address cannot be changed. Delete this number and create a new one to change it.",
+        "addressStoredAs": "Stored as <code>{normalized}</code> ({type})",
+        "countryLabel": "Country (ISO-2)",
+        "countryPlaceholder": "US",
+        "labelLabel": "Label",
+        "labelPlaceholder": "e.g. Boston caller ID",
+        "inboundWorkflowLabel": "Inbound workflow",
+        "noneOption": "(none)",
+        "inboundWorkflowHint": "Used when per-number inbound routing is enabled. Today, inbound calls still route by the workflow_id in the webhook URL.",
+        "activeLabel": "Active",
+        "defaultCallerIdLabel": "Default caller ID for this configuration",
+        "defaultCallerIdHint": "Used as the from-number for test calls when set.",
+        "cancel": "Cancel",
+        "saving": "Saving...",
+        "saveChanges": "Save changes",
+        "add": "Add",
+        "saveError": "Failed to save phone number",
+        "toastUpdated": "Phone number updated",
+        "toastAdded": "Phone number added",
+        "toastSyncWarning": "Saved, but failed to sync inbound webhook to the provider."
+      }
+    },
+    "workflow": {
+      "createWorkflowButton": {
+        "creating": "Creating...",
+        "createAgent": "Create Agent",
+        "useAgentBuilder": "Use Agent Builder",
+        "useAgentBuilderDescription": "AI generates a workflow from your description",
+        "blankCanvas": "Blank Canvas",
+        "blankCanvasDescription": "Start from scratch with an empty workflow",
+        "createWorkflowError": "Failed to create workflow"
+      },
+      "templateCard": {
+        "creating": "Creating...",
+        "duplicateWorkflowTemplate": "Duplicate Workflow Template"
+      },
+      "uploadWorkflowButton": {
+        "uploadAgentDefinition": "Upload Agent Definition",
+        "dropZoneInstruction": "Drag and drop your Workflow JSON File here, or Click to Select",
+        "selectFile": "Select File",
+        "uploadFailed": "Failed to upload workflow. Please check if the file is valid.",
+        "invalidJsonFile": "Please upload a valid JSON file"
+      },
+      "workflowTable": {
+        "columnId": "ID",
+        "columnAgentName": "Agent Name",
+        "columnCreatedAt": "Created At",
+        "columnTotalRuns": "Total Runs",
+        "columnActions": "Actions",
+        "edit": "Edit",
+        "move": "Move",
+        "moveToFolder": "Move to folder",
+        "uncategorized": "Uncategorized",
+        "restoring": "Restoring...",
+        "archiving": "Archiving...",
+        "restore": "Restore",
+        "archive": "Archive",
+        "archiveSuccess": "Workflow archived successfully",
+        "restoreSuccess": "Workflow restored successfully",
+        "archiveError": "Failed to archive workflow",
+        "restoreError": "Failed to restore workflow",
+        "movedToUncategorized": "Moved to Uncategorized",
+        "agentMoved": "Agent moved",
+        "moveError": "Failed to move agent"
+      },
+      "conversation": {
+        "conversationContainer": {
+          "statusReady": "Ready",
+          "statusLive": "Live",
+          "statusEnded": "Ended",
+          "messageCount": "{count} messages"
+        },
+        "realtimeFeedback": {
+          "callTranscript": "Call Transcript",
+          "noConversationRecorded": "No conversation recorded",
+          "noConversationRecordedSubtitle": "Real-time feedback events were not captured for this call",
+          "liveTranscript": "Live Transcript",
+          "noMessagesYet": "No messages yet",
+          "startSpeakingSubtitle": "Start speaking to see the transcript",
+          "startCallSubtitle": "Start the call to begin the conversation"
+        },
+        "toolCallCard": {
+          "reasoningDelay": "Reasoning Delay:",
+          "running": "Running",
+          "completed": "Completed",
+          "details": "Details",
+          "arguments": "Arguments",
+          "result": "Result"
+        }
+      },
+      "folders": {
+        "createFolderButton": {
+          "createError": "Failed to create folder",
+          "createSuccess": "Folder \"{name}\" created",
+          "newFolder": "New Folder",
+          "dialogTitle": "Create folder",
+          "submitLabel": "Create"
+        },
+        "folderFormDialog": {
+          "folderNameLabel": "Folder name",
+          "folderNamePlaceholder": "e.g. Sales, Support, Onboarding",
+          "cancel": "Cancel",
+          "saving": "Saving..."
+        },
+        "folderSection": {
+          "archived": "Archived",
+          "uncategorized": "Uncategorized",
+          "renameError": "Failed to rename folder",
+          "renameSuccess": "Folder renamed",
+          "deleteSuccess": "Folder \"{name}\" deleted",
+          "deleteError": "Failed to delete folder",
+          "toggleAriaLabel": "Toggle {title}",
+          "folderActions": "Folder actions",
+          "rename": "Rename",
+          "delete": "Delete",
+          "emptyArchived": "No archived agents.",
+          "emptyFolder": "This folder is empty. Use “Move to folder” on an agent to add it here.",
+          "emptyUncategorized": "No uncategorized agents.",
+          "renameFolderTitle": "Rename folder",
+          "deleteConfirmTitle": "Delete “{name}”?",
+          "deleteConfirmDescription": "The {count} {count, plural, one {agent} other {agents}} in this folder won’t be deleted — they’ll move to Uncategorized.",
+          "cancel": "Cancel",
+          "deleting": "Deleting...",
+          "deleteFolder": "Delete folder"
+        }
+      }
+    },
+    "ui": {
+      "dialog": {
+        "close": "Close"
+      },
+      "sheet": {
+        "close": "Close"
+      },
+      "sidebar": {
+        "sidebarTitle": "Sidebar",
+        "mobileSidebarDescription": "Displays the mobile sidebar.",
+        "toggleSidebar": "Toggle Sidebar"
+      }
+    },
+    "workflowRuns": {
+      "campaignRuns": {
+        "title": "Campaign Workflow Runs",
+        "emptyMessage": "No workflow runs found for this campaign",
+        "loadError": "Failed to load campaign runs"
+      },
+      "workflowRunsTable": {
+        "title": "Workflow Run History",
+        "emptyMessage": "No workflow runs found",
+        "loading": "Loading workflow runs...",
+        "cardTitle": "Workflow Runs",
+        "showingRuns": "Showing {shown} of {total} total runs",
+        "reload": "Reload",
+        "columnId": "ID",
+        "columnStatus": "Status",
+        "columnCreatedAt": "Created At",
+        "columnCallType": "Call Type",
+        "columnDuration": "Duration",
+        "columnDisposition": "Disposition",
+        "columnActions": "Actions",
+        "statusCompleted": "Completed",
+        "statusInProgress": "In Progress",
+        "pageOf": "Page {current} of {total}",
+        "previous": "Previous",
+        "next": "Next"
+      }
     }
   }
 }

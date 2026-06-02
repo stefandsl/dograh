@@ -1,3 +1,4 @@
+import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 
 import { Input } from "@/components/ui/input";
@@ -18,11 +19,12 @@ export const NumberFilter: React.FC<NumberFilterProps> = ({
   value,
   onChange,
   error,
-  placeholder = "Enter value",
+  placeholder,
   min,
   max,
   step = 1,
 }) => {
+  const t = useTranslations("components.filters.numberFilter");
   // Local state for fast typing - only syncs to parent on blur
   const [localValue, setLocalValue] = useState<string>(value.value?.toString() ?? '');
 
@@ -49,14 +51,14 @@ export const NumberFilter: React.FC<NumberFilterProps> = ({
   return (
     <div className="space-y-2">
       <div className="space-y-2">
-        <Label htmlFor="number-filter">Value</Label>
+        <Label htmlFor="number-filter">{t("valueLabel")}</Label>
         <Input
           id="number-filter"
           type="number"
           value={localValue}
           onChange={handleChange}
           onBlur={handleBlur}
-          placeholder={placeholder}
+          placeholder={placeholder ?? t("placeholder")}
           min={min}
           max={max}
           step={step}

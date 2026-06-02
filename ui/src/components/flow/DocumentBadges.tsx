@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useState } from "react";
 
 import { useWorkflow } from "@/app/[locale]/workflow/[workflowId]/contexts/WorkflowContext";
@@ -12,6 +13,7 @@ interface DocumentBadgesProps {
 }
 
 export const DocumentBadges = ({ documentUuids, onStaleUuidsDetected }: DocumentBadgesProps) => {
+    const t = useTranslations("components.flow.documentBadges");
     const { documents } = useWorkflow();
     const [documentNames, setDocumentNames] = useState<Record<string, string>>({});
 
@@ -50,7 +52,7 @@ export const DocumentBadges = ({ documentUuids, onStaleUuidsDetected }: Document
 
     // Show loading while data hasn't loaded yet
     if (documents === undefined) {
-        return <Badge variant="outline">Loading...</Badge>;
+        return <Badge variant="outline">{t("loading")}</Badge>;
     }
 
     return (

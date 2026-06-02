@@ -1,4 +1,5 @@
 import { AlertCircle, Calendar, CheckSquare, Hash, Radio, RefreshCw, Tag, X } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useState } from "react";
 
 import { DateRangeFilter } from "@/components/filters/DateRangeFilter";
@@ -52,6 +53,7 @@ export const FilterBuilder: React.FC<FilterBuilderProps> = ({
   onAutoRefreshChange,
   hasAppliedFilters = false,
 }) => {
+  const t = useTranslations("components.filters.filterBuilder");
   const [selectedAttribute, setSelectedAttribute] = useState<string>("");
   const [expandedFilters, setExpandedFilters] = useState<Set<number>>(new Set());
 
@@ -180,13 +182,13 @@ export const FilterBuilder: React.FC<FilterBuilderProps> = ({
         return formatDateRange(filter.value as DateRangeValue);
       case "multiSelect": {
         const value = filter.value as MultiSelectValue;
-        if (value.codes.length === 0) return "No options selected";
+        if (value.codes.length === 0) return t("noOptionsSelected");
         if (value.codes.length <= 3) return value.codes.join(", ");
-        return `${value.codes.slice(0, 3).join(", ")} +${value.codes.length - 3} more`;
+        return t("plusMore", { items: value.codes.slice(0, 3).join(", "), count: value.codes.length - 3 });
       }
       case "number": {
         const value = filter.value as NumberValue;
-        return value.value !== null ? value.value.toString() : "No value";
+        return value.value !== null ? value.value.toString() : t("noValue");
       }
       case "numberRange":
         return formatNumberRange(filter.value as NumberRangeValue, filter.attribute.config.unit);
@@ -197,13 +199,13 @@ export const FilterBuilder: React.FC<FilterBuilderProps> = ({
       }
       case "tags": {
         const value = filter.value as MultiSelectValue;
-        if (value.codes.length === 0) return "No tags";
+        if (value.codes.length === 0) return t("noTags");
         if (value.codes.length <= 3) return value.codes.join(", ");
-        return `${value.codes.slice(0, 3).join(", ")} +${value.codes.length - 3} more`;
+        return t("plusMore", { items: value.codes.slice(0, 3).join(", "), count: value.codes.length - 3 });
       }
       case "text": {
         const value = filter.value as TextValue;
-        return value.value || "No value";
+        return value.value || t("noValue");
       }
     }
   };
@@ -297,20 +299,20 @@ export const FilterBuilder: React.FC<FilterBuilderProps> = ({
       <CardHeader>
         <div className="flex items-center justify-between">
           <div>
-            <CardTitle>Filter Workflow Runs</CardTitle>
+            <CardTitle>{t("title")}</CardTitle>
             <CardDescription>
-              Build custom filters to find specific workflow runs
+              {t("description")}
             </CardDescription>
           </div>
           <div className="flex items-center gap-2">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="outline" size="sm">
-                  Templates
+                  {t("templates")}
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-[250px]">
-                <DropdownMenuLabel>Filter Templates</DropdownMenuLabel>
+                <DropdownMenuLabel>{t("filterTemplates")}</DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 {filterTemplates.map((template) => (
                   <DropdownMenuItem
@@ -338,7 +340,7 @@ export const FilterBuilder: React.FC<FilterBuilderProps> = ({
               addFilter(value);
             }}>
               <SelectTrigger className="flex-1">
-                <SelectValue placeholder="Select attribute to filter by" />
+                <SelectValue placeholder={t("selectAttributePlaceholder")} />
               </SelectTrigger>
               <SelectContent>
                 {availableAttributesForAdding.map((attr) => (
@@ -357,14 +359,14 @@ export const FilterBuilder: React.FC<FilterBuilderProps> = ({
           {activeFilters.length > 0 && (
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <h4 className="text-sm font-medium">Active Filters</h4>
+                <h4 className="text-sm font-medium">{t("activeFilters")}</h4>
                 {activeFilters.length > 1 && (
                   <Button
                     variant="ghost"
                     size="sm"
                     onClick={clearAllFilters}
                   >
-                    Clear All
+                    {t("clearAll")}
                   </Button>
                 )}
               </div>
@@ -425,7 +427,7 @@ export const FilterBuilder: React.FC<FilterBuilderProps> = ({
                     id="auto-refresh"
                   />
                   <label htmlFor="auto-refresh" className="text-sm font-medium cursor-pointer">
-                    Auto-refresh every 5s
+                    {t("autoRefreshEvery5s")}
                   </label>
                   {autoRefresh && (
                     <RefreshCw className="h-4 w-4 text-gray-500 animate-spin" />
@@ -439,14 +441,14 @@ export const FilterBuilder: React.FC<FilterBuilderProps> = ({
                   variant="outline"
                   onClick={clearAllFilters}
                 >
-                  Clear All
+                  {t("clearAll")}
                 </Button>
                 <Button
                   onClick={onApplyFilters}
                   disabled={(activeFilters.length > 0 && !allFiltersValid) || isExecuting}
-                  title={"Apply filters"}
+                  title={t("applyFilters")}
                 >
-                  {isExecuting ? "Applying..." : `Apply (${navigator.userAgent.toUpperCase().indexOf('MAC') >= 0 ? '⌘' : 'Ctrl'}+Enter)`}
+                  {isExecuting ? t("applying") : t("applyWithShortcut", { shortcut: navigator.userAgent.toUpperCase().indexOf('MAC') >= 0 ? '⌘' : 'Ctrl' })}
                 </Button>
               </div>
             </div>

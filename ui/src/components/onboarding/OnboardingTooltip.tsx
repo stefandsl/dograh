@@ -1,6 +1,7 @@
 'use client';
 
 import { X } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 
@@ -16,13 +17,15 @@ interface OnboardingTooltipProps {
 
 export const OnboardingTooltip = ({
     targetRef,
-    title = "One more thing...",
+    title,
     message,
     onDismiss,
     onNext,
     showNext = true,
     isVisible
 }: OnboardingTooltipProps) => {
+    const t = useTranslations("components.onboarding.onboardingTooltip");
+    const resolvedTitle = title ?? t("defaultTitle");
     const tooltipRef = useRef<HTMLDivElement>(null);
     const [position, setPosition] = useState({ top: 0, left: 0 });
     const [mounted, setMounted] = useState(false);
@@ -96,13 +99,13 @@ export const OnboardingTooltip = ({
                 <button
                     onClick={onDismiss}
                     className="absolute top-2 right-2 p-1 hover:bg-blue-600 rounded-full transition-colors"
-                    aria-label="Close tooltip"
+                    aria-label={t("closeTooltipAria")}
                 >
                     <X className="h-4 w-4" />
                 </button>
 
                 {/* Title */}
-                <h3 className="text-lg font-semibold mb-3">{title}</h3>
+                <h3 className="text-lg font-semibold mb-3">{resolvedTitle}</h3>
 
                 {/* Message */}
                 <p className="text-sm leading-relaxed mb-4 pr-4">
@@ -115,7 +118,7 @@ export const OnboardingTooltip = ({
                         onClick={onDismiss}
                         className="bg-white text-blue-500 px-4 py-1.5 rounded font-medium text-sm hover:bg-blue-50 transition-colors cursor-pointer"
                     >
-                        Close
+                        {t("close")}
                     </button>
 
                     {showNext && (
@@ -126,7 +129,7 @@ export const OnboardingTooltip = ({
                             }}
                             className="bg-white text-blue-500 px-4 py-1.5 rounded font-medium text-sm hover:bg-blue-50 transition-colors"
                         >
-                            Next
+                            {t("next")}
                         </button>
                     )}
                 </div>
