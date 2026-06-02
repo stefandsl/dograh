@@ -1,7 +1,7 @@
 # ADR-104 — Microsoft Teams calling integration
 
-**Status:** Proposed
-**Date:** 2026-06-02
+**Status:** Accepted
+**Date:** 2026-06-02 (decisions recorded 2026-06-02)
 **Context:** Request to integrate Microsoft Teams for outbound (and if possible
 inbound) AI voice calls, originally framed as "add it to IM Channels". After
 mapping the IM-channels and telephony subsystems, this ADR records *where* Teams
@@ -187,24 +187,92 @@ telephony-configurations screen (unlike IM Channels, which needs its own tab).
 | 2 | **Inbound** (ACS number / resource account + Event Grid `IncomingCall`) | Medium-Large |
 | 3 | Transfers (`transfer_call`), recording, DTMF, cost tracking (ties into the Paygent aggregator) | Medium |
 
-## Open questions
+## Resolved decisions (2026-06-02)
 
-1. **Media path** — proceed with ACS (recommended), or is pure-Graph /
-   Direct-Routing a hard requirement (changes the whole design)?
-2. **Outbound-only MVP first**, or inbound from day one?
-3. **Call target** — primarily Teams users, Teams meetings, or PSTN via Teams?
-   (Drives ACS identity setup.)
-4. **Azure availability** — is there an Azure subscription + ACS resource + AAD
-   app, or can they be created? Without these there is nothing to call.
-5. **Encrypt the Teams client secret** in `TelephonyConfigurationModel`
-   (deviating from the plaintext-creds norm)?
+The five open questions are resolved as follows. They are defaults chosen to get
+to a demonstrable MVP fastest; revisit if requirements change.
+
+1. **Media path → ACS Call Automation.** The only Python-native real-time
+   bidirectional-audio path that fits the existing provider abstraction.
+   Pure-Graph is .NET-only; Direct-Routing is telecom-ops heavy.
+2. **MVP scope → outbound only.** Inbound needs ACS number / resource-account
+   provisioning + Event Grid `IncomingCall` wiring — kept as Phase 2.
+3. **Call target → Teams meeting-join (primary) + Teams user (secondary).** Same
+   ACS create-call, different target identifier. Meeting-join is lowest-friction
+   to demo (a join URL, no per-user consent / object-ID resolution); Teams-user
+   is near-free to add. PSTN-via-Teams deferred.
+4. **Azure availability → operator-provided (Phase 0).** Cannot be provisioned
+   from this repo. Phase 1 can be built and unit-tested without it, but not
+   smoke-tested against real Teams until it exists.
+5. **Encrypt the client secret → yes.** Reuse the Fernet helper in
+   `api/services/im/encryption.py` (keyed off `OSS_JWT_SECRET`) to encrypt the
+   AAD client secret in the JSONB creds, even though other telephony creds are
+   plaintext today.
+
+## Phase 1 implementation plan (outbound, ACS)
+
+**Phase 0 — operator prerequisites (blocking, external):** Azure subscription +
+ACS resource; AAD app registration (client id/secret, tenant id) with
+admin-consented ACS Call Automation permissions (+ Graph `Calls.*` for direct
+Teams-user calls); Teams interop enabled (+ a test meeting URL / target user
+object IDs); a public HTTPS backend URL ACS can reach for events + media WSS.
+
+1. **Dependencies** — add `azure-communication-callautomation` and
+   `azure-identity` to `api/requirements.txt` (both currently absent from the
+   image; `azure-core` is present). Dry-run resolve against the image before
+   committing (same technique used for the `litellm`/`openai` pin) to avoid a
+   mid-rebuild conflict.
+2. **Provider package** `api/services/telephony/providers/teams/` mirroring
+   `telnyx/`:
+   - `config.py` — `TeamsConfigurationRequest`/`Response` (tenant_id, client_id,
+     client_secret [masked], acs_connection_string|acs_resource_id,
+     default_target_type ∈ {meeting, teams_user}, from_identity).
+   - `auth.py` — AAD client-credentials token (`ClientSecretCredential` / ACS
+     connection-string), cached with refresh; isolated for unit testing.
+   - `provider.py` — `TeamsProvider(TelephonyProvider)`: `initiate_call` (ACS
+     create-call with `media_streaming.transportUrl=wss://…/telephony/teams/ws`
+     PCM 16k + `callbackUri=…/telephony/teams/events/<run_id>`),
+     `parse_status_callback` (map ACS `CallConnected`/`CallDisconnected`/…),
+     `verify_inbound_signature`, `handle_websocket`, `get_call_status`,
+     `validate_config`, `can_handle_webhook`, `parse_inbound_webhook` (minimal),
+     `transfer_call`/`supports_transfers` (Phase-3 stub OK).
+   - `serializers.py` — **hand-written `AcsFrameSerializer(FrameSerializer)`**:
+     ACS WS media protocol (JSON `AudioData`, base64 PCM 16-bit 16 kHz mono) ↔
+     pipecat audio frames. pipecat ships serializers for telnyx/twilio/vonage/…
+     but **none for ACS**, so this is bespoke and is the riskiest piece.
+   - `transport.py` — `create_transport()` → `FastAPIWebsocketTransport` with the
+     ACS serializer and 16 kHz in/out, same shape as `telnyx/transport.py`.
+   - `routes.py` — `POST /teams/events/{workflow_run_id}` (signature-verified ACS
+     events) + `websocket /teams/ws` → `handle_websocket`; loaded on-demand via
+     the existing importlib route mechanism.
+   - `__init__.py` — one `register(ProviderSpec(name="teams", …,
+     transport_factory=create_transport, transport_sample_rate=16000,
+     account_id_credential_field="acs_resource_id",
+     preprocess_credentials_on_save=<encrypt secret + register ACS event sub>))`.
+3. **Credential encryption** — encrypt `client_secret` in
+   `preprocess_credentials_on_save`, decrypt in `config_loader`, via the IM
+   Fernet helper.
+4. **UI** — add `ui_metadata` to the `ProviderSpec` so the existing
+   telephony-config screen renders the Teams form (surfaced by
+   `GET /api/v1/telephony/providers/metadata`). No new page.
+5. **Verification** — unit (no Azure): config + secret round-trip, AAD layer with
+   a fake credential, `AcsFrameSerializer` PCM round-trip, `initiate_call` payload
+   (mock ACS client), registry registration — run in the api image like the
+   existing provider/config tests. Smoke (needs Phase 0): real outbound call to a
+   Teams meeting → two-way AI audio over the ACS WS → events update the
+   `WorkflowRun`. Regenerate `docs/api-reference/openapi.json` for the new schema.
+
+**Effort:** Large — a full new provider + a bespoke media serializer + an AAD
+auth layer. **Top risk:** `AcsFrameSerializer` framing/timing vs. pipecat
+expectations. **Inert by default:** activates only when a Teams telephony config
+exists, so it cannot disturb existing providers.
 
 ## Implications
 
 - Adds a hard dependency on Azure (ACS billing + AAD) for any Teams calling.
-- Introduces the first encrypted-at-rest telephony credential if Open-question 5
-  is accepted (today telephony creds are plaintext JSONB; IM Channels use
-  Fernet — a precedent exists in `api/services/im/encryption.py`).
+- Introduces the first encrypted-at-rest telephony credential (decision 5; today
+  telephony creds are plaintext JSONB; IM Channels use Fernet — a precedent
+  exists in `api/services/im/encryption.py`).
 - Reuses the existing pipecat WebSocket transport path and `TelephonyProvider`
   registry — no changes to the core call/audio plumbing, only a new provider
   package + serializer + an AAD token layer.
