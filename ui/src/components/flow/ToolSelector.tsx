@@ -4,8 +4,8 @@ import { ExternalLink, RefreshCw } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 
-import { renderToolIcon } from "@/app/tools/config";
-import { useWorkflowOptional } from "@/app/workflow/[workflowId]/contexts/WorkflowContext";
+import { renderToolIcon } from "@/app/[locale]/tools/config";
+import { useWorkflowOptional } from "@/app/[locale]/workflow/[workflowId]/contexts/WorkflowContext";
 import type { ToolResponse } from "@/client/types.gen";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";

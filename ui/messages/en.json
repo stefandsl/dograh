@@ -1,0 +1,78 @@
+{
+  "brand": {
+    "name": "Bellerophone",
+    "tagline": "Open Source Voice Assistant Workflow Builder"
+  },
+  "common": {
+    "language": "Language",
+    "english": "English",
+    "italian": "Italian",
+    "loading": "Loading...",
+    "errorGeneric": "An error occurred. Please try again."
+  },
+  "auth": {
+    "login": {
+      "title": "Sign in",
+      "subtitle": "Enter your email and password to continue",
+      "email": "Email",
+      "emailPlaceholder": "you@example.com",
+      "password": "Password",
+      "passwordPlaceholder": "Enter your password",
+      "submit": "Sign in",
+      "submitting": "Signing in...",
+      "forgot": "Forgot your password?",
+      "noAccount": "Don't have an account?",
+      "signupLink": "Sign up",
+      "failed": "Login failed"
+    },
+    "signup": {
+      "title": "Create an account",
+      "subtitle": "Enter your details to get started",
+      "name": "Name",
+      "namePlaceholder": "Your name",
+      "email": "Email",
+      "emailPlaceholder": "you@example.com",
+      "password": "Password",
+      "passwordPlaceholder": "At least 8 characters",
+      "confirmPassword": "Confirm password",
+      "confirmPasswordPlaceholder": "Confirm your password",
+      "submit": "Create account",
+      "submitting": "Creating account...",
+      "haveAccount": "Already have an account?",
+      "loginLink": "Sign in",
+      "passwordTooShort": "Password must be at least 8 characters",
+      "passwordMismatch": "Passwords do not match",
+      "failed": "Signup failed"
+    },
+    "forgot": {
+      "title": "Reset your password",
+      "subtitle": "Enter your email and we'll send you a link to reset your password",
+      "email": "Email",
+      "emailPlaceholder": "you@example.com",
+      "submit": "Send reset link",
+      "submitting": "Sending...",
+      "sent": "If an account exists for {email}, a password reset link has been sent. Check your inbox.",
+      "devMode": "Dev mode (no SMTP configured)",
+      "remember": "Remember your password?",
+      "loginLink": "Sign in"
+    },
+    "reset": {
+      "title": "Set a new password",
+      "subtitle": "Choose a new password for your account",
+      "newPassword": "New password",
+      "newPasswordPlaceholder": "At least 8 characters",
+      "confirmPassword": "Confirm new password",
+      "confirmPasswordPlaceholder": "Re-enter your password",
+      "submit": "Reset password",
+      "submitting": "Resetting...",
+      "success": "Password reset successfully",
+      "passwordTooShort": "Password must be at least 8 characters",
+      "passwordMismatch": "Passwords do not match",
+      "invalidLink": "This password reset link is invalid or incomplete.",
+      "requestNew": "Request a new link",
+      "failed": "Could not reset password. The link may have expired.",
+      "remember": "Remember your password?",
+      "loginLink": "Sign in"
+    }
+  }
+}

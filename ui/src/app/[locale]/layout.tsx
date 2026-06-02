@@ -1,7 +1,10 @@
-import "./globals.css";
+import "../globals.css";
 
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { notFound } from "next/navigation";
+import { hasLocale, NextIntlClientProvider } from "next-intl";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Suspense } from "react";
 
 import ChatwootWidget from "@/components/ChatwootWidget";
@@ -14,8 +17,8 @@ import { AppConfigProvider } from "@/context/AppConfigContext";
 import { OnboardingProvider } from "@/context/OnboardingContext";
 import { TelephonyConfigWarningsProvider } from "@/context/TelephonyConfigWarningsContext";
 import { UserConfigProvider } from "@/context/UserConfigContext";
+import { routing } from "@/i18n/routing";
 import { AuthProvider } from "@/lib/auth";
-
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -27,19 +30,39 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-export const metadata: Metadata = {
-  title: "Dograh",
-  description: "Open Source Voice Assistant Workflow Builder",
-};
+export function generateStaticParams() {
+  return routing.locales.map((locale) => ({ locale }));
+}
 
-export default function RootLayout({
-  children
+export async function generateMetadata({
+  params,
 }: {
-  children: React.ReactNode
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "brand" });
+  return {
+    title: t("name"),
+    description: t("tagline"),
+  };
+}
+
+export default async function LocaleLayout({
+  children,
+  params,
+}: {
+  children: React.ReactNode;
+  params: Promise<{ locale: string }>;
 }) {
+  const { locale } = await params;
+  if (!hasLocale(routing.locales, locale)) {
+    notFound();
+  }
+  // Enable static rendering for this locale.
+  setRequestLocale(locale);
 
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang={locale} suppressHydrationWarning>
       <head>
         {/* Inline script to prevent flash of light theme - runs before React hydrates */}
         <script
@@ -62,26 +85,28 @@ export default function RootLayout({
       <body
         suppressHydrationWarning
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        <SentryErrorBoundary>
-          <AuthProvider>
-            <AppConfigProvider>
-              <Suspense fallback={<SpinLoader />}>
-                <UserConfigProvider>
-                  <TelephonyConfigWarningsProvider>
-                    <OnboardingProvider>
-                      <PostHogIdentify />
-                      <AppLayout>
-                        {children}
-                      </AppLayout>
-                      <Toaster />
-                      <ChatwootWidget />
-                    </OnboardingProvider>
-                  </TelephonyConfigWarningsProvider>
-                </UserConfigProvider>
-              </Suspense>
-            </AppConfigProvider>
-          </AuthProvider>
-        </SentryErrorBoundary>
+        <NextIntlClientProvider>
+          <SentryErrorBoundary>
+            <AuthProvider>
+              <AppConfigProvider>
+                <Suspense fallback={<SpinLoader />}>
+                  <UserConfigProvider>
+                    <TelephonyConfigWarningsProvider>
+                      <OnboardingProvider>
+                        <PostHogIdentify />
+                        <AppLayout>
+                          {children}
+                        </AppLayout>
+                        <Toaster />
+                        <ChatwootWidget />
+                      </OnboardingProvider>
+                    </TelephonyConfigWarningsProvider>
+                  </UserConfigProvider>
+                </Suspense>
+              </AppConfigProvider>
+            </AuthProvider>
+          </SentryErrorBoundary>
+        </NextIntlClientProvider>
       </body>
     </html>
   );

@@ -4,8 +4,8 @@ import { Check, Circle, Copy, Edit, type LucideIcon, RefreshCw, Trash2Icon } fro
 import Link from "next/link";
 import { memo, useCallback, useEffect, useMemo, useState } from "react";
 
-import { useWorkflow } from "@/app/workflow/[workflowId]/contexts/WorkflowContext";
-import { useWorkflowStore } from "@/app/workflow/[workflowId]/stores/workflowStore";
+import { useWorkflow } from "@/app/[locale]/workflow/[workflowId]/contexts/WorkflowContext";
+import { useWorkflowStore } from "@/app/[locale]/workflow/[workflowId]/stores/workflowStore";
 import type { NodeSpec } from "@/client/types.gen";
 import { DocumentBadges } from "@/components/flow/DocumentBadges";
 import { NodeEditForm, useNodeSpecs } from "@/components/flow/renderer";

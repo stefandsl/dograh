@@ -1,15 +1,20 @@
-import type { NextRequest } from 'next/server';
-import { NextResponse } from 'next/server';
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
+import createMiddleware from "next-intl/middleware";
 
-const OSS_TOKEN_COOKIE = 'dograh_auth_token';
+import { routing } from "./i18n/routing";
 
-// Paths that don't require authentication in OSS mode
+const OSS_TOKEN_COOKIE = "dograh_auth_token";
+
+// Paths that don't require authentication in OSS mode (locale-stripped).
 const PUBLIC_PATHS = [
-  '/auth/login',
-  '/auth/signup',
-  '/auth/forgot-password',
-  '/auth/reset-password',
+  "/auth/login",
+  "/auth/signup",
+  "/auth/forgot-password",
+  "/auth/reset-password",
 ];
+
+const intlMiddleware = createMiddleware(routing);
 
 let cachedAuthProvider: string | null = null;
 
@@ -17,59 +22,69 @@ async function fetchAuthProvider(): Promise<string> {
   if (cachedAuthProvider) {
     return cachedAuthProvider;
   }
-
   try {
-    const backendUrl = process.env.BACKEND_URL || 'http://localhost:8000';
+    const backendUrl = process.env.BACKEND_URL || "http://localhost:8000";
     const res = await fetch(`${backendUrl}/api/v1/health`);
     if (res.ok) {
       const data = await res.json();
-      cachedAuthProvider = (data.auth_provider as string) || 'local';
+      cachedAuthProvider = (data.auth_provider as string) || "local";
       return cachedAuthProvider;
     }
   } catch {
     // Backend not reachable — fall back to local
   }
-
-  cachedAuthProvider = 'local';
+  cachedAuthProvider = "local";
   return cachedAuthProvider;
 }
 
-export async function middleware(request: NextRequest) {
-  const authProvider = await fetchAuthProvider();
+/** Remove a leading /en or /it segment so auth checks are locale-agnostic. */
+function stripLocale(pathname: string): string {
+  for (const locale of routing.locales) {
+    if (pathname === `/${locale}`) return "/";
+    if (pathname.startsWith(`/${locale}/`)) return pathname.slice(locale.length + 1);
+  }
+  return pathname;
+}
 
-  // Only handle OSS mode
-  if (authProvider !== 'local') {
-    return NextResponse.next();
+/** Resolve the active locale from the first path segment, else default. */
+function localeFromPath(pathname: string): string {
+  const seg = pathname.split("/")[1];
+  return (routing.locales as readonly string[]).includes(seg)
+    ? seg
+    : routing.defaultLocale;
+}
+
+export async function middleware(request: NextRequest) {
+  // 1) Locale routing first — next-intl handles prefix detection/redirects and
+  //    sets the locale for the request. Preserve its response/headers.
+  const response = intlMiddleware(request);
+
+  // 2) Auth gate (OSS/local mode only), operating on the locale-stripped path.
+  const authProvider = await fetchAuthProvider();
+  if (authProvider !== "local") {
+    return response;
   }
 
   const token = request.cookies.get(OSS_TOKEN_COOKIE)?.value;
-  const { pathname } = request.nextUrl;
+  const pathname = stripLocale(request.nextUrl.pathname);
 
-  // Allow public paths without auth
   if (PUBLIC_PATHS.some((p) => pathname.startsWith(p))) {
-    return NextResponse.next();
+    return response;
   }
 
-  // If no token, redirect to login
   if (!token) {
-    const loginUrl = new URL('/auth/login', request.url);
+    const locale = localeFromPath(request.nextUrl.pathname);
+    const loginUrl = new URL(`/${locale}/auth/login`, request.url);
     return NextResponse.redirect(loginUrl);
   }
 
-  return NextResponse.next();
+  return response;
 }
 
-// Configure which routes the middleware runs on
 export const config = {
   matcher: [
-    /*
-     * Match all request paths except:
-     * - api routes
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     * - public files (public folder)
-     */
-    '/((?!api|_next/static|_next/image|favicon.ico|public).*)',
+    // Run on everything except API routes, Next internals, the Sentry tunnel,
+    // favicon, and public files.
+    "/((?!api|_next/static|_next/image|favicon.ico|monitoring|public).*)",
   ],
 };

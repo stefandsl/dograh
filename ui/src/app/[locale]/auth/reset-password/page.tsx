@@ -1,7 +1,7 @@
 "use client";
 
-import Link from "next/link";
 import { useSearchParams } from "next/navigation";
+import { useLocale, useTranslations } from "next-intl";
 import { Suspense, useState } from "react";
 import { toast } from "sonner";
 
@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Link } from "@/i18n/navigation";
 
 interface ResetPasswordResponse {
   token: string;
@@ -17,6 +18,9 @@ interface ResetPasswordResponse {
 }
 
 function ResetPasswordForm() {
+  const t = useTranslations("auth.reset");
+  const tc = useTranslations("common");
+  const locale = useLocale();
   const searchParams = useSearchParams();
   const token = searchParams.get("token") ?? "";
 
@@ -28,11 +32,11 @@ function ResetPasswordForm() {
     e.preventDefault();
 
     if (password.length < 8) {
-      toast.error("Password must be at least 8 characters");
+      toast.error(t("passwordTooShort"));
       return;
     }
     if (password !== confirmPassword) {
-      toast.error("Passwords do not match");
+      toast.error(t("passwordMismatch"));
       return;
     }
 
@@ -45,7 +49,7 @@ function ResetPasswordForm() {
 
       if (res.error || !res.data) {
         const detail = (res.error as { detail?: string })?.detail;
-        toast.error(detail || "Could not reset password. The link may have expired.");
+        toast.error(detail || t("failed"));
         return;
       }
 
@@ -58,10 +62,10 @@ function ResetPasswordForm() {
         body: JSON.stringify({ token: data.token, user: data.user }),
       });
 
-      toast.success("Password reset successfully");
-      window.location.href = "/after-sign-in";
+      toast.success(t("success"));
+      window.location.href = `/${locale}/after-sign-in`;
     } catch {
-      toast.error("An error occurred. Please try again.");
+      toast.error(tc("errorGeneric"));
     } finally {
       setLoading(false);
     }
@@ -70,11 +74,9 @@ function ResetPasswordForm() {
   if (!token) {
     return (
       <div className="space-y-4 text-center">
-        <p className="text-sm text-muted-foreground">
-          This password reset link is invalid or incomplete.
-        </p>
+        <p className="text-sm text-muted-foreground">{t("invalidLink")}</p>
         <Button asChild className="w-full">
-          <Link href="/auth/forgot-password">Request a new link</Link>
+          <Link href="/auth/forgot-password">{t("requestNew")}</Link>
         </Button>
       </div>
     );
@@ -83,50 +85,52 @@ function ResetPasswordForm() {
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="space-y-2">
-        <Label htmlFor="password">New password</Label>
+        <Label htmlFor="password">{t("newPassword")}</Label>
         <Input
           id="password"
           type="password"
-          placeholder="At least 8 characters"
+          placeholder={t("newPasswordPlaceholder")}
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           required
         />
       </div>
       <div className="space-y-2">
-        <Label htmlFor="confirmPassword">Confirm new password</Label>
+        <Label htmlFor="confirmPassword">{t("confirmPassword")}</Label>
         <Input
           id="confirmPassword"
           type="password"
-          placeholder="Re-enter your password"
+          placeholder={t("confirmPasswordPlaceholder")}
           value={confirmPassword}
           onChange={(e) => setConfirmPassword(e.target.value)}
           required
         />
       </div>
       <Button type="submit" className="w-full" disabled={loading}>
-        {loading ? "Resetting..." : "Reset password"}
+        {loading ? t("submitting") : t("submit")}
       </Button>
     </form>
   );
 }
 
 export default function ResetPasswordPage() {
+  const t = useTranslations("auth.reset");
+  const tc = useTranslations("common");
   return (
     <div className="flex min-h-screen items-center justify-center bg-background">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <CardTitle className="text-2xl">Set a new password</CardTitle>
-          <CardDescription>Choose a new password for your account</CardDescription>
+          <CardTitle className="text-2xl">{t("title")}</CardTitle>
+          <CardDescription>{t("subtitle")}</CardDescription>
         </CardHeader>
         <CardContent>
-          <Suspense fallback={<div className="text-center text-sm text-muted-foreground">Loading...</div>}>
+          <Suspense fallback={<div className="text-center text-sm text-muted-foreground">{tc("loading")}</div>}>
             <ResetPasswordForm />
           </Suspense>
           <p className="mt-4 text-center text-sm text-muted-foreground">
-            Remember your password?{" "}
+            {t("remember")}{" "}
             <Link href="/auth/login" className="text-primary underline-offset-4 hover:underline">
-              Sign in
+              {t("loginLink")}
             </Link>
           </p>
         </CardContent>

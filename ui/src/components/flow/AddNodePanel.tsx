@@ -2,7 +2,7 @@ import * as LucideIcons from 'lucide-react';
 import { Circle, ExternalLink, type LucideIcon, X } from 'lucide-react';
 import { useEffect, useMemo } from 'react';
 
-import { useWorkflowNodes } from '@/app/workflow/[workflowId]/stores/workflowStore';
+import { useWorkflowNodes } from '@/app/[locale]/workflow/[workflowId]/stores/workflowStore';
 import type { NodeSpec } from '@/client/types.gen';
 import { useNodeSpecs } from '@/components/flow/renderer';
 import { Button } from '@/components/ui/button';

@@ -4,7 +4,7 @@ import { useParams, useSearchParams } from 'next/navigation';
 import posthog from 'posthog-js';
 import { useEffect, useMemo, useState } from 'react';
 
-import RenderWorkflow from '@/app/workflow/[workflowId]/RenderWorkflow';
+import RenderWorkflow from '@/app/[locale]/workflow/[workflowId]/RenderWorkflow';
 import { getWorkflowApiV1WorkflowFetchWorkflowIdGet } from '@/client/sdk.gen';
 import type { WorkflowResponse } from '@/client/types.gen';
 import { FlowEdge, FlowNode } from '@/components/flow/types';

@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { useLocale, useTranslations } from "next-intl";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -9,8 +9,12 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Link } from "@/i18n/navigation";
 
 export default function LoginPage() {
+  const t = useTranslations("auth.login");
+  const tc = useTranslations("common");
+  const locale = useLocale();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -26,7 +30,7 @@ export default function LoginPage() {
 
       if (res.error || !res.data) {
         const detail = (res.error as { detail?: string })?.detail;
-        toast.error(detail || "Login failed");
+        toast.error(detail || t("failed"));
         return;
       }
 
@@ -37,9 +41,9 @@ export default function LoginPage() {
         body: JSON.stringify({ token: res.data.token, user: res.data.user }),
       });
 
-      window.location.href = "/after-sign-in";
+      window.location.href = `/${locale}/after-sign-in`;
     } catch {
-      toast.error("An error occurred. Please try again.");
+      toast.error(tc("errorGeneric"));
     } finally {
       setLoading(false);
     }
@@ -49,35 +53,35 @@ export default function LoginPage() {
     <div className="flex min-h-screen items-center justify-center bg-background">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <CardTitle className="text-2xl">Sign in</CardTitle>
-          <CardDescription>Enter your email and password to continue</CardDescription>
+          <CardTitle className="text-2xl">{t("title")}</CardTitle>
+          <CardDescription>{t("subtitle")}</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">{t("email")}</Label>
               <Input
                 id="email"
                 type="email"
-                placeholder="you@example.com"
+                placeholder={t("emailPlaceholder")}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="password">{t("password")}</Label>
               <Input
                 id="password"
                 type="password"
-                placeholder="Enter your password"
+                placeholder={t("passwordPlaceholder")}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
               />
             </div>
             <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? "Signing in..." : "Sign in"}
+              {loading ? t("submitting") : t("submit")}
             </Button>
           </form>
           <p className="mt-4 text-center text-sm">
@@ -85,13 +89,13 @@ export default function LoginPage() {
               href="/auth/forgot-password"
               className="text-primary underline-offset-4 hover:underline"
             >
-              Forgot your password?
+              {t("forgot")}
             </Link>
           </p>
           <p className="mt-2 text-center text-sm text-muted-foreground">
-            Don&apos;t have an account?{" "}
+            {t("noAccount")}{" "}
             <Link href="/auth/signup" className="text-primary underline-offset-4 hover:underline">
-              Sign up
+              {t("signupLink")}
             </Link>
           </p>
         </CardContent>

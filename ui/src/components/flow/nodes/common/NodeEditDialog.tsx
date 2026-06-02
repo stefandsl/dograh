@@ -1,7 +1,7 @@
 import { AlertCircle, ExternalLink } from "lucide-react";
 import { ReactNode, useCallback, useEffect, useState } from "react";
 
-import { useWorkflowOptional } from "@/app/workflow/[workflowId]/contexts/WorkflowContext";
+import { useWorkflowOptional } from "@/app/[locale]/workflow/[workflowId]/contexts/WorkflowContext";
 import { FlowNodeData } from "@/components/flow/types";
 import {
     AlertDialog,

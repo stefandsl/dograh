@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Link } from "@/i18n/navigation";
 
 interface ForgotPasswordResponse {
   message: string;
@@ -16,6 +17,8 @@ interface ForgotPasswordResponse {
 }
 
 export default function ForgotPasswordPage() {
+  const t = useTranslations("auth.forgot");
+  const tc = useTranslations("common");
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
@@ -34,7 +37,7 @@ export default function ForgotPasswordPage() {
 
       if (res.error) {
         const detail = (res.error as { detail?: string })?.detail;
-        toast.error(detail || "Something went wrong. Please try again.");
+        toast.error(detail || tc("errorGeneric"));
         return;
       }
 
@@ -42,7 +45,7 @@ export default function ForgotPasswordPage() {
       setDevResetUrl(data?.reset_url ?? null);
       setSubmitted(true);
     } catch {
-      toast.error("An error occurred. Please try again.");
+      toast.error(tc("errorGeneric"));
     } finally {
       setLoading(false);
     }
@@ -52,22 +55,18 @@ export default function ForgotPasswordPage() {
     <div className="flex min-h-screen items-center justify-center bg-background">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <CardTitle className="text-2xl">Reset your password</CardTitle>
-          <CardDescription>
-            Enter your email and we&apos;ll send you a link to reset your password
-          </CardDescription>
+          <CardTitle className="text-2xl">{t("title")}</CardTitle>
+          <CardDescription>{t("subtitle")}</CardDescription>
         </CardHeader>
         <CardContent>
           {submitted ? (
             <div className="space-y-4">
               <p className="text-center text-sm text-muted-foreground">
-                If an account exists for{" "}
-                <span className="font-medium text-foreground">{email}</span>, a
-                password reset link has been sent. Check your inbox.
+                {t("sent", { email })}
               </p>
               {devResetUrl && (
                 <div className="rounded-md border border-dashed p-3 text-sm">
-                  <p className="mb-1 font-medium">Dev mode (no SMTP configured)</p>
+                  <p className="mb-1 font-medium">{t("devMode")}</p>
                   <a
                     href={devResetUrl}
                     className="break-all text-primary underline-offset-4 hover:underline"
@@ -80,25 +79,25 @@ export default function ForgotPasswordPage() {
           ) : (
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="email">{t("email")}</Label>
                 <Input
                   id="email"
                   type="email"
-                  placeholder="you@example.com"
+                  placeholder={t("emailPlaceholder")}
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
                 />
               </div>
               <Button type="submit" className="w-full" disabled={loading}>
-                {loading ? "Sending..." : "Send reset link"}
+                {loading ? t("submitting") : t("submit")}
               </Button>
             </form>
           )}
           <p className="mt-4 text-center text-sm text-muted-foreground">
-            Remember your password?{" "}
+            {t("remember")}{" "}
             <Link href="/auth/login" className="text-primary underline-offset-4 hover:underline">
-              Sign in
+              {t("loginLink")}
             </Link>
           </p>
         </CardContent>

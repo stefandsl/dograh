@@ -2,8 +2,8 @@ import { BaseEdge, type Edge, EdgeLabelRenderer, type EdgeProps, getSmoothStepPa
 import { AlertCircle, Pencil, Trash2 } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 
-import { useWorkflow, useWorkflowOptional } from "@/app/workflow/[workflowId]/contexts/WorkflowContext";
-import { useWorkflowStore } from "@/app/workflow/[workflowId]/stores/workflowStore";
+import { useWorkflow, useWorkflowOptional } from "@/app/[locale]/workflow/[workflowId]/contexts/WorkflowContext";
+import { useWorkflowStore } from "@/app/[locale]/workflow/[workflowId]/stores/workflowStore";
 import { StaticTextWarning, TextOrAudioInput } from "@/components/flow/TextOrAudioInput";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";

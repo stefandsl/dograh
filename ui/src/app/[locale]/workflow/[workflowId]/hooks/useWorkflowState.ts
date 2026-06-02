@@ -12,7 +12,7 @@ import posthog from "posthog-js";
 import { useCallback, useEffect, useRef } from "react";
 import { toast } from "sonner";
 
-import { useWorkflowStore } from "@/app/workflow/[workflowId]/stores/workflowStore";
+import { useWorkflowStore } from "@/app/[locale]/workflow/[workflowId]/stores/workflowStore";
 import {
     createWorkflowRunApiV1WorkflowWorkflowIdRunsPost,
     updateWorkflowApiV1WorkflowWorkflowIdPut,

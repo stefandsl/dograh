@@ -6,7 +6,7 @@ import { useParams } from 'next/navigation';
 import posthog from 'posthog-js';
 import { useEffect, useRef, useState } from 'react';
 
-import WorkflowLayout from '@/app/workflow/WorkflowLayout';
+import WorkflowLayout from '@/app/[locale]/workflow/WorkflowLayout';
 import { getWorkflowRunApiV1WorkflowWorkflowIdRunsRunIdGet } from '@/client/sdk.gen';
 import { MediaPreviewButton, MediaPreviewDialog } from '@/components/MediaPreviewDialog';
 import { OnboardingTooltip } from '@/components/onboarding/OnboardingTooltip';

@@ -160,6 +160,6 @@ SMTP_USERNAME = os.getenv("SMTP_USERNAME")
 SMTP_PASSWORD = os.getenv("SMTP_PASSWORD")
 SMTP_USE_TLS = os.getenv("SMTP_USE_TLS", "true").lower() == "true"
 SMTP_FROM_EMAIL = os.getenv("SMTP_FROM_EMAIL", "no-reply@dograh.com")
-SMTP_FROM_NAME = os.getenv("SMTP_FROM_NAME", "Dograh")
+SMTP_FROM_NAME = os.getenv("SMTP_FROM_NAME", "Bellerophone")
 
 TUNER_BASE_URL = os.getenv("TUNER_BASE_URL", "https://api.usetuner.ai")

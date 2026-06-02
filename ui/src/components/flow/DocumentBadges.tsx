@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 
-import { useWorkflow } from "@/app/workflow/[workflowId]/contexts/WorkflowContext";
+import { useWorkflow } from "@/app/[locale]/workflow/[workflowId]/contexts/WorkflowContext";
 import type { DocumentResponseSchema } from "@/client/types.gen";
 import { Badge } from "@/components/ui/badge";
 
