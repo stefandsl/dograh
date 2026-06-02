@@ -74,5 +74,137 @@
       "remember": "Remember your password?",
       "loginLink": "Sign in"
     }
+  },
+  "pages": {
+    "apiKeys": {
+      "title": "Developer Portal",
+      "subtitle": "Manage your API keys to access {brand} services programmatically",
+      "never": "Never",
+      "hideArchived": "Hide Archived",
+      "showArchived": "Show Archived",
+      "createNewKey": "Create New Key",
+      "createKey": "Create Key",
+      "createServiceKey": "Create Service Key",
+      "createFirstApiKey": "Create Your First API Key",
+      "createFirstServiceKey": "Create Your First Service Key",
+      "noApiKeys": "No API keys found",
+      "noServiceKeys": "No service keys found",
+      "fullKeyHidden": "(Full key hidden for security)",
+      "created": "Created: {date}",
+      "lastUsed": "Last used: {date}",
+      "expires": "Expires: {date}",
+      "expiresOn": "Expires on: {date}",
+      "reactivate": "Reactivate",
+      "cancel": "Cancel",
+      "done": "Done",
+      "signupPrompt": "To generate additional service keys, <link>Sign up on app.dograh.com</link>",
+      "securityNotice": "<important>Important:</important> Keep your API keys secure. Never share them publicly or commit them to version control. API keys provide full access to your organization's resources.",
+      "status": {
+        "archived": "Archived",
+        "active": "Active",
+        "inactive": "Inactive"
+      },
+      "apiKeys": {
+        "title": "API Keys",
+        "description": "Create and manage API keys for your organization"
+      },
+      "serviceKeys": {
+        "title": "{brand} Service Keys",
+        "description": "Manage service keys for accessing {brand} AI services (LLM, TTS, STT)"
+      },
+      "createDialog": {
+        "title": "Create New API Key",
+        "description": "Enter a descriptive name for your API key to help you identify it later.",
+        "nameLabel": "Key Name",
+        "namePlaceholder": "e.g., Production Server, Development Environment"
+      },
+      "createServiceDialog": {
+        "title": "Create New Service Key",
+        "description": "Create a service key to access {brand} AI services (LLM, TTS, STT)",
+        "nameLabel": "Service Key Name",
+        "namePlaceholder": "e.g., Production AI Services, Development LLM Access"
+      },
+      "createdDialog": {
+        "apiKeyTitle": "API Key Created Successfully",
+        "apiKeyDescription": "Make sure to copy your API key now. You won't be able to see it again!",
+        "yourApiKey": "Your API Key:",
+        "serviceKeyTitle": "Service Key Created Successfully",
+        "serviceKeyDescription": "Make sure to copy your service key now. You won't be able to see it again!",
+        "yourServiceKey": "Your Service Key:",
+        "serviceKeyInfo": "This key provides access to {brand} AI services including LLM, Text-to-Speech, and Speech-to-Text.",
+        "storeSecurely": "Store this key securely. It will only be shown once and cannot be retrieved later."
+      },
+      "errors": {
+        "fetchApiKeys": "Failed to fetch API keys",
+        "fetchServiceKeys": "Failed to fetch service keys",
+        "enterApiKeyName": "Please enter a name for the API key",
+        "enterServiceKeyName": "Please enter a name for the service key",
+        "createApiKey": "Failed to create API key",
+        "createServiceKey": "Failed to create service key",
+        "archiveApiKey": "Failed to archive API key",
+        "archiveServiceKey": "Failed to archive service key",
+        "reactivateApiKey": "Failed to reactivate API key"
+      }
+    },
+    "overview": {
+      "welcomeBrand": "Welcome to {brand}",
+      "welcomeUser": "Welcome, {name}!",
+      "welcome": "Welcome!",
+      "ossTagline": "Open source alternative to Vapi. Help us support the project by giving us a star on GitHub.",
+      "getStarted": "Get started with building voice AI workflows",
+      "starUsOnGithub": "Star us on GitHub",
+      "voiceAgentsTitle": "Create and Manage your Voice Agents",
+      "voiceAgentsDescription": "Build powerful AI Voice Agents with our visual editor",
+      "goToAgents": "Go to Agents",
+      "configureServicesTitle": "Configure Services",
+      "configureServicesDescription": "Set up your AI services like LLM, TTS, and STT providers",
+      "configureModels": "Configure Models",
+      "resourcesTitle": "Resources",
+      "resourcesDescription": "Get help and learn more about {brand}",
+      "documentation": "Documentation",
+      "reportAnIssue": "Report an Issue"
+    },
+    "settings": {
+      "title": "Platform Settings",
+      "subtitle": "Manage your platform configuration and integrations.",
+      "mcpTitle": "MCP Server",
+      "mcpDescription": "Let AI agents access your {brand} workspace and documentation via the Model Context Protocol.",
+      "telemetryTitle": "Telemetry",
+      "telemetryDescription": "Configure Langfuse tracing for your voice agent calls.",
+      "learnMore": "Learn more"
+    }
+  },
+  "nav": {
+    "openMenu": "Open menu",
+    "joinSlack": "Join Slack",
+    "configuredBackend": "the configured backend",
+    "backendNotReachable": "Backend is not reachable at {backendUrl}.",
+    "backendConnectionFailed": "Backend connection failed",
+    "retry": "Retry",
+    "overview": "Overview",
+    "sectionBuild": "BUILD",
+    "voiceAgents": "Voice Agents",
+    "campaigns": "Campaigns",
+    "models": "Models",
+    "telephony": "Telephony",
+    "imChannels": "IM Channels",
+    "tools": "Tools",
+    "files": "Files",
+    "recordings": "Recordings",
+    "developers": "Developers",
+    "sectionObserve": "OBSERVE",
+    "agentRuns": "Agent Runs",
+    "reports": "Reports",
+    "actionRequired": "Action required",
+    "telephonyWarningAria": "Action required on a telephony configuration",
+    "update": "Update",
+    "latestVersionAvailable": "Latest: {version} — click to see the update guide",
+    "latest": "Latest",
+    "runningLatest": "You're running the latest release",
+    "platformSettings": "Platform Settings",
+    "signOut": "Sign out",
+    "accountSettings": "Account settings",
+    "usage": "Usage",
+    "toggleTheme": "Toggle theme"
   }
 }

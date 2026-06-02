@@ -74,5 +74,137 @@
       "remember": "Ricordi la password?",
       "loginLink": "Accedi"
     }
+  },
+  "pages": {
+    "apiKeys": {
+      "title": "Portale per sviluppatori",
+      "subtitle": "Gestisci le tue chiavi API per accedere ai servizi {brand} a livello programmatico",
+      "never": "Mai",
+      "hideArchived": "Nascondi archiviate",
+      "showArchived": "Mostra archiviate",
+      "createNewKey": "Crea nuova chiave",
+      "createKey": "Crea chiave",
+      "createServiceKey": "Crea chiave di servizio",
+      "createFirstApiKey": "Crea la tua prima chiave API",
+      "createFirstServiceKey": "Crea la tua prima chiave di servizio",
+      "noApiKeys": "Nessuna chiave API trovata",
+      "noServiceKeys": "Nessuna chiave di servizio trovata",
+      "fullKeyHidden": "(Chiave completa nascosta per sicurezza)",
+      "created": "Creata: {date}",
+      "lastUsed": "Ultimo utilizzo: {date}",
+      "expires": "Scade: {date}",
+      "expiresOn": "Scade il: {date}",
+      "reactivate": "Riattiva",
+      "cancel": "Annulla",
+      "done": "Fatto",
+      "signupPrompt": "Per generare ulteriori chiavi di servizio, <link>Registrati su app.dograh.com</link>",
+      "securityNotice": "<important>Importante:</important> Mantieni al sicuro le tue chiavi API. Non condividerle mai pubblicamente né salvarle nel controllo di versione. Le chiavi API forniscono pieno accesso alle risorse della tua organizzazione.",
+      "status": {
+        "archived": "Archiviata",
+        "active": "Attiva",
+        "inactive": "Inattiva"
+      },
+      "apiKeys": {
+        "title": "Chiavi API",
+        "description": "Crea e gestisci le chiavi API per la tua organizzazione"
+      },
+      "serviceKeys": {
+        "title": "Chiavi di servizio {brand}",
+        "description": "Gestisci le chiavi di servizio per accedere ai servizi AI di {brand} (LLM, TTS, STT)"
+      },
+      "createDialog": {
+        "title": "Crea nuova chiave API",
+        "description": "Inserisci un nome descrittivo per la tua chiave API per aiutarti a identificarla in seguito.",
+        "nameLabel": "Nome chiave",
+        "namePlaceholder": "es. Server di produzione, Ambiente di sviluppo"
+      },
+      "createServiceDialog": {
+        "title": "Crea nuova chiave di servizio",
+        "description": "Crea una chiave di servizio per accedere ai servizi AI di {brand} (LLM, TTS, STT)",
+        "nameLabel": "Nome chiave di servizio",
+        "namePlaceholder": "es. Servizi AI di produzione, Accesso LLM di sviluppo"
+      },
+      "createdDialog": {
+        "apiKeyTitle": "Chiave API creata con successo",
+        "apiKeyDescription": "Assicurati di copiare ora la tua chiave API. Non potrai più visualizzarla!",
+        "yourApiKey": "La tua chiave API:",
+        "serviceKeyTitle": "Chiave di servizio creata con successo",
+        "serviceKeyDescription": "Assicurati di copiare ora la tua chiave di servizio. Non potrai più visualizzarla!",
+        "yourServiceKey": "La tua chiave di servizio:",
+        "serviceKeyInfo": "Questa chiave fornisce accesso ai servizi AI di {brand} inclusi LLM, sintesi vocale (Text-to-Speech) e riconoscimento vocale (Speech-to-Text).",
+        "storeSecurely": "Conserva questa chiave in modo sicuro. Verrà mostrata una sola volta e non potrà essere recuperata in seguito."
+      },
+      "errors": {
+        "fetchApiKeys": "Impossibile recuperare le chiavi API",
+        "fetchServiceKeys": "Impossibile recuperare le chiavi di servizio",
+        "enterApiKeyName": "Inserisci un nome per la chiave API",
+        "enterServiceKeyName": "Inserisci un nome per la chiave di servizio",
+        "createApiKey": "Impossibile creare la chiave API",
+        "createServiceKey": "Impossibile creare la chiave di servizio",
+        "archiveApiKey": "Impossibile archiviare la chiave API",
+        "archiveServiceKey": "Impossibile archiviare la chiave di servizio",
+        "reactivateApiKey": "Impossibile riattivare la chiave API"
+      }
+    },
+    "overview": {
+      "welcomeBrand": "Benvenuto in {brand}",
+      "welcomeUser": "Benvenuto, {name}!",
+      "welcome": "Benvenuto!",
+      "ossTagline": "Alternativa open source a Vapi. Aiutaci a sostenere il progetto lasciandoci una stella su GitHub.",
+      "getStarted": "Inizia a creare flussi di lavoro di IA vocale",
+      "starUsOnGithub": "Lasciaci una stella su GitHub",
+      "voiceAgentsTitle": "Crea e gestisci i tuoi Agenti vocali",
+      "voiceAgentsDescription": "Crea potenti Agenti vocali IA con il nostro editor visivo",
+      "goToAgents": "Vai agli Agenti",
+      "configureServicesTitle": "Configura i servizi",
+      "configureServicesDescription": "Configura i tuoi servizi IA come provider LLM, TTS e STT",
+      "configureModels": "Configura i Modelli",
+      "resourcesTitle": "Risorse",
+      "resourcesDescription": "Ottieni aiuto e scopri di più su {brand}",
+      "documentation": "Documentazione",
+      "reportAnIssue": "Segnala un problema"
+    },
+    "settings": {
+      "title": "Impostazioni della piattaforma",
+      "subtitle": "Gestisci la configurazione e le integrazioni della tua piattaforma.",
+      "mcpTitle": "Server MCP",
+      "mcpDescription": "Consenti agli agenti IA di accedere al tuo spazio di lavoro {brand} e alla documentazione tramite il Model Context Protocol.",
+      "telemetryTitle": "Telemetria",
+      "telemetryDescription": "Configura il tracciamento Langfuse per le chiamate del tuo agente vocale.",
+      "learnMore": "Scopri di più"
+    }
+  },
+  "nav": {
+    "openMenu": "Apri menu",
+    "joinSlack": "Unisciti a Slack",
+    "configuredBackend": "il backend configurato",
+    "backendNotReachable": "Il backend non è raggiungibile a {backendUrl}.",
+    "backendConnectionFailed": "Connessione al backend non riuscita",
+    "retry": "Riprova",
+    "overview": "Panoramica",
+    "sectionBuild": "CREA",
+    "voiceAgents": "Agenti vocali",
+    "campaigns": "Campagne",
+    "models": "Modelli",
+    "telephony": "Telefonia",
+    "imChannels": "Canali di messaggistica",
+    "tools": "Strumenti",
+    "files": "File",
+    "recordings": "Registrazioni",
+    "developers": "Sviluppatori",
+    "sectionObserve": "OSSERVA",
+    "agentRuns": "Esecuzioni agente",
+    "reports": "Report",
+    "actionRequired": "Azione richiesta",
+    "telephonyWarningAria": "Azione richiesta su una configurazione di telefonia",
+    "update": "Aggiorna",
+    "latestVersionAvailable": "Ultima: {version} — fai clic per vedere la guida all'aggiornamento",
+    "latest": "Ultima",
+    "runningLatest": "Stai usando l'ultima versione",
+    "platformSettings": "Impostazioni piattaforma",
+    "signOut": "Esci",
+    "accountSettings": "Impostazioni account",
+    "usage": "Utilizzo",
+    "toggleTheme": "Cambia tema"
   }
 }
