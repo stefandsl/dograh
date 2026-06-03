@@ -27,6 +27,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import React, { useRef } from "react";
 
+import LanguageSwitcher from "@/components/LanguageSwitcher";
 import ThemeToggle from "@/components/ThemeSwitcher";
 import { Button } from "@/components/ui/button";
 import {
@@ -160,6 +161,7 @@ const StackTeamSwitcher = React.lazy(() =>
 export function AppSidebar() {
   const t = useTranslations("nav");
   const tb = useTranslations("brand");
+  const tc = useTranslations("common");
   const pathname = usePathname();
   const router = useRouter();
   const { state, isMobile, setOpenMobile } = useSidebar();
@@ -460,24 +462,43 @@ export function AppSidebar() {
             </div>
           )}
 
-          <div className={cn("mt-2 border-t pt-2", isCollapsed && "flex justify-center")}>
+          <div className={cn("mt-2 border-t pt-2", isCollapsed && "flex flex-col items-center gap-1")}>
             {isCollapsed ? (
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <div className="notranslate" translate="no">
-                    <ThemeToggle
-                      showLabel={false}
-                      className="hover:bg-accent hover:text-accent-foreground"
-                    />
-                  </div>
-                </TooltipTrigger>
-                <TooltipContent side="right">
-                  <p>{t("toggleTheme")}</p>
-                </TooltipContent>
-              </Tooltip>
+              <>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className="notranslate" translate="no">
+                      <ThemeToggle
+                        showLabel={false}
+                        className="hover:bg-accent hover:text-accent-foreground"
+                      />
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent side="right">
+                    <p>{t("toggleTheme")}</p>
+                  </TooltipContent>
+                </Tooltip>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className="notranslate" translate="no">
+                      <LanguageSwitcher
+                        showLabel={false}
+                        className="hover:bg-accent hover:text-accent-foreground"
+                      />
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent side="right">
+                    <p>{tc("switchLanguage")}</p>
+                  </TooltipContent>
+                </Tooltip>
+              </>
             ) : (
-              <div className="notranslate" translate="no">
+              <div className="notranslate space-y-1" translate="no">
                 <ThemeToggle
+                  showLabel={true}
+                  className="hover:bg-accent hover:text-accent-foreground"
+                />
+                <LanguageSwitcher
                   showLabel={true}
                   className="hover:bg-accent hover:text-accent-foreground"
                 />

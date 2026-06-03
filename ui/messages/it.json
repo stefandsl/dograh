@@ -5,6 +5,7 @@
   },
   "common": {
     "language": "Lingua",
+    "switchLanguage": "Cambia lingua",
     "english": "Inglese",
     "italian": "Italiano",
     "loading": "Caricamento...",
