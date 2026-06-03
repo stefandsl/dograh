@@ -1558,9 +1558,6 @@
       "inbound": "In entrata",
       "outbound": "In uscita"
     },
-    "chatwootWidget": {
-      "launcherTitle": "Scrivici"
-    },
     "dailyUsageTable": {
       "title": "Riepilogo utilizzo giornaliero",
       "description": "Ultimi 7 giorni di utilizzo",

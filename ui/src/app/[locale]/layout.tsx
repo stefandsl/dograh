@@ -7,7 +7,6 @@ import { hasLocale, NextIntlClientProvider } from "next-intl";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Suspense } from "react";
 
-import ChatwootWidget from "@/components/ChatwootWidget";
 import AppLayout from "@/components/layout/AppLayout";
 import PostHogIdentify from "@/components/PostHogIdentify";
 import { SentryErrorBoundary } from "@/components/SentryErrorBoundary";
@@ -98,7 +97,6 @@ export default async function LocaleLayout({
                           {children}
                         </AppLayout>
                         <Toaster />
-                        <ChatwootWidget />
                       </OnboardingProvider>
                     </TelephonyConfigWarningsProvider>
                   </UserConfigProvider>

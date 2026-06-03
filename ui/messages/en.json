@@ -1558,9 +1558,6 @@
       "inbound": "Inbound",
       "outbound": "Outbound"
     },
-    "chatwootWidget": {
-      "launcherTitle": "Chat with us"
-    },
     "dailyUsageTable": {
       "title": "Daily Usage Breakdown",
       "description": "Last 7 days of usage",
