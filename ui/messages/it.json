@@ -999,6 +999,12 @@
     },
     "csvUploadSelector": {
       "csvFileLabel": "File CSV",
+      "tabUpload": "Carica file",
+      "tabPaste": "Incolla elenco",
+      "pastePlaceholder": "+14155550100\n+14155550101\n\nOppure incolla un CSV con intestazione phone_number per includere colonne aggiuntive.",
+      "pasteButton": "Usa questo elenco",
+      "pasteHelp": "Un numero di telefono per riga, con prefisso internazionale (es. +14155550100). Oppure incolla un CSV con intestazione phone_number per aggiungere colonne (disponibili come initial_context nel flusso). Massimo 10MB.",
+      "pasteEmptyError": "Inserisci almeno un numero di telefono",
       "uploadButton": "Carica file CSV",
       "uploadingProgress": "Caricamento... {progress}%",
       "selectedLabel": "Selezionato:",

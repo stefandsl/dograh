@@ -999,6 +999,12 @@
     },
     "csvUploadSelector": {
       "csvFileLabel": "CSV File",
+      "tabUpload": "Upload file",
+      "tabPaste": "Paste list",
+      "pastePlaceholder": "+14155550100\n+14155550101\n\nOr paste CSV text with a phone_number header to include extra columns.",
+      "pasteButton": "Use this list",
+      "pasteHelp": "One phone number per line, including country code (e.g. +14155550100). Or paste full CSV text with a phone_number header to add columns (available as initial_context in the workflow). Max 10MB.",
+      "pasteEmptyError": "Enter at least one phone number",
       "uploadButton": "Upload CSV File",
       "uploadingProgress": "Uploading... {progress}%",
       "selectedLabel": "Selected:",
