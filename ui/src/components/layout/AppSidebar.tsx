@@ -264,24 +264,16 @@ export function AppSidebar() {
   };
 
   return (
-    <Sidebar collapsible="icon" className="border-r">
+    <Sidebar collapsible="icon">
       <SidebarHeader className="border-b px-2 py-3 notranslate" translate="no">
-        <div className="flex items-center justify-between">
-          <div className={cn("flex items-center gap-2", isCollapsed && "hidden")}>
+        <div className="flex items-center justify-between gap-1 pr-0.5">
+          <div className={cn("flex min-w-0 items-center gap-2", isCollapsed && "hidden")}>
             <Link
               href="/"
-              className="notranslate flex items-center gap-2 px-2 text-xl font-bold"
+              className="notranslate truncate px-2 text-xl font-bold"
               translate="no"
             >
               {tb("name")}
-              {versionInfo && (
-                <span
-                  className="notranslate text-xs font-normal text-muted-foreground"
-                  translate="no"
-                >
-                  v{versionInfo.ui}
-                </span>
-              )}
             </Link>
             {isBehind && latestRelease && (
               <Tooltip>
@@ -290,10 +282,18 @@ export function AppSidebar() {
                     href="https://docs.dograh.com/deployment/update"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1 rounded-md border bg-amber-50 px-1.5 py-0.5 text-[10px] font-medium leading-none text-amber-900 transition-opacity hover:opacity-80 dark:bg-amber-950 dark:text-amber-200"
+                    className="group/update-badge inline-flex shrink-0 items-center gap-1 rounded-md border bg-amber-50 px-1.5 py-0.5 text-[10px] font-medium leading-none text-amber-900 transition-opacity hover:opacity-80 dark:bg-amber-950 dark:text-amber-200"
                   >
                     <ArrowUpCircle className="h-3 w-3" />
                     {t("update")}
+                    {versionInfo && (
+                      <span
+                        className="notranslate max-w-0 overflow-hidden whitespace-nowrap font-normal text-amber-800 opacity-0 transition-all duration-200 group-hover/update-badge:max-w-[5rem] group-hover/update-badge:opacity-100 dark:text-amber-300"
+                        translate="no"
+                      >
+                        v{versionInfo.ui}
+                      </span>
+                    )}
                   </a>
                 </TooltipTrigger>
                 <TooltipContent side="bottom">
@@ -304,8 +304,16 @@ export function AppSidebar() {
             {isLatest && (
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <span className="inline-flex items-center rounded-md border bg-emerald-50 px-1.5 py-0.5 text-[10px] font-medium leading-none text-emerald-900 dark:bg-emerald-950 dark:text-emerald-200">
+                  <span className="group/latest-badge inline-flex shrink-0 items-center gap-1 rounded-md border bg-emerald-50 px-1.5 py-0.5 text-[10px] font-medium leading-none text-emerald-900 dark:bg-emerald-950 dark:text-emerald-200">
                     {t("latest")}
+                    {versionInfo && (
+                      <span
+                        className="notranslate max-w-0 overflow-hidden whitespace-nowrap font-normal text-emerald-700 opacity-0 transition-all duration-200 group-hover/latest-badge:max-w-[5rem] group-hover/latest-badge:opacity-100 dark:text-emerald-300"
+                        translate="no"
+                      >
+                        v{versionInfo.ui}
+                      </span>
+                    )}
                   </span>
                 </TooltipTrigger>
                 <TooltipContent side="bottom">
@@ -315,7 +323,7 @@ export function AppSidebar() {
             )}
           </div>
 
-          <SidebarTrigger className={cn("hover:bg-accent", isCollapsed && "mx-auto")}>
+          <SidebarTrigger className={cn("shrink-0 hover:bg-accent", isCollapsed && "mx-auto")}>
             {isCollapsed ? (
               <ChevronRight className="h-4 w-4" />
             ) : (
