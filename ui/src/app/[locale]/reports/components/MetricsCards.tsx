@@ -1,5 +1,7 @@
+'use client';
+
 import { Phone,PhoneForwarded } from 'lucide-react';
-import { getTranslations } from 'next-intl/server';
+import { useTranslations } from 'next-intl';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
@@ -10,8 +12,8 @@ interface MetricsCardsProps {
   };
 }
 
-export async function MetricsCards({ metrics }: MetricsCardsProps) {
-  const t = await getTranslations('components.metricsCards');
+export function MetricsCards({ metrics }: MetricsCardsProps) {
+  const t = useTranslations('components.metricsCards');
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
