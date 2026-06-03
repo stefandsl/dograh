@@ -2,6 +2,8 @@ import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import createMiddleware from "next-intl/middleware";
 
+import { getServerBackendUrl } from "@/lib/apiClient";
+
 import { routing } from "./i18n/routing";
 
 const OSS_TOKEN_COOKIE = "dograh_auth_token";
@@ -23,7 +25,7 @@ async function fetchAuthProvider(): Promise<string> {
     return cachedAuthProvider;
   }
   try {
-    const backendUrl = process.env.BACKEND_URL || "http://localhost:8000";
+    const backendUrl = getServerBackendUrl();
     const res = await fetch(`${backendUrl}/api/v1/health`);
     if (res.ok) {
       const data = await res.json();
