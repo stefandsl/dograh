@@ -5,6 +5,7 @@ import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 
+import { loginPath } from '@/i18n/pathLocale';
 import { useAuth } from '@/lib/auth';
 
 import Footer from './Footer';
@@ -21,7 +22,7 @@ export default function SignInClient() {
 
   useEffect(() => {
     if (provider === 'local') {
-      router.replace('/auth/login');
+      router.replace(loginPath(window.location.pathname));
     }
   }, [provider, router]);
 

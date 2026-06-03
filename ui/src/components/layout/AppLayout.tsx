@@ -11,6 +11,7 @@ import { SidebarInset, SidebarProvider, useSidebar } from "@/components/ui/sideb
 import { PostHogEvent } from "@/constants/posthog-events";
 import { useAppConfig } from "@/context/AppConfigContext";
 import { Link } from "@/i18n/navigation";
+import { stripLocale } from "@/i18n/pathLocale";
 
 import { AppSidebar } from "./AppSidebar";
 import { GitHubStarBadge } from "./GitHubStarBadge";
@@ -103,12 +104,15 @@ const AppLayout: React.FC<AppLayoutProps> = ({
 }) => {
   const pathname = usePathname();
 
-  // Check if current route should have sidebar
+  // Check if current route should have sidebar.
+  // pathname is locale-prefixed (/en/..., /it/...); strip the locale before
+  // matching so /en/auth/login etc. are recognized as auth routes.
+  const basePath = stripLocale(pathname);
   // Hide sidebar for root (/), /handler routes (Stack Auth routes), and /auth routes
-  const shouldShowSidebar = pathname !== "/" && !pathname.startsWith("/handler") && !pathname.startsWith("/auth");
+  const shouldShowSidebar = basePath !== "/" && !basePath.startsWith("/handler") && !basePath.startsWith("/auth");
 
   // Only match the exact editor page /workflow/<id>, not sub-routes like /workflow/<id>/runs
-  const isWorkflowEditor = /^\/workflow\/\d+$/.test(pathname);
+  const isWorkflowEditor = /^\/workflow\/\d+$/.test(basePath);
 
   // Always render SidebarProvider to keep the component tree shape consistent
   // across route changes (avoids React hooks ordering violations during navigation).

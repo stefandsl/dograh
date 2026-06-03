@@ -2,6 +2,7 @@
 
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 
+import { isAuthPath, loginPath } from '@/i18n/pathLocale';
 import logger from '@/lib/logger';
 
 import type { AuthUser, LocalUser } from '../types';
@@ -24,9 +25,11 @@ export function LocalProviderWrapper({ children }: { children: React.ReactNode }
           setUser(data.user);
           logger.info('OSS auth initialized', { user: data.user });
         } else if (response.status === 401) {
-          // No token - redirect to login (but not if already on auth pages)
-          if (!window.location.pathname.startsWith('/auth/')) {
-            window.location.href = '/auth/login';
+          // No token - redirect to login (but not if already on auth pages).
+          // Paths are locale-prefixed (/en/auth/..., /it/auth/...), so use the
+          // locale-aware helpers rather than a bare '/auth/' check.
+          if (!isAuthPath(window.location.pathname)) {
+            window.location.href = loginPath(window.location.pathname);
             return;
           }
         } else {
@@ -54,7 +57,7 @@ export function LocalProviderWrapper({ children }: { children: React.ReactNode }
   }, []);
 
   const redirectToLogin = React.useCallback(() => {
-    window.location.href = '/auth/login';
+    window.location.href = loginPath(window.location.pathname);
   }, []);
 
   const logout = React.useCallback(async () => {
@@ -65,7 +68,7 @@ export function LocalProviderWrapper({ children }: { children: React.ReactNode }
     }
     setUser(null);
     tokenRef.current = null;
-    window.location.href = '/auth/login';
+    window.location.href = loginPath(window.location.pathname);
   }, []);
 
   const contextValue = useMemo(() => ({
