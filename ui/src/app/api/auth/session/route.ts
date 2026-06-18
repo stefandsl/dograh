@@ -1,5 +1,6 @@
-import { cookies } from 'next/headers';
 import { NextRequest, NextResponse } from 'next/server';
+
+import { authCookieBaseOptions } from '@/lib/auth/cookieOptions';
 
 const OSS_TOKEN_COOKIE = 'dograh_auth_token';
 const OSS_USER_COOKIE = 'dograh_auth_user';
@@ -11,23 +12,18 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Missing token' }, { status: 400 });
   }
 
-  const cookieStore = await cookies();
+  const cookieOptions = authCookieBaseOptions(request);
+  const response = NextResponse.json({ success: true });
 
-  cookieStore.set(OSS_TOKEN_COOKIE, token, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
+  response.cookies.set(OSS_TOKEN_COOKIE, token, {
+    ...cookieOptions,
     maxAge: 60 * 60 * 24 * 30,
-    path: '/',
   });
 
-  cookieStore.set(OSS_USER_COOKIE, JSON.stringify(user), {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
+  response.cookies.set(OSS_USER_COOKIE, JSON.stringify(user), {
+    ...cookieOptions,
     maxAge: 60 * 60 * 24 * 30,
-    path: '/',
   });
 
-  return NextResponse.json({ success: true });
+  return response;
 }

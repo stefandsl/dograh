@@ -117,11 +117,15 @@ export function setStackRefreshCookie(refreshToken: string) {
 
   const isDograhDomain = window.location.hostname.endsWith('.dograh.com');
   const cookieDomainPart = isDograhDomain ? '; domain=.dograh.com' : '';
+  const securePart =
+    typeof window !== 'undefined' && window.location.protocol === 'https:'
+      ? '; secure'
+      : '';
 
   document.cookie =
     `stack-refresh-${process.env.NEXT_PUBLIC_STACK_PROJECT_ID}=${refreshToken}; ` +
     `expires=${expiryDate.toUTCString()}; path=/` +
-    `${cookieDomainPart}; secure; samesite=lax`;
+    `${cookieDomainPart}${securePart}; samesite=lax`;
 }
 
 /**

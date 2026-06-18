@@ -35,7 +35,7 @@ export async function GET(request: NextRequest) {
     response.cookies.set(`stack-refresh-${process.env.NEXT_PUBLIC_STACK_PROJECT_ID}` as string, refreshToken, {
         path: "/",
         maxAge,
-        secure: true,
+        secure: request.nextUrl.protocol === "https:",
         httpOnly: false, // Must be accessible from the browser for Stack SDK
         sameSite: "lax",
     });

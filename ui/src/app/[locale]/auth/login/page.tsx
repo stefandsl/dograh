@@ -35,11 +35,16 @@ export default function LoginPage() {
       }
 
       // Set httpOnly cookies via server route
-      await fetch("/api/auth/session", {
+      const sessionRes = await fetch("/api/auth/session", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ token: res.data.token, user: res.data.user }),
       });
+
+      if (!sessionRes.ok) {
+        toast.error(t("failed"));
+        return;
+      }
 
       window.location.href = `/${locale}/after-sign-in`;
     } catch {

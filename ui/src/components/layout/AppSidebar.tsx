@@ -28,6 +28,7 @@ import { useTranslations } from "next-intl";
 import React, { useRef } from "react";
 
 import LanguageSwitcher from "@/components/LanguageSwitcher";
+import { BellerophoneLogoFrame } from "@/components/layout/BellerophoneLogoFrame";
 import ThemeToggle from "@/components/ThemeSwitcher";
 import { Button } from "@/components/ui/button";
 import {
@@ -352,29 +353,55 @@ export function AppSidebar() {
 
       <SidebarContent className={cn("notranslate", isCollapsed && "px-0")} translate="no">
         {NAV_SECTIONS.map((section, index) => (
-          <SidebarGroup
-            key={section.labelKey ?? "overview"}
-            className={index === 0 ? "mt-2" : "mt-6"}
-          >
-            {section.labelKey && (
-              <SidebarGroupLabel
+          <React.Fragment key={section.labelKey ?? "overview"}>
+            <SidebarGroup
+              className={cn(
+                index === 0 && "mt-2 mb-1",
+                index === 1 && "mt-2",
+                index > 1 && "mt-6"
+              )}
+            >
+              {section.labelKey && (
+                <SidebarGroupLabel
+                  className={cn(
+                    "notranslate text-xs font-semibold uppercase tracking-wider text-muted-foreground",
+                    isCollapsed && "hidden"
+                  )}
+                  translate="no"
+                >
+                  {t(section.labelKey)}
+                </SidebarGroupLabel>
+              )}
+              <SidebarMenu>
+                {section.items.map((item) => (
+                  <SidebarMenuItem key={item.titleKey}>
+                    <SidebarLink item={item} />
+                  </SidebarMenuItem>
+                ))}
+              </SidebarMenu>
+            </SidebarGroup>
+            {index === 0 && (
+              <div
                 className={cn(
-                  "notranslate text-xs font-semibold uppercase tracking-wider text-muted-foreground",
-                  isCollapsed && "hidden"
+                  "flex shrink-0 items-center justify-center px-2",
+                  isCollapsed ? "py-1.5" : "py-1.5"
                 )}
-                translate="no"
               >
-                {t(section.labelKey)}
-              </SidebarGroupLabel>
+                {isCollapsed ? (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <BellerophoneLogoFrame alt={tb("name")} collapsed />
+                    </TooltipTrigger>
+                    <TooltipContent side="right">
+                      <p>{tb("name")}</p>
+                    </TooltipContent>
+                  </Tooltip>
+                ) : (
+                  <BellerophoneLogoFrame alt={tb("name")} />
+                )}
+              </div>
             )}
-            <SidebarMenu>
-              {section.items.map((item) => (
-                <SidebarMenuItem key={item.titleKey}>
-                  <SidebarLink item={item} />
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroup>
+          </React.Fragment>
         ))}
       </SidebarContent>
 

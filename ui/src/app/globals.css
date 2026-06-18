@@ -135,3 +135,56 @@
 .animate-spin-slow {
   animation: spin-slow 3s linear infinite;
 }
+
+@keyframes spin-border-idle {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin-border-idle {
+  animation: spin-border-idle 8s linear infinite;
+}
+
+/* Bellerophone sidebar logo — neon cyan glow clipped to PNG silhouette */
+.bellerophone-logo-glow-mask {
+  -webkit-mask-image: url(/bellerophone-logo.png);
+  mask-image: url(/bellerophone-logo.png);
+  -webkit-mask-size: contain;
+  mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  mask-position: center;
+}
+
+.bellerophone-logo-glow {
+  background-image: conic-gradient(
+    from 0deg,
+    rgba(255, 255, 255, 0.42) 0deg,
+    #a5f3fc 36deg,
+    #22d3ee 72deg,
+    #0ea5e9 108deg,
+    #06b6d4 144deg,
+    rgba(34, 211, 238, 0.65) 180deg,
+    #7dd3fc 216deg,
+    #38bdf8 252deg,
+    #22d3ee 288deg,
+    rgba(255, 255, 255, 0.48) 324deg,
+    #67e8f9 360deg
+  );
+}
+
+.bellerophone-logo-glow-halo {
+  background-image: conic-gradient(
+    from 0deg,
+    rgba(56, 189, 248, 0.55) 0deg,
+    rgba(34, 211, 238, 0.75) 90deg,
+    rgba(14, 165, 233, 0.7) 180deg,
+    rgba(56, 189, 248, 0.75) 270deg,
+    rgba(34, 211, 238, 0.55) 360deg
+  );
+}

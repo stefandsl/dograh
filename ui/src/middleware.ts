@@ -86,7 +86,7 @@ export async function middleware(request: NextRequest) {
 export const config = {
   matcher: [
     // Run on everything except API routes, Next internals, the Sentry tunnel,
-    // favicon, and public files.
-    "/((?!api|_next/static|_next/image|favicon.ico|monitoring|public).*)",
+    // favicon, and static assets from /public (served at the URL root).
+    "/((?!api|_next/static|_next/image|favicon.ico|monitoring|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)",
   ],
 };
