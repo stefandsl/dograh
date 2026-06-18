@@ -452,7 +452,7 @@ export function EmbedDialog({
                                                     {t.rich("headlessExampleDescription", { code: (c) => <code className="text-xs">{c}</code> })}
                                                 </p>
                                                 <pre className="text-xs overflow-x-auto">
-                                                    <code className="text-blue-800 dark:text-blue-200">{`// Vanilla JS — keep your own state, render however you want
+                                                    <code className="text-blue-800 dark:text-blue-200">{`// Vanilla JS - keep your own state, render however you want
 let callStatus = 'idle';
 
 window.DograhWidget?.onStatusChange((status) => {

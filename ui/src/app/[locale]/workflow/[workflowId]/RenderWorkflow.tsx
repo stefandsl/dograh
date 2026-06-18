@@ -18,6 +18,7 @@ import CustomEdge from "@/components/flow/edges/CustomEdge";
 import { GenericNode } from "@/components/flow/nodes/GenericNode";
 import { useNodeSpecs } from "@/components/flow/renderer";
 import { FlowEdge, FlowNode, NodeType } from "@/components/flow/types";
+import { HireExpertNudge } from "@/components/lead-forms/HireExpertNudge";
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -483,6 +484,7 @@ function RenderWorkflow({
     return (
         <WorkflowProvider value={workflowContextValue}>
             <div className="flex flex-col h-screen min-w-fit">
+                <HireExpertNudge workflowId={workflowId} />
                 {/* New Workflow Editor Header */}
                 <WorkflowEditorHeader
                     workflowName={workflowName}

@@ -168,6 +168,8 @@
     "settings": {
       "title": "Platform Settings",
       "subtitle": "Manage your platform configuration and integrations.",
+      "preferencesTitle": "Preferences",
+      "preferencesDescription": "Set organization-wide defaults such as the test phone number and timezone.",
       "mcpTitle": "MCP Server",
       "mcpDescription": "Let AI agents access your {brand} workspace and documentation via the Model Context Protocol.",
       "telemetryTitle": "Telemetry",
@@ -948,6 +950,7 @@
     "developers": "Developers",
     "sectionObserve": "OBSERVE",
     "agentRuns": "Agent Runs",
+    "billing": "Billing",
     "reports": "Reports",
     "actionRequired": "Action required",
     "telephonyWarningAria": "Action required on a telephony configuration",

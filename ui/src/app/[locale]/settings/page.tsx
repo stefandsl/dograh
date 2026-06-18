@@ -4,6 +4,7 @@ import { ExternalLink } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 import { MCPSection } from "@/components/MCPSection";
+import { OrganizationPreferencesSection } from "@/components/OrganizationPreferencesSection";
 import { TelemetrySection } from "@/components/TelemetrySection";
 import {
   Card,
@@ -24,6 +25,18 @@ export default function SettingsPage() {
           <h1 className="text-2xl font-bold">{t("title")}</h1>
           <p className="text-muted-foreground">{t("subtitle")}</p>
         </div>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>{t("preferencesTitle")}</CardTitle>
+            <CardDescription>
+              {t("preferencesDescription")}
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <OrganizationPreferencesSection />
+          </CardContent>
+        </Card>
 
         <Card>
           <CardHeader>

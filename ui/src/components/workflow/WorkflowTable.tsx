@@ -20,6 +20,7 @@ import {
 } from '@/client/sdk.gen';
 import type { FolderResponse } from '@/client/types.gen';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -132,132 +133,134 @@ export function WorkflowTable({
     };
 
     return (
-        <div className="bg-card border rounded-lg overflow-hidden shadow-sm">
-            <Table>
-                <TableHeader>
-                    <TableRow>
-                        <TableHead className="font-semibold">{t('columnId')}</TableHead>
-                        <TableHead className="font-semibold">{t('columnAgentName')}</TableHead>
-                        <TableHead className="font-semibold">{t('columnCreatedAt')}</TableHead>
-                        <TableHead className="font-semibold text-center">{t('columnTotalRuns')}</TableHead>
-                        <TableHead className="font-semibold text-right">{t('columnActions')}</TableHead>
-                    </TableRow>
-                </TableHeader>
-                <TableBody>
-                    {workflows.map((workflow) => (
-                        <TableRow
-                            key={workflow.id}
-                            className={`hover:bg-accent transition-colors ${showArchived ? 'opacity-60' : ''}`}
-                        >
-                            <TableCell className="text-muted-foreground">
-                                {workflow.id}
-                            </TableCell>
-                            <TableCell className="font-medium">
-                                {workflow.name}
-                            </TableCell>
-                            <TableCell>
-                                {new Date(workflow.created_at).toLocaleDateString('en-US', {
-                                    year: 'numeric',
-                                    month: 'short',
-                                    day: 'numeric',
-                                })}
-                            </TableCell>
-                            <TableCell className="text-center">
-                                <span className="inline-flex items-center justify-center min-w-[2rem] px-2 py-1 text-sm font-semibold bg-muted rounded-full">
-                                    {workflow.total_runs || 0}
-                                </span>
-                            </TableCell>
-                            <TableCell className="text-right">
-                                <div className="flex justify-end gap-2">
-                                    <Button
-                                        variant="outline"
-                                        size="sm"
-                                        onClick={() => handleEdit(workflow.id)}
-                                        className="flex items-center gap-2"
-                                    >
-                                        <Pencil size={16} />
-                                        {t('edit')}
-                                    </Button>
-                                    {folders && (
-                                        <DropdownMenu>
-                                            <DropdownMenuTrigger asChild>
-                                                <Button
-                                                    variant="outline"
-                                                    size="sm"
-                                                    disabled={movingWorkflowId === workflow.id || isPending}
-                                                    className="flex items-center gap-2"
-                                                >
-                                                    {movingWorkflowId === workflow.id ? (
-                                                        <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                                                    ) : (
-                                                        <FolderInput size={16} />
-                                                    )}
-                                                    {t('move')}
-                                                </Button>
-                                            </DropdownMenuTrigger>
-                                            <DropdownMenuContent align="end" className="w-52">
-                                                <DropdownMenuLabel>{t('moveToFolder')}</DropdownMenuLabel>
-                                                <DropdownMenuSeparator />
-                                                <DropdownMenuItem
-                                                    disabled={currentFolderId === null}
-                                                    onClick={() => handleMove(workflow.id, null)}
-                                                >
-                                                    <Inbox size={14} className="mr-2" />
-                                                    {t('uncategorized')}
-                                                    {currentFolderId === null && (
-                                                        <Check size={14} className="ml-auto" />
-                                                    )}
-                                                </DropdownMenuItem>
-                                                {folders.map((folder) => (
-                                                    <DropdownMenuItem
-                                                        key={folder.id}
-                                                        disabled={folder.id === currentFolderId}
-                                                        onClick={() => handleMove(workflow.id, folder.id)}
+        <Card className="overflow-hidden">
+            <CardContent className="p-0">
+                <Table>
+                    <TableHeader>
+                        <TableRow>
+                            <TableHead className="font-semibold">{t('columnId')}</TableHead>
+                            <TableHead className="font-semibold">{t('columnAgentName')}</TableHead>
+                            <TableHead className="font-semibold">{t('columnCreatedAt')}</TableHead>
+                            <TableHead className="font-semibold text-center">{t('columnTotalRuns')}</TableHead>
+                            <TableHead className="font-semibold text-right">{t('columnActions')}</TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        {workflows.map((workflow) => (
+                            <TableRow
+                                key={workflow.id}
+                                className={`hover:bg-accent transition-colors ${showArchived ? 'opacity-60' : ''}`}
+                            >
+                                <TableCell className="text-muted-foreground">
+                                    {workflow.id}
+                                </TableCell>
+                                <TableCell className="font-medium">
+                                    {workflow.name}
+                                </TableCell>
+                                <TableCell>
+                                    {new Date(workflow.created_at).toLocaleDateString('en-US', {
+                                        year: 'numeric',
+                                        month: 'short',
+                                        day: 'numeric',
+                                    })}
+                                </TableCell>
+                                <TableCell className="text-center">
+                                    <span className="inline-flex items-center justify-center min-w-[2rem] px-2 py-1 text-sm font-semibold bg-muted rounded-full">
+                                        {workflow.total_runs || 0}
+                                    </span>
+                                </TableCell>
+                                <TableCell className="text-right">
+                                    <div className="flex justify-end gap-2">
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={() => handleEdit(workflow.id)}
+                                            className="flex items-center gap-2"
+                                        >
+                                            <Pencil size={16} />
+                                            {t('edit')}
+                                        </Button>
+                                        {folders && (
+                                            <DropdownMenu>
+                                                <DropdownMenuTrigger asChild>
+                                                    <Button
+                                                        variant="outline"
+                                                        size="sm"
+                                                        disabled={movingWorkflowId === workflow.id || isPending}
+                                                        className="flex items-center gap-2"
                                                     >
-                                                        <FolderIcon size={14} className="mr-2" />
-                                                        <span className="truncate">{folder.name}</span>
-                                                        {folder.id === currentFolderId && (
-                                                            <Check size={14} className="ml-auto shrink-0" />
+                                                        {movingWorkflowId === workflow.id ? (
+                                                            <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                                                        ) : (
+                                                            <FolderInput size={16} />
+                                                        )}
+                                                        {t('move')}
+                                                    </Button>
+                                                </DropdownMenuTrigger>
+                                                <DropdownMenuContent align="end" className="w-52">
+                                                    <DropdownMenuLabel>{t('moveToFolder')}</DropdownMenuLabel>
+                                                    <DropdownMenuSeparator />
+                                                    <DropdownMenuItem
+                                                        disabled={currentFolderId === null}
+                                                        onClick={() => handleMove(workflow.id, null)}
+                                                    >
+                                                        <Inbox size={14} className="mr-2" />
+                                                        {t('uncategorized')}
+                                                        {currentFolderId === null && (
+                                                            <Check size={14} className="ml-auto" />
                                                         )}
                                                     </DropdownMenuItem>
-                                                ))}
-                                            </DropdownMenuContent>
-                                        </DropdownMenu>
-                                    )}
-                                    <Button
-                                        variant={showArchived ? "default" : "outline"}
-                                        size="sm"
-                                        onClick={() => handleArchiveToggle(workflow.id, workflow.status)}
-                                        disabled={loadingWorkflowId === workflow.id || isPending}
-                                        className="flex items-center gap-2"
-                                    >
-                                        {loadingWorkflowId === workflow.id ? (
-                                            <>
-                                                <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                                                {showArchived ? t('restoring') : t('archiving')}
-                                            </>
-                                        ) : (
-                                            <>
-                                                {showArchived ? (
-                                                    <>
-                                                        <RotateCcw size={16} />
-                                                        {t('restore')}
-                                                    </>
-                                                ) : (
-                                                    <>
-                                                        <Archive size={16} />
-                                                        {t('archive')}
-                                                    </>
-                                                )}
-                                            </>
+                                                    {folders.map((folder) => (
+                                                        <DropdownMenuItem
+                                                            key={folder.id}
+                                                            disabled={folder.id === currentFolderId}
+                                                            onClick={() => handleMove(workflow.id, folder.id)}
+                                                        >
+                                                            <FolderIcon size={14} className="mr-2" />
+                                                            <span className="truncate">{folder.name}</span>
+                                                            {folder.id === currentFolderId && (
+                                                                <Check size={14} className="ml-auto shrink-0" />
+                                                            )}
+                                                        </DropdownMenuItem>
+                                                    ))}
+                                                </DropdownMenuContent>
+                                            </DropdownMenu>
                                         )}
-                                    </Button>
-                                </div>
-                            </TableCell>
-                        </TableRow>
-                    ))}
-                </TableBody>
-            </Table>
-        </div>
+                                        <Button
+                                            variant={showArchived ? "default" : "outline"}
+                                            size="sm"
+                                            onClick={() => handleArchiveToggle(workflow.id, workflow.status)}
+                                            disabled={loadingWorkflowId === workflow.id || isPending}
+                                            className="flex items-center gap-2"
+                                        >
+                                            {loadingWorkflowId === workflow.id ? (
+                                                <>
+                                                    <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                                                    {showArchived ? t('restoring') : t('archiving')}
+                                                </>
+                                            ) : (
+                                                <>
+                                                    {showArchived ? (
+                                                        <>
+                                                            <RotateCcw size={16} />
+                                                            {t('restore')}
+                                                        </>
+                                                    ) : (
+                                                        <>
+                                                            <Archive size={16} />
+                                                            {t('archive')}
+                                                        </>
+                                                    )}
+                                                </>
+                                            )}
+                                        </Button>
+                                    </div>
+                                </TableCell>
+                            </TableRow>
+                        ))}
+                    </TableBody>
+                </Table>
+            </CardContent>
+        </Card>
     );
 }

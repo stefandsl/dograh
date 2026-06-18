@@ -158,6 +158,7 @@
             "pages": [
               "deployment/introduction",
               "deployment/docker",
+              "deployment/authentication",
               "deployment/custom-domain",
               "deployment/scaling",
               "deployment/update",

@@ -11,7 +11,7 @@ interface ApiKeyErrorDialogProps {
     onOpenChange: (open: boolean) => void;
     error: string | null;
     errorCode: string | null;
-    onNavigateToCredits: () => void;
+    onNavigateToBilling: () => void;
     onNavigateToModelConfig: () => void;
 }
 
@@ -20,18 +20,19 @@ export const ApiKeyErrorDialog = ({
     onOpenChange,
     error,
     errorCode,
-    onNavigateToCredits,
+    onNavigateToBilling,
     onNavigateToModelConfig,
 }: ApiKeyErrorDialogProps) => {
     const t = useTranslations("components.apiKeyErrorDialog");
     const tb = useTranslations("brand");
 
-    const isQuotaError = errorCode === 'quota_exceeded';
+    const isBillingCreditsError = errorCode === 'insufficient_credits';
+    const isQuotaError = isBillingCreditsError || errorCode === 'quota_exceeded';
 
     const title = isQuotaError ? t("insufficientCreditsTitle") : t("apiConfigErrorTitle");
     const icon = isQuotaError ? <CreditCard className="h-5 w-5 text-orange-500" /> : <Key className="h-5 w-5 text-red-500" />;
-    const buttonText = isQuotaError ? t("addCredits") : t("goToModelConfigurations");
-    const onNavigate = isQuotaError ? onNavigateToCredits : onNavigateToModelConfig;
+    const buttonText = isBillingCreditsError ? t("addCredits") : t("goToModelConfigurations");
+    const onNavigate = isBillingCreditsError ? onNavigateToBilling : onNavigateToModelConfig;
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
@@ -46,7 +47,7 @@ export const ApiKeyErrorDialog = ({
                             <AlertCircle className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
                             <div className="text-sm space-y-1">
                                 <p className="font-medium text-foreground">{error}</p>
-                                {isQuotaError && (
+                                {isBillingCreditsError && (
                                     <p className="text-muted-foreground">
                                         {t("lowCreditsMessage", { brand: tb("name") })}
                                     </p>

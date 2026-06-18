@@ -168,6 +168,8 @@
     "settings": {
       "title": "Impostazioni della piattaforma",
       "subtitle": "Gestisci la configurazione e le integrazioni della tua piattaforma.",
+      "preferencesTitle": "Preferenze",
+      "preferencesDescription": "Imposta le impostazioni predefinite a livello di organizzazione, come il numero di telefono di test e il fuso orario.",
       "mcpTitle": "Server MCP",
       "mcpDescription": "Consenti agli agenti IA di accedere al tuo spazio di lavoro {brand} e alla documentazione tramite il Model Context Protocol.",
       "telemetryTitle": "Telemetria",
@@ -948,6 +950,7 @@
     "developers": "Sviluppatori",
     "sectionObserve": "OSSERVA",
     "agentRuns": "Esecuzioni agente",
+    "billing": "Fatturazione",
     "reports": "Report",
     "actionRequired": "Azione richiesta",
     "telephonyWarningAria": "Azione richiesta su una configurazione di telefonia",

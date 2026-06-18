@@ -85,8 +85,10 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    // Run on everything except API routes, Next internals, the Sentry tunnel,
-    // favicon, and static assets from /public (served at the URL root).
-    "/((?!api|_next/static|_next/image|favicon.ico|monitoring|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)",
+    // Run on everything except API routes, Next internals, the Sentry tunnel
+    // (monitoring), favicon, and static assets from /public (served at the URL
+    // root, e.g. /dograh-logo.png). Excludes the union of asset extensions both
+    // the fork and upstream cover (images + fonts).
+    "/((?!api|_next/static|_next/image|favicon.ico|monitoring|.*\\.(?:png|jpe?g|gif|svg|webp|avif|ico|woff2?|ttf|otf)$).*)",
   ],
 };
