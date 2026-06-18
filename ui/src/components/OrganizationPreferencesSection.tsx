@@ -1,6 +1,7 @@
 "use client";
 
 import { Save } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useEffect, useId, useRef, useState } from "react";
 import TimezoneSelect, { type ITimezoneOption } from "react-timezone-select";
 import { toast } from "sonner";
@@ -89,6 +90,7 @@ function getTimezoneValue(tz: ITimezoneOption | string): string {
 }
 
 export function OrganizationPreferencesSection() {
+  const t = useTranslations("pages.settings");
   const { user, loading: authLoading } = useAuth();
   const { refreshConfig } = useUserConfig();
   const timezoneSelectId = useId();
@@ -120,7 +122,7 @@ export function OrganizationPreferencesSection() {
         toast.error(
           detailFromError(
             result.error,
-            "Failed to load organization preferences",
+            t("preferencesLoadError"),
           ),
         );
         return;
@@ -135,7 +137,7 @@ export function OrganizationPreferencesSection() {
         nextPreferences.timezone || emptyPreferences.timezone || "UTC",
       );
     } catch {
-      toast.error("Failed to load organization preferences");
+      toast.error(t("preferencesLoadError"));
     } finally {
       setLoading(false);
     }
@@ -156,11 +158,11 @@ export function OrganizationPreferencesSection() {
         );
 
       if (result.error) {
-        toast.error(detailFromError(result.error, "Failed to save preferences"));
+        toast.error(detailFromError(result.error, t("preferencesSaveError")));
         return;
       }
       if (!result.data) {
-        toast.error("Failed to save preferences");
+        toast.error(t("preferencesSaveError"));
         return;
       }
 
@@ -170,26 +172,26 @@ export function OrganizationPreferencesSection() {
       });
       setTimezone(result.data.timezone || emptyPreferences.timezone || "UTC");
       await refreshConfig();
-      toast.success("Preferences saved");
+      toast.success(t("preferencesSaved"));
     } catch {
-      toast.error("Failed to save preferences");
+      toast.error(t("preferencesSaveError"));
     } finally {
       setSaving(false);
     }
   }
 
   if (loading) {
-    return <p className="text-sm text-muted-foreground">Loading...</p>;
+    return <p className="text-sm text-muted-foreground">{t("loading")}</p>;
   }
 
   return (
     <form onSubmit={handleSave} className="space-y-4">
       <p className="text-sm text-muted-foreground">
-        Set organization-wide defaults used by testing and scheduling flows.
+        {t("preferencesFormDescription")}
       </p>
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-2">
-          <Label htmlFor="settings-test-phone-number">Test Phone Number</Label>
+          <Label htmlFor="settings-test-phone-number">{t("testPhoneNumber")}</Label>
           <Input
             id="settings-test-phone-number"
             value={preferences.test_phone_number || ""}
@@ -203,7 +205,7 @@ export function OrganizationPreferencesSection() {
           />
         </div>
         <div className="space-y-2">
-          <Label>Timezone</Label>
+          <Label>{t("timezone")}</Label>
           <TimezoneSelect
             instanceId={timezoneSelectId}
             value={timezone}
@@ -214,7 +216,7 @@ export function OrganizationPreferencesSection() {
       </div>
       <Button type="submit" disabled={saving}>
         <Save className="mr-2 h-4 w-4" />
-        {saving ? "Saving..." : "Save"}
+        {saving ? t("saving") : t("save")}
       </Button>
     </form>
   );

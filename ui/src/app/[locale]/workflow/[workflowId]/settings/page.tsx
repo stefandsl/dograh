@@ -1088,6 +1088,7 @@ function WorkflowModelOverridesSection({
     modelConfigurationLoading: boolean;
     modelConfigurationError: string | null;
 }) {
+    const t = useTranslations("pages.workflow.workflowId.settings");
     const savedV2Override = workflowConfigurations.model_configuration_v2_override;
     const hasSavedModelOverride = Boolean(savedV2Override || workflowConfigurations.model_overrides);
     const [overrideEnabled, setOverrideEnabled] = useState(Boolean(savedV2Override));
@@ -1113,7 +1114,7 @@ function WorkflowModelOverridesSection({
         const nextConfigurations = withoutModelConfigurationOverrides(workflowConfigurations);
         nextConfigurations.model_configuration_v2_override = configuration;
         await onSave(nextConfigurations, workflowName);
-        toast.success("Model override saved");
+        toast.success(t("modelOverrideSavedToast"));
     };
 
     const removeV2Override = async () => {
@@ -1121,7 +1122,7 @@ function WorkflowModelOverridesSection({
         try {
             await onSave(withoutModelConfigurationOverrides(workflowConfigurations), workflowName);
             setOverrideEnabled(false);
-            toast.success("Using organization model configuration");
+            toast.success(t("usingOrgConfigurationToast"));
         } finally {
             setIsRemovingOverride(false);
         }
@@ -1132,20 +1133,20 @@ function WorkflowModelOverridesSection({
             <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-base">
                     <Brain className="h-4 w-4" />
-                    Model Overrides
+                    {t("modelOverridesTitle")}
                 </CardTitle>
                 <CardDescription>
                     {isV2
-                        ? "Override the full organization model configuration for this workflow."
-                        : "Override global model settings for this workflow. Toggle individual services to customize."}{" "}
-                    <a href={SETTINGS_DOCUMENTATION_URLS.modelOverrides} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-0.5 underline">Learn more <ExternalLink className="h-3 w-3" /></a>
+                        ? t("modelOverridesDescriptionV2")
+                        : t("modelOverridesDescription")}{" "}
+                    <a href={SETTINGS_DOCUMENTATION_URLS.modelOverrides} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-0.5 underline">{t("learnMore")} <ExternalLink className="h-3 w-3" /></a>
                 </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
                 {modelConfigurationLoading && (
                     <div className="flex items-center gap-2 rounded-md border p-4 text-sm text-muted-foreground">
                         <Loader2 className="h-4 w-4 animate-spin" />
-                        Loading model configuration
+                        {t("modelConfigLoading")}
                     </div>
                 )}
 
@@ -1160,17 +1161,17 @@ function WorkflowModelOverridesSection({
                         {source === "legacy_user_v1" && (
                             <div className="flex flex-col gap-3 rounded-md border bg-muted/30 p-4 sm:flex-row sm:items-center sm:justify-between">
                                 <p className="text-sm text-muted-foreground">
-                                    This workflow is using legacy model overrides. Migrate organization model configuration to use v2 overrides.
+                                    {t("legacyOverrideNotice")}
                                 </p>
                                 <Button type="button" variant="outline" size="sm" asChild>
-                                    <Link href="/model-configurations?action=migrate_to_v2">Migrate to v2</Link>
+                                    <Link href="/model-configurations?action=migrate_to_v2">{t("migrateToV2")}</Link>
                                 </Button>
                             </div>
                         )}
                         <ServiceConfigurationForm
                             mode="override"
                             currentOverrides={workflowConfigurations.model_overrides}
-                            submitLabel="Save Model Overrides"
+                            submitLabel={t("saveModelOverrides")}
                             onSave={saveLegacyOverrides}
                         />
                     </>
@@ -1181,12 +1182,12 @@ function WorkflowModelOverridesSection({
                         <div className="flex items-center justify-between rounded-md border p-4">
                             <div className="space-y-0.5">
                                 <Label htmlFor="workflow-model-v2-override" className="text-sm font-medium">
-                                    Override for this workflow
+                                    {t("overrideForThisWorkflow")}
                                 </Label>
                                 <p className="text-xs text-muted-foreground">
                                     {overrideEnabled
-                                        ? "This workflow uses its own complete model configuration."
-                                        : "This workflow uses the organization model configuration."}
+                                        ? t("overrideEnabledHelp")
+                                        : t("overrideDisabledHelp")}
                                 </p>
                             </div>
                             <Switch
@@ -1208,13 +1209,13 @@ function WorkflowModelOverridesSection({
                                         ? null
                                         : organizationModelConfiguration.effective_configuration
                                 }
-                                submitLabel="Save Model Override"
+                                submitLabel={t("saveModelOverride")}
                                 onSave={saveV2Override}
                             />
                         ) : (
                             <div className="rounded-md border bg-muted/20 p-4">
                                 <p className="text-sm text-muted-foreground">
-                                    Using organization model configuration.
+                                    {t("usingOrgConfiguration")}
                                 </p>
                                 {hasSavedModelOverride && (
                                     <Button
@@ -1224,7 +1225,7 @@ function WorkflowModelOverridesSection({
                                         onClick={removeV2Override}
                                         disabled={isRemovingOverride}
                                     >
-                                        {isRemovingOverride ? "Saving..." : "Save Organization Configuration"}
+                                        {isRemovingOverride ? t("savingEllipsis") : t("saveOrgConfiguration")}
                                     </Button>
                                 )}
                             </div>

@@ -174,7 +174,16 @@
       "mcpDescription": "Let AI agents access your {brand} workspace and documentation via the Model Context Protocol.",
       "telemetryTitle": "Telemetry",
       "telemetryDescription": "Configure Langfuse tracing for your voice agent calls.",
-      "learnMore": "Learn more"
+      "learnMore": "Learn more",
+      "preferencesFormDescription": "Set organization-wide defaults used by testing and scheduling flows.",
+      "testPhoneNumber": "Test Phone Number",
+      "timezone": "Timezone",
+      "save": "Save",
+      "saving": "Saving...",
+      "loading": "Loading...",
+      "preferencesLoadError": "Failed to load organization preferences",
+      "preferencesSaveError": "Failed to save preferences",
+      "preferencesSaved": "Preferences saved"
     },
     "campaigns": {
       "campaignId": {
@@ -834,7 +843,19 @@
           "clickToCopy": "Click to copy",
           "copyUuidButton": "Copy UUID",
           "agentUuidCopied": "Agent UUID copied",
-          "agentUuidCopyError": "Failed to copy Agent UUID"
+          "agentUuidCopyError": "Failed to copy Agent UUID",
+          "modelOverridesDescriptionV2": "Override the full organization model configuration for this workflow.",
+          "modelConfigLoading": "Loading model configuration",
+          "legacyOverrideNotice": "This workflow is using legacy model overrides. Migrate organization model configuration to use v2 overrides.",
+          "migrateToV2": "Migrate to v2",
+          "overrideForThisWorkflow": "Override for this workflow",
+          "overrideEnabledHelp": "This workflow uses its own complete model configuration.",
+          "overrideDisabledHelp": "This workflow uses the organization model configuration.",
+          "saveModelOverride": "Save Model Override",
+          "usingOrgConfiguration": "Using organization model configuration.",
+          "saveOrgConfiguration": "Save Organization Configuration",
+          "modelOverrideSavedToast": "Model override saved",
+          "usingOrgConfigurationToast": "Using organization model configuration"
         },
         "run": {
           "runId": {

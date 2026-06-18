@@ -174,7 +174,16 @@
       "mcpDescription": "Consenti agli agenti IA di accedere al tuo spazio di lavoro {brand} e alla documentazione tramite il Model Context Protocol.",
       "telemetryTitle": "Telemetria",
       "telemetryDescription": "Configura il tracciamento Langfuse per le chiamate del tuo agente vocale.",
-      "learnMore": "Scopri di più"
+      "learnMore": "Scopri di più",
+      "preferencesFormDescription": "Imposta i valori predefiniti a livello di organizzazione utilizzati dai flussi di test e pianificazione.",
+      "testPhoneNumber": "Numero di telefono di test",
+      "timezone": "Fuso orario",
+      "save": "Salva",
+      "saving": "Salvataggio in corso...",
+      "loading": "Caricamento...",
+      "preferencesLoadError": "Impossibile caricare le preferenze dell'organizzazione",
+      "preferencesSaveError": "Impossibile salvare le preferenze",
+      "preferencesSaved": "Preferenze salvate"
     },
     "campaigns": {
       "campaignId": {
@@ -834,7 +843,19 @@
           "clickToCopy": "Clicca per copiare",
           "copyUuidButton": "Copia UUID",
           "agentUuidCopied": "UUID agente copiato",
-          "agentUuidCopyError": "Impossibile copiare l'UUID dell'agente"
+          "agentUuidCopyError": "Impossibile copiare l'UUID dell'agente",
+          "modelOverridesDescriptionV2": "Sostituisci l'intera configurazione dei modelli dell'organizzazione per questo flusso di lavoro.",
+          "modelConfigLoading": "Caricamento della configurazione dei modelli in corso",
+          "legacyOverrideNotice": "Questo flusso di lavoro utilizza override dei modelli legacy. Migra la configurazione dei modelli dell'organizzazione per usare gli override v2.",
+          "migrateToV2": "Migra a v2",
+          "overrideForThisWorkflow": "Override per questo flusso di lavoro",
+          "overrideEnabledHelp": "Questo flusso di lavoro utilizza una propria configurazione completa dei modelli.",
+          "overrideDisabledHelp": "Questo flusso di lavoro utilizza la configurazione dei modelli dell'organizzazione.",
+          "saveModelOverride": "Salva override del modello",
+          "usingOrgConfiguration": "Utilizzo della configurazione dei modelli dell'organizzazione.",
+          "saveOrgConfiguration": "Salva configurazione dell'organizzazione",
+          "modelOverrideSavedToast": "Override del modello salvato",
+          "usingOrgConfigurationToast": "Utilizzo della configurazione dei modelli dell'organizzazione"
         },
         "run": {
           "runId": {
